@@ -1,3 +1,5 @@
+import math
+
 
 class Chemistry:
     aeat = 0
@@ -46,6 +48,19 @@ class Rocket:
     def __init__(self, chem, mdot):
         self.chem = chem
         self.mdot = mdot
+
+        self.isp_s = chem.isp / 9.8  # Isp = exhaust velocity (m/s) / g (sec)
+        self.rbar = 8.31446261815324 / chem.m * 1000  # Calculate specific gas constant and put in kJ scale
+        self.a_thr = (self.mdot / (chem.p * 101325)) * math.sqrt(chem.t * self.rbar / chem.gam) * (
+                    1 + ((chem.gam - 1) / 2)) ^ ((chem.gam + 1) / (2 * (chem.gam - 1)))  # Throat Size Equation
+
+        # p is in atm, conversion constant to Pa, might change to Pa later. area is in m^2
+
+        self.a_noz = self.a_thr * chem.ae
+        self.d_thr = math.sqrt(self.a_thr / math.pi * 2)
+        self.d_noz = math.sqrt(self.a_noz / math.pi * 2)
+
+        self.thrust = self.mdot * chem.isp  # + self.a_noz*(self.p-self.p_amb) not included as sea level expanded
 
 
 def parse(file):
