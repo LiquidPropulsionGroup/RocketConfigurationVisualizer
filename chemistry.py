@@ -2,25 +2,25 @@ import math
 
 
 class Chemistry:
-    aeat = 0
-    rho = 0
-    h = 0
-    s = 0
-    gam = 0
-    g = 0
-    u = 0
-    m = 0
-    mw = 0
-    p = 0
-    son = 0
-    cp = 0
-    t = 0
-    ae = 0
-    cf = 0
-    ivac = 0
-    mach = 0
-    pip = 0
-    isp = 0
+    aeat = None
+    rho = None
+    h = None
+    s = None
+    gam = None
+    g = None
+    u = None
+    m = None
+    mw = None
+    p = None
+    son = None
+    cp = None
+    t = None
+    ae = None
+    cf = None
+    ivac = None
+    mach = None
+    pip = None
+    isp = None
 
     def __repr__(self):
         return f"(aeat: {self.aeat} "\
@@ -64,28 +64,31 @@ class Rocket:
 
 
 def parse(file):
-    with open(file, 'r') as csv:
-        lines = csv.readlines()
+    with open(file, 'r') as tsv:
+        lines = tsv.readlines()
 
+        # we don't know what order the data will be delivered in. 'names' stores this when we receive it
         names = lines[0].split()
 
+        # these are the values required by the 'Rocket' calculations
         for req in ["t", "gam", "ae", "isp", "m", "p"]:
             if req not in names:
                 raise Exception("Missing required fields")
 
-        rockets = []
+        chem = []
 
         for line in lines[1:]:
             i = 0
             r = Chemistry()
 
             for val in line.split():
+                # dynamic access to 'Chemistry's fields based on the ordering stored in 'names'
                 r.__setattr__(names[i], float(val))
                 i += 1
 
-            rockets.append(r)
+            chem.append(r)
 
-        return rockets
+        return chem
 
 
 rockets = parse('test')
