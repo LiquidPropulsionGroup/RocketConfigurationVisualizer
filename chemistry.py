@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 
 class Chemistry:
@@ -51,8 +52,8 @@ class Rocket:
 
         self.isp_s = chem.isp / 9.8  # Isp = exhaust velocity (m/s) / g (sec)
         self.rbar = 8.31446261815324 / chem.m * 1000  # Calculate specific gas constant and put in kJ scale
-        self.a_thr = (self.mdot / (chem.p * 101325)) * math.sqrt(chem.t * self.rbar / chem.gam) * (
-                    1 + ((chem.gam - 1) / 2)) ^ ((chem.gam + 1) / (2 * (chem.gam - 1)))  # Throat Size Equation
+        self.a_thr = (self.mdot / (chem.p * 101325)) * math.sqrt(chem.t * self.rbar / chem.gam) * math.pow(
+            (1 + ((chem.gam - 1) / 2)), ((chem.gam + 1) / (2 * (chem.gam - 1))))  # Throat Size Equation
 
         # p is in atm, conversion constant to Pa, might change to Pa later. area is in m^2
 
@@ -91,6 +92,51 @@ def parse(file):
         return chem
 
 
-rockets = parse('test')
+chemistry = parse('test')
+
+print(chemistry)
+
+mdot = None
+
+while True:
+    mdotinput = rawin = input("Enter mdot: \n").strip()
+
+    try:
+        mdot = [float(mdotinput)]
+        break
+    except ValueError:
+        if not (mdotinput.endswith("]") and mdotinput.startswith("[")):
+            print("Enter either a range '[1:1:1]' or a single number '1.0'")
+            continue
+
+        mdotinput = mdotinput.lstrip("[").rstrip("]")
+
+        vals = mdotinput.split(":")
+
+        if len(vals) > 3 or len(vals) < 2:
+            print("Must have at most 3 values, formatted [start : stride : end] or [start : end], "
+                  "where stride defaults to .1")
+            continue
+
+        start = float(vals[0])
+        stride = 0.1
+        end = None
+
+        if len(vals) == 3:
+            stride = float(vals[1])
+            end = float(vals[2])
+        else:
+            end = float(vals[1])
+
+        mdot = np.arange(start, end, stride)
+
+        break
+
+rockets = []
+
+for chem in chemistry:
+    for m in mdot:
+        rockets.append(Rocket(chem, m))
 
 print(rockets)
+print(len(rockets))
