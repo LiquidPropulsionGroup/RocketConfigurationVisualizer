@@ -65,7 +65,7 @@ class Rocket:
         self.thrust = self.mdot * chem.isp  # + self.a_noz*(self.p-self.p_amb) not included as sea level expanded
 
 
-def parse(file):
+def parse(file) -> [Chemistry]:
     with open(file, 'r') as tsv:
         lines = tsv.readlines()
 
@@ -93,51 +93,54 @@ def parse(file):
         return chem
 
 
-chemistry = parse('test')
+def generate_rockets(chemfile) -> [Rocket]:
+    chemistry = parse(chemfile)
 
-print(chemistry)
+    mdot = []
 
-mdot = None
+    while True:
+        mdotinput = input("Enter mdot: \n").strip()
 
-while True:
-    mdotinput = rawin = input("Enter mdot: \n").strip()
+        try:
+            mdot = [float(mdotinput)]
+            break
+        except ValueError:
+            if not (mdotinput.endswith("]") and mdotinput.startswith("[")):
+                print("Enter either a range '[1:1:1]' or a single number '1.0'")
+                continue
 
-    try:
-        mdot = [float(mdotinput)]
-        break
-    except ValueError:
-        if not (mdotinput.endswith("]") and mdotinput.startswith("[")):
-            print("Enter either a range '[1:1:1]' or a single number '1.0'")
-            continue
+            mdotinput = mdotinput.lstrip("[").rstrip("]")
 
-        mdotinput = mdotinput.lstrip("[").rstrip("]")
+            vals = mdotinput.split(":")
 
-        vals = mdotinput.split(":")
+            if len(vals) > 3 or len(vals) < 2:
+                print("Must have at most 3 values, formatted [start : stride : end] or [start : end], "
+                      "where stride defaults to .1")
+                continue
 
-        if len(vals) > 3 or len(vals) < 2:
-            print("Must have at most 3 values, formatted [start : stride : end] or [start : end], "
-                  "where stride defaults to .1")
-            continue
+            start = float(vals[0])
+            stride = 0.1
 
-        start = float(vals[0])
-        stride = 0.1
-        end = None
+            if len(vals) == 3:
+                stride = float(vals[1])
+                end = float(vals[2])
+            else:
+                end = float(vals[1])
 
-        if len(vals) == 3:
-            stride = float(vals[1])
-            end = float(vals[2])
-        else:
-            end = float(vals[1])
+            mdot = np.arange(start, end, stride)
 
-        mdot = np.arange(start, end, stride)
+            break
 
-        break
+    rockets = []
 
-rockets = []
+    for chem in chemistry:
+        for m in mdot:
+            rockets.append(Rocket(chem, m))
 
-for chem in chemistry:
-    for m in mdot:
-        rockets.append(Rocket(chem, m))
+    return rockets
+
+
+rockets = generate_rockets('test')
 
 print(rockets)
 print(len(rockets))
