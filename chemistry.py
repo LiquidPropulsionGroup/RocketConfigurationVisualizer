@@ -22,6 +22,7 @@ class Chemistry:
     mach = None
     pip = None
     isp = None
+    # isp_s = None this needs to be implemented as its referenced in the calc in line 54
 
     def __repr__(self):
         return f"(aeat: {self.aeat} "\
