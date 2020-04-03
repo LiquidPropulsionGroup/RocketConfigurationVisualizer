@@ -59,8 +59,8 @@ class Rocket:
         # p is in atm, conversion constant to Pa, might change to Pa later. area is in m^2
 
         self.a_noz = self.a_thr * chem.ae
-        self.d_thr = math.sqrt(self.a_thr / math.pi * 2)
-        self.d_noz = math.sqrt(self.a_noz / math.pi * 2)
+        self.d_thr = 2 * math.sqrt(self.a_thr / math.pi)
+        self.d_noz = 2 * math.sqrt(self.a_noz / math.pi)
 
         self.thrust = self.mdot * chem.isp  # + self.a_noz*(self.p-self.p_amb) not included as sea level expanded
 
