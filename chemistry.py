@@ -123,6 +123,7 @@ def getPoints(endpoints, r1=0.05, convergence_angle=30, r2=0.03,r3=0.025,step=1e
         lambda x: ((endpoints[6][1] - endpoints[5][1]) / (endpoints[6][0] - endpoints[5][0])) * (x - endpoints[2][0]) + endpoints[2][1] # straight line
 
     ]
+    
     num = np.int32(np.rint((endpoints[6][0] - endpoints[0][0]) / step))
     
     x = np.array([])
