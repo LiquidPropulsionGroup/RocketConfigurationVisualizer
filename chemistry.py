@@ -115,13 +115,13 @@ def get_mdot() -> float:
 def getPoints(endpoints, r1=0.05, convergence_angle=30, r2=0.03,r3=0.025,step=1e-6):
 
     functions = [
-        lambda x: endpoints[0][1], # straight line
-        lambda x: np.sqrt(r1**2 - (endpoints[1][1] - x)**2) + endpoints[1][1] - r1, # circle
-        lambda x: -np.pi * (convergence_angle / 180) * (x - endpoints[2][0]) + endpoints[2][1], # straight line
-        lambda x: -np.sqrt(r2**2 - (endpoints[3][1] - x)**2) + endpoints[3][1] - r2, # circle
-        lambda x: -np.sqrt(r3**2 - (endpoints[4][1] - x)**2) + endpoints[4][1] - r3, # circle
-        lambda x: ((endpoints[6][1] - endpoints[5][1]) / (endpoints[6][0] - endpoints[5][0])) * (x - endpoints[2][0]) + endpoints[2][1] # straight line
-
+        lambda x: endpoints[0][1],  # straight line
+        lambda x: np.sqrt(abs(r1 ** 2 - (endpoints[1][1] - x) ** 2)) + endpoints[1][1] - r1,  # circle
+        lambda x: -np.pi * (convergence_angle / 180) * (x - endpoints[2][0]) + endpoints[2][1],  # straight line
+        lambda x: -np.sqrt(abs(r2 ** 2 - (endpoints[3][1] - x) ** 2)) + endpoints[3][1] - r2,  # circle
+        lambda x: -np.sqrt(abs(r3 ** 2 - (endpoints[4][1] - x) ** 2)) + endpoints[4][1] - r3,  # circle
+        lambda x: ((endpoints[6][1] - endpoints[5][1]) / (endpoints[6][0] - endpoints[5][0])) * (x - endpoints[2][0]) +
+                  endpoints[2][1]  # straight line
     ]
     
     num = np.int32(np.rint((endpoints[6][0] - endpoints[0][0]) / step))
