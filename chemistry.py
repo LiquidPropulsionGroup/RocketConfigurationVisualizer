@@ -2,6 +2,25 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
+# input values
+#mdot #total mass flowrate into engine (kg/s)
+#Lstar #characteristic length (m)
+chamber_diameter = 0.08
+
+#hoop stress calculater
+#takes: internal pressure, inside diameter of hoop, and wall thickness
+def hoop_stress(internal_pressure, inside_diameter, wall_thickness):
+    hoopStress = internal_pressure * inside_diameter / 2 * wall_thickness
+    return hoopStress
+                                                                                             
+#bartz equation calculator
+def bartz(d_throat, p_chamber, Cstar, d, c_p, visc, t_gas, t_wall):
+    t_boundary = (t_gas + t_wall)/2
+    return (0.026 / math.pow(d_throat,(0.2)) * math.pow((p_chamber/Cstar),(0.8)) * math.pow((d_throat/d),(1.8)) * c_p * math.pow(visc,(0.2)) * math.pow((t_gas/t_boundary),(0.8-0.2*0.6)))
+
+#chamber diameter(0.08m), lambda curve, 15degree nozzle
+
+
 
 class Chemistry:
     aeat = None
@@ -51,22 +70,38 @@ class Chemistry:
 
 
 class Rocket:
-    def __init__(self, chem, mdot):
+    def __init__(self, chem, mdot, Lstar):
         self.chem = chem
         self.mdot = mdot
+        self.Lstar = Lstar
 
-        self.isp_s = chem.isp / 9.8  # Isp = exhaust velocity (m/s) / g (sec)
-        self.rbar = 8.31446261815324 / chem.m * 1000  # Calculate specific gas constant and put in kJ scale
+        # Specific impulse in seconds
+        self.isp_s = chem.isp / 9.8
+
+        # Gas Constant per molecular weight (specific R) in kJ
+        self.rbar = 8.31446261815324 / chem.m * 1000
+
+        # Throat Area Equation
         self.a_thr = (self.mdot / (chem.p * 101325)) * math.sqrt(chem.t * self.rbar / chem.gam) * math.pow(
-            (1 + ((chem.gam - 1) / 2)), ((chem.gam + 1) / (2 * (chem.gam - 1))))  # Throat Size Equation
+            (1 + ((chem.gam - 1) / 2)), ((chem.gam + 1) / (2 * (chem.gam - 1))))
 
         # p is in atm, conversion constant to Pa, might change to Pa later. area is in m^2
 
+        # Nozzle Exit Area and diameters via Expansion Ratio and 
         self.a_noz = self.a_thr * chem.ae
         self.d_thr = 2 * math.sqrt(self.a_thr / math.pi)
         self.d_noz = 2 * math.sqrt(self.a_noz / math.pi)
 
+        # Thrust by fundamental rocket eq F = mdot * exhaust_velocity
         self.thrust = self.mdot * chem.isp  # + self.a_noz*(self.p-self.p_amb) not included as sea level expanded
+
+        # Total Chamber Volume via Characteristic Length
+        self.chamber_volume = self.Lstar * self.a_thr
+
+        # Here goes the dimensions and convergence angle calculator, hardcoding 30.
+        self.convergence_angle = 30 #degrees
+        self.divergence_angle = 15 #degrees
+        
 
 
 def parse(file) -> [Chemistry]:
@@ -117,7 +152,7 @@ def getPoints(endpoints, r1=0.05, convergence_angle=30, r2=0.03,r3=0.025,step=1e
     functions = [
         lambda x: endpoints[0][1],  # straight line
         lambda x: np.sqrt(abs(r1 ** 2 - (endpoints[1][1] - x) ** 2)) + endpoints[1][1] - r1,  # circle
-        lambda x: -np.pi * (convergence_angle / 180) * (x - endpoints[2][0]) + endpoints[2][1],  # straight line
+        lambda x: -np.pi * ((convergence_angle/180 )* (x - endpoints[2][0])) + endpoints[2][1],  # straight line
         lambda x: -np.sqrt(abs(r2 ** 2 - (endpoints[3][1] - x) ** 2)) + endpoints[3][1] - r2,  # circle
         lambda x: -np.sqrt(abs(r3 ** 2 - (endpoints[4][1] - x) ** 2)) + endpoints[4][1] - r3,  # circle
         lambda x: ((endpoints[6][1] - endpoints[5][1]) / (endpoints[6][0] - endpoints[5][0])) * (x - endpoints[2][0]) +
