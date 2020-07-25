@@ -42,7 +42,7 @@ class Chemistry:
     mach = None
     pip = None
     isp = None
-    # isp_s = None this needs to be implemented as its referenced in the calc in line 54 can you 
+    isp_s = None # this needs to be implemented as its referenced in the calc in line 54 can you 
     # testing yes 
     # hello world?
 
@@ -68,15 +68,18 @@ class Chemistry:
                 f"pip: {self.pip} "\
                 f"isp: {self.isp})"
 
-
 class Rocket:
-    def __init__(self, chem, mdot, Lstar):
+    def __init__(self, chem, mdot, Lstar, inj_d):
         self.chem = chem
         self.mdot = mdot
         self.Lstar = Lstar
+        self.inj_d = inj_d
+        self.contourPoints = 0
+        self.contour = 0
+        # self.inj_r = self.inj_d/2
 
         # Specific impulse in seconds
-        self.isp_s = chem.isp / 9.8
+        self.isp_s = self.chem.isp / 9.8
 
         # Gas Constant per molecular weight (specific R) in kJ
         self.rbar = 8.31446261815324 / chem.m * 1000
@@ -98,10 +101,68 @@ class Rocket:
         # Total Chamber Volume via Characteristic Length
         self.chamber_volume = self.Lstar * self.a_thr
 
+        # Temporary Chamber Volume (cylindrical approximation)
+        self.chamber_length = self.chamber_volume/(math.pi*(self.inj_d/2)**2)
+
         # Here goes the dimensions and convergence angle calculator, hardcoding 30.
-        self.convergence_angle = 30 #degrees
-        self.divergence_angle = 15 #degrees
+        self.conv_angle = math.pi/6 #rad, 30deg
+        self.divergence_angle = math.pi/12 #rad, 15deg
+        genContourPoints(self)
+        genContour(self)
+    
+    def genContourPoints(self, r1 = 0.05, r2 = 0.03, r3 = 0.025):
         
+        # Radius and origin at throat
+        origin_thr = np.array(0, self.d_thr/2)
+        
+        # start with the chamber side (left in our coordinates)
+        d = np.array([r2*np.sin(self.conv_angle)], [origin_thr[1]+r2*(1-np.cos(self.conv_angle))])
+        
+        c_y = self.inj_d/2 - r1*(1-np.cos(self.conv_angle))
+        c = np.array([(c_y - d[1])/np.tan(self.conv_angle) + d[0]],[c_y])
+
+        b = np.array([c[0] + r1*np.sin(self.conv_angle)],[self.inj_d/2])
+
+        inj = np.array([self.chamber_length],[self.inj_d/2])
+
+        # Concactenate left points
+        self.contourPoints = np.concatenate(inj, b, c, d, origin_thr)
+        
+        # Flip the array order (multiply all the x elements by -1, faster than sort)
+        self.contourPoints = self.contourPoints * np.array([-1],[1])
+
+        # now the right side
+        n = np.array([r3*np.sin(self.divergence_angle)],[origin_thr[1]+r3*(1-np.cos(self.divergence_angle))])
+        e = np.array([n[0]+(self.d_noz/2)/np.tan(self.divergence_angle)],[self.d_noz/2])
+
+        # Concactenate the right points
+        self.contourPoints = np.concatenate(self.contourPoints, n, e)
+
+    def genContour(self, r1=0.05, convergence_angle=30, r2=0.03,r3=0.025,step=1e-6):
+        #This is the function that draws the discrete contour
+
+        functions = [
+            lambda x: self.contourPoints[0][1],  # straight line
+            #lambda x: np.sqrt(abs(r1 ** 2 - (endpoints[1][1] - x) ** 2)) + endpoints[1][1] - r1,  # circle
+            lambda x: np.sqrt(r1**2 - (x - self.contourPoints[1][0]) ** 2) + self.contourPoints[1][1] - r1,
+            lambda x: -np.pi * ((convergence_angle/180 )* (x - self.contourPoints[2][0])) + self.contourPoints[2][1],  # straight line
+            lambda x: -np.sqrt(r2 ** 2 - (x - self.contourPoints[4][0]) ** 2) + self.contourPoints[4][1] + r2,  # circle
+            lambda x: -np.sqrt(r3 ** 2 - (x - self.contourPoints[4][0]) ** 2) + self.contourPoints[4][1] + r3,  # circle
+            lambda x: ((self.contourPoints[5][1] - self.contourPoints[6][1]) / (self.contourPoints[5][0] - self.contourPoints[6][0])) 
+                        * (x - self.contourPoints[5][0]) + self.contourPoints[5][1]  # straight line
+        ]
+
+        num = np.int32(np.rint((self.contourPoints[6][0] - self.contourPoints[0][0]) / step))
+
+        x = np.array([])
+        y = np.array([])
+
+        for i,fun in enumerate(functions):
+            temp_x = np.linspace(self.contourPoints[i][0], self.contourPoints[i+1][0], num)
+            f = np.vectorize(fun)
+            y = np.append(y, f(temp_x))
+            x = np.append(x, temp_x)
+        self.contour = np.array([x],[y])
 
 
 def parse(file) -> [Chemistry]:
@@ -146,7 +207,7 @@ def get_mdot() -> float:
 
     return mdot
 
-def getPoints(endpoints, r1=0.05, convergence_angle=30, r2=0.03,r3=0.025,step=1e-6):
+""" def genContour(endpoints, r1=0.05, convergence_angle=30, r2=0.03,r3=0.025,step=1e-6):
 
     functions = [
         lambda x: endpoints[0][1],  # straight line
@@ -156,11 +217,11 @@ def getPoints(endpoints, r1=0.05, convergence_angle=30, r2=0.03,r3=0.025,step=1e
         lambda x: -np.sqrt(r2 ** 2 - (x - endpoints[4][0]) ** 2) + endpoints[4][1] + r2,  # circle
         lambda x: -np.sqrt(r3 ** 2 - (x - endpoints[4][0]) ** 2) + endpoints[4][1] + r3,  # circle
         lambda x: ((endpoints[5][1] - endpoints[6][1]) / (endpoints[5][0] - endpoints[6][0])) * (x - endpoints[5][0]) +
-                  endpoints[5][1]  # straight line
+                endpoints[5][1]  # straight line
     ]
-    
+
     num = np.int32(np.rint((endpoints[6][0] - endpoints[0][0]) / step))
-    
+
     x = np.array([])
     y = np.array([])
 
@@ -169,11 +230,10 @@ def getPoints(endpoints, r1=0.05, convergence_angle=30, r2=0.03,r3=0.025,step=1e
         f = np.vectorize(fun)
         y = np.append(y, f(temp_x))
         x = np.append(x, temp_x)
-    return x, y
+    return x, y  """ 
 
-                       
 # These are just some hardcoded test values
-x,y = getPoints(np.array(
+""" x,y = genContour(np.array(
     [[-0.190432417470023, 0.0400000000000000], 
      [-0.0618912817675829, 0.0400000000000000],
      [-0.0368912817675829, 0.0333012701892219],
@@ -183,4 +243,9 @@ x,y = getPoints(np.array(
      [0.0401400000000000, 0.0256163128987331]]), step=0.00001)
 
 plt.plot(x, y)
-plt.show()
+plt.show() """
+
+chem = parse('test')
+print(chem)
+#rocket = Rocket(chem, 0.5, 1.1, 0.08)
+
