@@ -1,24 +1,24 @@
 class Chemistry:
-    aeat = None
-    rho = None
-    h = None
-    s = None
-    gam = None
-    g = None
-    u = None
-    m = None
-    mw = None
-    p = None
-    son = None
-    cp = None
-    t = None
-    ae = None
-    cf = None
-    ivac = None
-    mach = None
-    pip = None
-    isp = None
-    isp_s = None  # this needs to be implemented as its referenced in the calc in line 54 can you
+    aeat = None # area of exit/area of throat
+    rho = None #density
+    h = None #enthalpy
+    s = None #entropy
+    gam = None #molar heat capacity
+    g = None #gibb's free energy
+    u = None #internal energy
+    m = None #molar mass
+    mw = None #molecular weight = 1/m
+    p = None #pressure
+    son = None #speen of sound
+    cp = None #specific heat capacity (constant pressure)
+    t = None #temperature
+    ae = None #exit area ?
+    cf = None #function of nozzle
+    ivac = None #specific impulse (exit velocity) if the rocket were in space
+    mach = None #mach number
+    pip = None #pressure ratio to chamber
+    isp = None #the exhaust velocity of the gas (m/s)
+    isp_s = None  #specific impulse but in seconds (thanks verner von braun)
 
     @staticmethod
     def parse(file):
