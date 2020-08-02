@@ -26,7 +26,8 @@ def bartz(d_throat, p_chamber, c_star, d, c_p, visc, t_gas, t_wall):
         visc, 0.2) * math.pow((t_gas / t_boundary), (0.8 - 0.2 * 0.6)))
 
 
-# chamber diameter(0.08m), lambda curve, 15degree nozzle
+# chamber diameter(0.08m), lambda curve, 15degree nozzle.
+
 
 
 class Rocket:
@@ -37,8 +38,6 @@ class Rocket:
         self.inj_d = inj_d
         self.contourPoints = 0
         self.contour = 0
-        # self.inj_r = self.inj_d/2
-
         # Specific impulse in seconds
         self.isp_s = self.chem.isp / 9.8
 
