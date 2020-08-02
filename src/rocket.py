@@ -27,6 +27,7 @@ def bartz(d_throat, p_chamber, c_star, d, c_p, visc, t_gas, t_wall):
 
 
 # chamber diameter(0.08m), lambda curve, 15degree nozzle.
+# testing pull request
 
 
 
