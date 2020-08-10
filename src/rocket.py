@@ -2,6 +2,7 @@ import math
 
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy as sp
 
 # input values
 # mdot #total mass flowrate into engine (kg/s)
@@ -38,6 +39,7 @@ class Rocket:
         self.inj_d = inj_d
         self.contourPoints = 0
         self.contour = 0
+        self.area_arr = 0
         # Specific impulse in seconds
         self.isp_s = self.chem.isp / 9.8
 
@@ -124,4 +126,6 @@ class Rocket:
             f = np.vectorize(fun)
             y = np.append(y, f(temp_x))
             x = np.append(x, temp_x)
+
+            
         self.contour = np.array([x], [y])

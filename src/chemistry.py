@@ -12,13 +12,13 @@ class Chemistry:
     son = None #speen of sound
     cp = None #specific heat capacity (constant pressure)
     t = None #temperature
-    ae = None #exit area ?
+    ae = None #exit area
     cf = None #function of nozzle
     ivac = None #specific impulse (exit velocity) if the rocket were in space
     mach = None #mach number
     pip = None #pressure ratio to chamber
     isp = None #the exhaust velocity of the gas (m/s)
-    isp_s = None  #specific impulse but in seconds (thanks verner von braun)
+    #isp_s = None  #specific impulse but in seconds (thanks verner von braun)
 
     @staticmethod
     def parse(file):
