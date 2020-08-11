@@ -46,6 +46,8 @@ class Rocket:
         self.contour = 0
         self.area_arr = 0
 
+        #self.props = 
+
         # Specific impulse in seconds
         self.isp_s = self.chemExit.isp / 9.8
         
