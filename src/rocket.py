@@ -29,31 +29,38 @@ def bartz(d_throat, p_chamber, c_star, d, c_p, visc, t_gas, t_wall):
 
 # chamber diameter(0.08m), lambda curve, 15degree nozzle.
 
-
+def nozzleAreaEquation(mdot, pres, temp, rbar, gam): 
+    return (mdot / (pres * 101325)) * math.sqrt(temp * rbar / gam) * math.pow(
+            (1 + ((gam - 1) / 2)), ((gam + 1) / (2 * (gam - 1))))
 
 class Rocket:
     def __init__(self, chem, mdot, l_star, inj_d):
-        self.chem = chem
+        self.chemInj = chem[0] # injector
+        self.chemCham = chem[1] # converging starts (end of chamber)
+        self.chemThr = chem[2] # throat
+        self.chemExit = chem[3] # exit
         self.mdot = mdot
         self.Lstar = l_star
         self.inj_d = inj_d
         self.contourPoints = 0
         self.contour = 0
         self.area_arr = 0
-        # Specific impulse in seconds
-        self.isp_s = self.chem.isp / 9.8
 
+        # Specific impulse in seconds
+        self.isp_s = self.chemExit.isp / 9.8
+        
         # Gas Constant per molecular weight (specific R) in kJ
-        self.rbar = 8.31446261815324 / chem.m * 1000
+        self.rbar = 8.31446261815324 / self.chem.m * 1000
 
         # Throat Area Equation
-        self.a_thr = (self.mdot / (chem.p * 101325)) * math.sqrt(chem.t * self.rbar / chem.gam) * math.pow(
-            (1 + ((chem.gam - 1) / 2)), ((chem.gam + 1) / (2 * (chem.gam - 1))))
+        #self.a_thr = (self.mdot / (chem.p * 101325)) * math.sqrt(chem.t * self.rbar / chem.gam) * math.pow(
+        #    (1 + ((chem.gam - 1) / 2)), ((chem.gam + 1) / (2 * (chem.gam - 1))))
 
+        self.a_thr = nozzleAreaEquation(self.mdot, self.chem.p, self.chem.t, self.rbar, self.chem.gam)
         # p is in atm, conversion constant to Pa, might change to Pa later. area is in m^2
 
         # Nozzle Exit Area and diameters via Expansion Ratio and
-        self.a_noz = self.a_thr * chem.ae
+        self.a_noz = self.a_thr * self.chem.ae
         self.d_thr = 2 * math.sqrt(self.a_thr / math.pi)
         self.d_noz = 2 * math.sqrt(self.a_noz / math.pi)
 

@@ -1,4 +1,5 @@
 class Chemistry:
+    #given from NASA chem
     aeat = None # area of exit/area of throat
     rho = None #density
     h = None #enthalpy
@@ -19,6 +20,13 @@ class Chemistry:
     pip = None #pressure ratio to chamber
     isp = None #the exhaust velocity of the gas (m/s)
     #isp_s = None  #specific impulse but in seconds (thanks verner von braun)
+
+    #calculated from chem
+    isp_s = None
+    rbar = None
+    a_thr = None
+    
+    
 
     @staticmethod
     def parse(file):
