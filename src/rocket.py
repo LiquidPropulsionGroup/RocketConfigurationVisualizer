@@ -138,4 +138,4 @@ class Rocket:
         self.contour = np.array([x], [y])
     #testing new contour generator that will allow for easier utilization elsewhere
     def my_contour_function(self, r1=0.05, convergence_angle=30, r2=0.03, r3=0.025, step=1e-6):
-        
+        pass        
