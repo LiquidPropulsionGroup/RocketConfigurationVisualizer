@@ -13,3 +13,4 @@ inj_d = 0.08
 conv_angle = math.pi / 6 # rad, 30deg
 div_angle = math.pi / 12  # rad, 15deg
 rocket = Rocket(chems, mdot, l_star, inj_d, conv_angle, div_angle)
+print (mdot)

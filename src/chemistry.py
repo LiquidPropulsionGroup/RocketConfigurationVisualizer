@@ -55,7 +55,7 @@ class Chemistry:
                     r.__setattr__(names[i], float(val))
                     i += 1
 
-                    r.initCalculations()
+                r.initCalculations()
 
                 chem.append(r)
 
