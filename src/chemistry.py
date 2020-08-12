@@ -19,17 +19,20 @@ class Chemistry:
     mach = None #mach number
     pip = None #pressure ratio to chamber
     isp = None #the exhaust velocity of the gas (m/s)
-    #isp_s = None  #specific impulse but in seconds (thanks verner von braun)
 
-    #calculated from chem
-    isp_s = None
-    rbar = None
-    a_thr = None
+    #calculated from self chem (calcs done in parse_initVeriables)
+    rbar = None # Gas Constant per molecular weight (specific R) in kJ
+
+    #calculated from other chems
+    a = None #area
+    d = None #diameter
     
-    
+    def initCalculations(self):
+        #self.isp_s =     (not needed for every point)
+        self.rbar = 8.31446261815324 / self.m * 1000
 
     @staticmethod
-    def parse(file):
+    def parse_initVeriables(file):
         with open(file, 'r') as tsv:
             lines = tsv.readlines()
 
@@ -51,6 +54,8 @@ class Chemistry:
                     # dynamic access to 'Chemistry's fields based on the ordering stored in 'names'
                     r.__setattr__(names[i], float(val))
                     i += 1
+
+                    r.initCalculations()
 
                 chem.append(r)
 
