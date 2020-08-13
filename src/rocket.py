@@ -42,9 +42,9 @@ class Rocket:
         self.mdot = mdot
         self.Lstar = l_star
         self.inj_d = inj_d #diameter of injector
-        self.contourPoints = 0
-        self.contour = 0
-        self.area_arr = 0
+        self.contourPoints = None
+        self.contour = None
+        self.area_arr = None
 
         #self.props = 
 
@@ -79,6 +79,8 @@ class Rocket:
 
         self.genContourPoints()
         self.genContour()
+        self.areas()
+        self.areaMach()
 
     def genContourPoints(self, r1=0.05, r2=0.03, r3=0.025):
         # Radius and origin at throat
@@ -143,4 +145,25 @@ class Rocket:
         self.contour = np.array([x, y])
     #testing new contour generator that will allow for easier utilization elsewhere
     def my_contour_function(self, r1=0.05, convergence_angle=30, r2=0.03, r3=0.025, step=1e-6):
-        pass        
+        pass
+
+    def areas(self):
+
+        self.area_arr = np.array(self.contour)
+        self.area_arr = np.power(self.area_arr, 2)
+        self.area_arr = np.multiply(self.area_arr, np.pi)
+    
+    def areaMach(self):
+    # Unfortunately, the Area-Mach relation is not an onto function, needs to use lookup
+
+        # Generate a linspace of machs, this will not exactly line up with the contour intervals
+        machs = np.linspace(0.1, self.exit.mach, 10000)
+
+        # Generate a set of area ratios
+        areaRatios = np.power(machs, 2)
+        areaRatios = np.multiply(areaRatios, (1+(self.cham.gam)/2))
+        areaRatios = np.multiply(areaRatios, (2/(self.cham.gam+1)))
+        areaRatios = np.power(areaRatios, ((self.cham.gam+1)/(2*(self.cham.gam-1))))
+        areaRatios = np.divide(areaRatios, machs)
+        
+        # what follows next is unholy (i'm going to use a dictionary lookup)
