@@ -82,32 +82,37 @@ class Rocket:
 
     def genContourPoints(self, r1=0.05, r2=0.03, r3=0.025):
         # Radius and origin at throat
-        origin_thr = np.array(0, self.thr.d / 2)
+        origin_thr = [0, self.thr.d / 2]
 
         # start with the chamber side (left in our coordinates)
-        d = np.array([r2 * np.sin(self.conv_angle)], [origin_thr[1] + r2 * (1 - np.cos(self.conv_angle))])
+        d = [r2 * np.sin(self.conv_angle), origin_thr[1] + r2 * (1 - np.cos(self.conv_angle))]
 
         c_y = self.inj_d / 2 - r1 * (1 - np.cos(self.conv_angle))
-        c = np.array([(c_y - d[1]) / np.tan(self.conv_angle) + d[0]], [c_y])
+        c = [(c_y - d[1]) / np.tan(self.conv_angle) + d[0], c_y]
 
-        b = np.array([c[0] + r1 * np.sin(self.conv_angle)], [self.inj_d / 2])
+        b = [c[0] + r1 * np.sin(self.conv_angle), self.inj_d / 2]
 
-        inj = np.array([self.chamber_length], [self.inj_d / 2])
+        inj = [self.chamber_length, self.inj_d / 2]
 
         # Concactenate left points
-        self.contourPoints = np.concatenate(inj, b, c, d, origin_thr)
+        self.contourPoints = [inj, b, c, d, origin_thr]
 
         # Flip the array order (multiply all the x elements by -1, faster than sort)
-        self.contourPoints = self.contourPoints * np.array([-1], [1])
+        # self.contourPoints = self.contourPoints * [-1, 1]
+        for i in range(len(self.contourPoints)):
+            self.contourPoints[i][0] = self.contourPoints[i][0] * -1
+
 
         # now the right side
-        n = np.array([r3 * np.sin(self.divergence_angle)], [origin_thr[1] + r3 * (1 - np.cos(self.divergence_angle))])
-        e = np.array([n[0] + (self.exit.d / 2) / np.tan(self.divergence_angle)], [self.exit.d / 2])
+        n = [r3 * np.sin(self.divergence_angle), origin_thr[1] + r3 * (1 - np.cos(self.divergence_angle))]
+        e = [n[0] + (self.exit.d / 2) / np.tan(self.divergence_angle), self.exit.d / 2]
 
         # Concactenate the right points
-        self.contourPoints = np.concatenate(self.contourPoints, n, e)
+        self.contourPoints.append(n)
+        self.contourPoints.append(e)
 
-    def genContour(self, r1=0.05, convergence_angle=30, r2=0.03, r3=0.025, step=1e-6): 
+
+    def genContour(self, r1=0.05, convergence_angle=30, r2=0.03, r3=0.025, step=1e-4): 
         # This is the function that draws the discrete contour
 
         functions = [
@@ -135,7 +140,7 @@ class Rocket:
             x = np.append(x, temp_x)
 
             
-        self.contour = np.array([x], [y])
+        self.contour = np.array([x, y])
     #testing new contour generator that will allow for easier utilization elsewhere
     def my_contour_function(self, r1=0.05, convergence_angle=30, r2=0.03, r3=0.025, step=1e-6):
         pass        
