@@ -39,9 +39,9 @@ class Rocket:
         self.mdot = mdot
         self.Lstar = l_star
         self.cham.d = cham_d #diameter of the chamber
-        self.contourPoints = 0
-        self.contour = 0
-        self.area_arr = 0
+        self.contourPoints = None
+        self.contour = None
+        self.area_arr = None
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
         #self.props = 
@@ -68,6 +68,8 @@ class Rocket:
         # this generates the chamber and nozzle contour that is used for calculations
         self.my_contourPoints()
         self.genContour()
+        self.areas()
+        self.areaMach()
 
     # this generates the points that the gencontour function uses to make functions between
     # the points are refrenced from left to right in the graph
@@ -115,4 +117,24 @@ class Rocket:
 
             
         self.contour = np.array([x, y])
+
+    def areas(self):
+
+        self.area_arr = np.array(self.contour)
+        self.area_arr = np.power(self.area_arr, 2)
+        self.area_arr = np.multiply(self.area_arr, np.pi)
     
+    def areaMach(self):
+    # Unfortunately, the Area-Mach relation is not an onto function, needs to use lookup
+
+        # Generate a linspace of machs, this will not exactly line up with the contour intervals
+        machs = np.linspace(0.1, self.exit.mach, 10000)
+
+        # Generate a set of area ratios
+        areaRatios = np.power(machs, 2)
+        areaRatios = np.multiply(areaRatios, (1+(self.cham.gam)/2))
+        areaRatios = np.multiply(areaRatios, (2/(self.cham.gam+1)))
+        areaRatios = np.power(areaRatios, ((self.cham.gam+1)/(2*(self.cham.gam-1))))
+        areaRatios = np.divide(areaRatios, machs)
+        
+        # what follows next is unholy (i'm going to use a dictionary lookup)
