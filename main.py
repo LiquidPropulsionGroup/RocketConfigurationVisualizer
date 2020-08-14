@@ -13,10 +13,10 @@ chems = Chemistry.parse_initVeriables('test_real')
 #set veriables
 mdot = 0.5
 l_star = 1.1
-inj_d = 0.08
+cham_d = 0.08 #in meters
 conv_angle = math.pi / 6 # rad, 30deg
 div_angle = math.pi / 12  # rad, 15deg
-rocket = Rocket(chems, mdot, l_star, inj_d, conv_angle, div_angle)
+rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle)
 
 plt.plot(rocket.contour[0], rocket.contour[1])
 plt.show()
