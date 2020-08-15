@@ -115,14 +115,13 @@ class Rocket:
             y = np.append(y, f(temp_x))
             x = np.append(x, temp_x)
 
-            
         self.contour = np.array([x, y])
 
-    def areas(self):
 
-        self.area_arr = np.array(self.contour)
-        self.area_arr = np.power(self.area_arr, 2)
-        self.area_arr = np.multiply(self.area_arr, np.pi)
+    def areas(self):
+        
+        self.area_arr = self.contour.copy()
+        self.area_arr[1,:] = np.multiply(np.power(self.area_arr[1,:], 2),np.pi)
     
     def areaMach(self):
     # Unfortunately, the Area-Mach relation is not an onto function, needs to use lookup

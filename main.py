@@ -18,9 +18,9 @@ conv_angle = math.pi / 6 # rad, 30deg
 div_angle = math.pi / 12  # rad, 15deg
 rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle)
 
-print(rocket.contourPoints)
-
-fig1, ax = plt.figure()
-plt.plot(rocket.contour[0], rocket.contour[1])
-fig1.axis('equal')
+#fig1, ax = plt.figure()
+#plt.plot(rocket.contour[0], rocket.contour[1])
+#fig1.axis('equal')
+rocket.areas()
+plt.plot(rocket.area_arr[0], rocket.area_arr[1])
 plt.show()
