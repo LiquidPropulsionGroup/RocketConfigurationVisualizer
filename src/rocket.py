@@ -3,7 +3,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
-
+import time
 # input values
 # mdot #total mass flowrate into engine (kg/s)
 # Lstar #characteristic length (m)
@@ -42,6 +42,8 @@ class Rocket:
         self.contourPoints = None
         self.contour = None
         self.area_arr = None
+        self.mach_arr = None
+        self.hoopStress_arr = None
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
         #self.props = 
@@ -72,7 +74,7 @@ class Rocket:
         self.areaMach()
 
     # this generates the points that the gencontour function uses to make functions between
-    # the points are refrenced from left to right in the graph
+    # the points are referenced from left to right in the graph
     def my_contourPoints(self, r1=0.05, r2=0.03, r3=0.025):
         o = [0,self.thr.d / 2]
         d = [-r2 * np.sin(self.conv_angle),o[1] + r2 * (1 - np.cos(self.conv_angle))]
@@ -88,7 +90,7 @@ class Rocket:
 
     def genContour(self, r1=0.05, convergence_angle=30, r2=0.03, r3=0.025, step=1e-4): 
         # This is the function that draws the discrete contour
-        # these functions are refrenced from left to right of the graph
+        # these functions are referenced from left to right of the graph
         functions = [
             lambda x: self.contourPoints[0][1],
             lambda x: np.sqrt(r1 ** 2 - (x - self.contourPoints[1][0]) ** 2) + self.contourPoints[1][1] - r1,
@@ -117,23 +119,86 @@ class Rocket:
 
         self.contour = np.array([x, y])
 
-
+    #array functions:
+    #this finds area over the contour
     def areas(self):
         
         self.area_arr = self.contour.copy()
-        self.area_arr[1,:] = np.multiply(np.power(self.area_arr[1,:], 2),np.pi)
+        self.area_arr[1,:] = np.multiply(np.power(self.area_arr[1,:], 2),np.pi)# this is just pi*r^2 in array form
+    
+    
+    def machAreaEquation(self, tempM, area):   #gamma used is for the chamber gamma, it is not changed throughout the chamber. fix later
+        gam = self.cham.gam
+        # return 1/(tempM**2) * math.pow((2/(gam+1))*(1+(gam-1)/2)*tempM**2, (gam+1/gam-1)) - math.pow((area/self.thr.a), 2)
+
+        myreturn = math.pow((1/tempM),2) * math.pow((2/(gam+1)*(1+((gam-1)/2)*math.pow(tempM,2))),((gam+1)/(gam-1))) - math.pow(area/self.thr.a,2)
+        return myreturn
+        #return 
+
+    def binarySearchConvergence(self, area, regimeSwitch):
+        myMach = 1
+        testMach = 0
+        step = 0
+        testVal = self.machAreaEquation(myMach,area)
+        #print(testVal)
+        if (regimeSwitch): #supersonic
+            #print("supersonic")
+            referenceMach = self.exit.mach
+            step = abs(myMach - referenceMach)/2
+            testMach = referenceMach - step
+            #print(referenceMach)
+            #print(step)
+            #print(testMach)
+        else: #subsonic
+            #print("subsonic")
+            referenceMach = self.cham.mach
+            step = abs(myMach - referenceMach)/2
+            testMach = referenceMach + step
+            #print(referenceMach)
+            #print(step)
+            #print(testMach)
+
+
+
+        while (testVal >= 0.000001 or testVal <= -0.000001):
+            testVal = self.machAreaEquation(testMach, area)
+            #if(regimeSwitch):
+            #    print(testVal, testMach)
+            #    time.sleep(1)
+            step /= 2
+            if (testVal < 0):
+                testMach -= step
+            else:
+                testMach += step
+        #print("final mach value")
+        print(testVal, testMach)
+        #print("beep")
+        return testMach
+
+
     
     def areaMach(self):
-    # Unfortunately, the Area-Mach relation is not an onto function, needs to use lookup
+    # uses convergence solver to arrive at Machs
 
-        # Generate a linspace of machs, this will not exactly line up with the contour intervals
-        machs = np.linspace(0.1, self.exit.mach, 10000)
-
-        # Generate a set of area ratios
-        areaRatios = np.power(machs, 2)
-        areaRatios = np.multiply(areaRatios, (1+(self.cham.gam)/2))
-        areaRatios = np.multiply(areaRatios, (2/(self.cham.gam+1)))
-        areaRatios = np.power(areaRatios, ((self.cham.gam+1)/(2*(self.cham.gam-1))))
-        areaRatios = np.divide(areaRatios, machs)
+        #throat_index = len(self.area_arr)*(self.contourPoints[4][0]-self.contourPoints[0][0])/(self.contourPoints[6][0]-self.contourPoints[0][0])
+        #print(throat_index)
         
+        regimeSwitch = False
+
+        tempMach = self.cham.mach
+        self.mach_arr = self.area_arr.copy()
+        count = 0 #:kekw:
+        for area in self.area_arr[1,:]:
+
+            tempMach = self.binarySearchConvergence(area, regimeSwitch)
+            self.mach_arr[1,count] = tempMach
+            if (self.area_arr[1,count] == self.thr.a):
+                regimeSwitch = True
+            count += 1
+            
         # what follows next is unholy (i'm going to use a dictionary lookup)
+
+    def hoopStress(self): #work in progress
+        #hoopStress = internal_pressure * inside_diameter / 2 * wall_thickness
+        self.hoopStress_arr = self.contour.copy()
+        self.hoopStress_arr = np.multiply(self.hoopStress_arr,)#needs pressure at every point
