@@ -43,6 +43,9 @@ class Rocket:
         self.contour = None
         self.area_arr = None
         self.mach_arr = None
+        self.pressure_arr = None
+        self.temp_arr = None
+        self.density_arr = None
         self.hoopStress_arr = None
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
@@ -72,6 +75,7 @@ class Rocket:
         self.genContour()
         self.areas()
         self.areaMach()
+        self.tempPressureDensity()
 
     # this generates the points that the gencontour function uses to make functions between
     # the points are referenced from left to right in the graph
@@ -126,7 +130,6 @@ class Rocket:
         self.area_arr = self.contour.copy()
         self.area_arr[1,:] = np.multiply(np.power(self.area_arr[1,:], 2),np.pi)# this is just pi*r^2 in array form
     
-    
     def machAreaEquation(self, tempM, area):   #gamma used is for the chamber gamma, it is not changed throughout the chamber. fix later
         gam = self.cham.gam
         myreturn = (1/tempM)**2 * (2/(gam+1)*(1+((gam-1)/2)*tempM**2))**((gam+1)/(gam-1)) - (area/self.thr.a)**2
@@ -176,6 +179,37 @@ class Rocket:
                 regimeSwitch = True                
             count += 1
 
+    def temp_eq(self, mach):
+        gam = self.cham.gam
+        t_stag = self.cham.t * (1 + ((gam-1)/2 * self.cham.mach**2))
+        myreturn = t_stag * (1 + ((gam-1)/2 * mach**2))**(-1)
+        return myreturn
+
+    def pressure_eq(self, mach):
+        gam = self.cham.gam
+        p_stag = self.cham.p * (1 + ((gam-1)/2 * self.cham.mach**2))**(gam/(gam-1))
+        myreturn = p_stag * (1 + ((gam-1)/2 * mach**2))**(-gam/(gam-1))
+        return myreturn
+
+    def density_eq(self, mach):#need to find chamber density
+        self.cham.rho = 1 #THIS IS TEMPORARY... PLEASE DELETE LATER
+        gam = self.cham.gam
+        d_stag = self.cham.rho * (1 + ((gam-1)/2 * self.cham.mach**2))**(1/(gam-1))
+        myreturn = d_stag * (1 + ((gam-1)/2 * mach**2))**(-1/(gam-1))
+        return myreturn
+
+    def tempPressureDensity(self):
+        self.pressure_arr = self.mach_arr.copy()
+        self.temp_arr = self.mach_arr.copy()
+        self.density_arr = self.mach_arr.copy()
+        count = 0
+        for mach in self.mach_arr[1,:]:
+            self.temp_arr[1,count] = self.temp_eq(mach)
+            self.pressure_arr[1,count] = self.pressure_eq(mach)
+            self.density_arr[1,count] = self.density_eq(mach)
+            count += 1
+
+        
     def hoopStress(self): #work in progress
         #hoopStress = internal_pressure * inside_diameter / 2 * wall_thickness
         self.hoopStress_arr = self.contour.copy()
