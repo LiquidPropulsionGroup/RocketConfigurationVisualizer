@@ -129,47 +129,26 @@ class Rocket:
     
     def machAreaEquation(self, tempM, area):   #gamma used is for the chamber gamma, it is not changed throughout the chamber. fix later
         gam = self.cham.gam
-        # return 1/(tempM**2) * math.pow((2/(gam+1))*(1+(gam-1)/2)*tempM**2, (gam+1/gam-1)) - math.pow((area/self.thr.a), 2)
-
-        #myreturn = (1/tempM)**2 * math.pow((2/(gam+1)*(1+((gam-1)/2)*math.pow(tempM,2))),((gam+1)/(2*(gam-1)))) - math.pow(area/self.thr.a,2)
         myreturn = (1/tempM)**2 * (2/(gam+1)*(1+((gam-1)/2)*tempM**2))**((gam+1)/(gam-1)) - (area/self.thr.a)**2
         return myreturn
-        #return 
 
     def binarySearchConvergence(self, area, regimeSwitch):
         myMach = 1
         testMach = 0
         step = 0
         testVal = self.machAreaEquation(myMach,area)
-        #print(testVal)
         if (regimeSwitch): #supersonic
-            #print("supersonic")
             referenceMach = self.exit.mach+0.1 #this number is so the last iteration does not get stuck
             step = abs(myMach - referenceMach)/2
             testMach = referenceMach - step
-            #print(testMach)
-            #print(referenceMach)
-            #print(step)
             testVal = self.machAreaEquation(testMach, area)
-            #print(testVal)
         else: #subsonic
-            #print("subsonic")
             referenceMach = self.cham.mach
             step = abs(myMach - referenceMach)/2
             testMach = referenceMach + step
             testVal = self.machAreaEquation(testMach, area)
-            #print(referenceMach)
-            #print(step)
-            #print(testMach)
-
-
 
         while (testVal >= 0.00001 or testVal <= -0.00001):
-            #testVal = self.machAreaEquation(testMach, area)
-            if(regimeSwitch):
-                print(testVal, testMach)
-            #    time.sleep(0.1)
-            
             step /= 2
             if(regimeSwitch):
                 if (testVal < 0):
@@ -182,22 +161,11 @@ class Rocket:
                 else:
                     testMach += step
             testVal = self.machAreaEquation(testMach, area)
-
-            
-
-        #print("final mach value")
-        print(testVal, testMach)
-        #print("beep")
         return testMach
     
     def areaMach(self):
     # uses convergence solver to arrive at Machs
-
-        #throat_index = len(self.area_arr)*(self.contourPoints[4][0]-self.contourPoints[0][0])/(self.contourPoints[6][0]-self.contourPoints[0][0])
-        #print(throat_index)
-        
         regimeSwitch = False
-
         tempMach = self.cham.mach
         self.mach_arr = self.area_arr.copy()
         count = 0 #:kekw:
