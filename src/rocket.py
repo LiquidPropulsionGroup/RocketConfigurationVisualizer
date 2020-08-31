@@ -173,8 +173,7 @@ class Rocket:
             tempMach = self.binarySearchConvergence(area, regimeSwitch)
             self.mach_arr[1,count] = tempMach
             if (self.area_arr[1,count] == self.thr.a):
-                regimeSwitch = True
-                print("switch")
+                regimeSwitch = True                
             count += 1
 
     def hoopStress(self): #work in progress
