@@ -131,7 +131,8 @@ class Rocket:
         gam = self.cham.gam
         # return 1/(tempM**2) * math.pow((2/(gam+1))*(1+(gam-1)/2)*tempM**2, (gam+1/gam-1)) - math.pow((area/self.thr.a), 2)
 
-        myreturn = math.pow((1/tempM),2) * math.pow((2/(gam+1)*(1+((gam-1)/2)*math.pow(tempM,2))),((gam+1)/(gam-1))) - math.pow(area/self.thr.a,2)
+        #myreturn = (1/tempM)**2 * math.pow((2/(gam+1)*(1+((gam-1)/2)*math.pow(tempM,2))),((gam+1)/(2*(gam-1)))) - math.pow(area/self.thr.a,2)
+        myreturn = (1/tempM)**2 * (2/(gam+1)*(1+((gam-1)/2)*tempM**2))**((gam+1)/(gam-1)) - (area/self.thr.a)**2
         return myreturn
         #return 
 
@@ -143,39 +144,51 @@ class Rocket:
         #print(testVal)
         if (regimeSwitch): #supersonic
             #print("supersonic")
-            referenceMach = self.exit.mach
+            referenceMach = self.exit.mach+0.1 #this number is so the last iteration does not get stuck
             step = abs(myMach - referenceMach)/2
             testMach = referenceMach - step
+            #print(testMach)
             #print(referenceMach)
             #print(step)
-            #print(testMach)
+            testVal = self.machAreaEquation(testMach, area)
+            #print(testVal)
         else: #subsonic
             #print("subsonic")
             referenceMach = self.cham.mach
             step = abs(myMach - referenceMach)/2
             testMach = referenceMach + step
+            testVal = self.machAreaEquation(testMach, area)
             #print(referenceMach)
             #print(step)
             #print(testMach)
 
 
 
-        while (testVal >= 0.000001 or testVal <= -0.000001):
-            testVal = self.machAreaEquation(testMach, area)
-            #if(regimeSwitch):
-            #    print(testVal, testMach)
-            #    time.sleep(1)
+        while (testVal >= 0.00001 or testVal <= -0.00001):
+            #testVal = self.machAreaEquation(testMach, area)
+            if(regimeSwitch):
+                print(testVal, testMach)
+            #    time.sleep(0.1)
+            
             step /= 2
-            if (testVal < 0):
-                testMach -= step
+            if(regimeSwitch):
+                if (testVal < 0):
+                    testMach += step
+                else:
+                    testMach -= step
             else:
-                testMach += step
+                if (testVal < 0):
+                    testMach -= step
+                else:
+                    testMach += step
+            testVal = self.machAreaEquation(testMach, area)
+
+            
+
         #print("final mach value")
         print(testVal, testMach)
         #print("beep")
         return testMach
-
-
     
     def areaMach(self):
     # uses convergence solver to arrive at Machs
@@ -189,14 +202,12 @@ class Rocket:
         self.mach_arr = self.area_arr.copy()
         count = 0 #:kekw:
         for area in self.area_arr[1,:]:
-
             tempMach = self.binarySearchConvergence(area, regimeSwitch)
             self.mach_arr[1,count] = tempMach
             if (self.area_arr[1,count] == self.thr.a):
                 regimeSwitch = True
+                print("switch")
             count += 1
-            
-        # what follows next is unholy (i'm going to use a dictionary lookup)
 
     def hoopStress(self): #work in progress
         #hoopStress = internal_pressure * inside_diameter / 2 * wall_thickness

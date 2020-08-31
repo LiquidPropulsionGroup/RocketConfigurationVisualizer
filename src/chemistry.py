@@ -20,7 +20,7 @@ class Chemistry:
     pip = None #pressure ratio to chamber
     isp = None #the exhaust velocity of the gas (m/s)
 
-    #calculated from self chem (calcs done in parse_initVeriables)
+    #calculated from self chem (calcs called in parse_initVeriables)
     rbar = None # Gas Constant per molecular weight (specific R) in kJ
 
     #calculated from other chems
