@@ -166,8 +166,8 @@ class Rocket:
 
         while (testVal >= 0.00001 or testVal <= -0.00001):
             #testVal = self.machAreaEquation(testMach, area)
-            if(regimeSwitch):
-                print(testVal, testMach)
+            #if(regimeSwitch):
+                #print(testVal, testMach)
             #    time.sleep(0.1)
             
             step /= 2
@@ -186,7 +186,7 @@ class Rocket:
             
 
         #print("final mach value")
-        print(testVal, testMach)
+        #print(testVal, testMach)
         #print("beep")
         return testMach
     
@@ -205,8 +205,7 @@ class Rocket:
             tempMach = self.binarySearchConvergence(area, regimeSwitch)
             self.mach_arr[1,count] = tempMach
             if (self.area_arr[1,count] == self.thr.a):
-                regimeSwitch = True
-                print("switch")
+                regimeSwitch = True                
             count += 1
 
     def hoopStress(self): #work in progress
