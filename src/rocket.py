@@ -103,7 +103,7 @@ class Rocket:
             lambda x: -np.sqrt(r3 ** 2 - (x + self.contourPoints[4][0]) ** 2) + self.contourPoints[4][1] + r3, 
             lambda x: ((self.contourPoints[5][1] - self.contourPoints[6][1]) / (self.contourPoints[5][0] - self.contourPoints[6][0]))  * (x - self.contourPoints[5][0]) + self.contourPoints[5][1] 
         ]
-            # 1: stait line
+            # 1: strait line
             # 2: circle
             # 3: stait line
             # 4: circle
