@@ -28,7 +28,7 @@ fuel_volEmpty = 360.04009 * 0.000016387064 # m^3
 lox_volEmpty = 360.04009 * 0.000016387064 # m^3
 
 target_pressure = 20*101300 # Pa
-n_tanks = target_pressue * (fuel_volEmpty + lox_volEmpty) / ()
+n_tanks = target_pressure * (fuel_volEmpty + lox_volEmpty) / ()
 
 print('Ideal Gas Solution:')
 print('Initial He volume: {} cubic inches.'.format(He_vol))
