@@ -125,7 +125,7 @@ ActuatorStroke_Length = 3.25;                       % [in], Actuator Rod Stroke 
 % Mechanical orientation: Negative
 ChA_InterfaceArea = RetArea;                        % [in^2] Chamber A is the retraction chamber
 ChA_InitialDisplacement = -ActuatorStroke_Length;   % [in] Piston starts fully retracted
-ChA_DeadVol = 0.1*ChB_InterfaceArea*ActuatorStroke_Length;                                % [in^3] Dead volume in Chamber A (Ideal = 0, but divide by zero)
+ChA_DeadVol = 0.1*ChA_InterfaceArea*ActuatorStroke_Length;                                % [in^3] Dead volume in Chamber A (Ideal = 0, but divide by zero)
 ChA_PortDiam = 0.1517;                              % [in] Port Diameter (From the minor diameter of 10-32 UNF)
 ChA_PortArea = (ChA_PortDiam/2)^2*pi;               % [in^2] Port Area
 % TODO: Get actual inlet minor diameter from hose insert
