@@ -7,7 +7,6 @@ import time
 # input values
 # mdot #total mass flowrate into engine (kg/s)
 # Lstar #characteristic length (m)
-chamber_diameter = 0.08
 
 def hoop_stress(internal_pressure, inside_diameter, wall_thickness):
     """
