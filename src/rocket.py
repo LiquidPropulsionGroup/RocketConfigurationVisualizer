@@ -30,7 +30,7 @@ def throatAreaEquation(mdot, pres, temp, rbar, gam):
             (1 + ((gam - 1) / 2)), ((gam + 1) / (2 * (gam - 1))))
 
 class Rocket:
-    def __init__(self, chem, mdot, l_star, cham_d, conv_angle, div_angle):
+    def __init__(self, chem, mdot, l_star, cham_d, conv_angle, div_angle, r1=0.05, r2=0.03, r3=0.025):
         self.inj = chem[0] # injector
         self.cham = chem[1] # converging starts (end of chamber)
         self.thr = chem[2] # throat
@@ -48,8 +48,7 @@ class Rocket:
         self.hoopStress_arr = None
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
-        #self.props = 
-
+        
         # Specific impulse in seconds
         self.isp_s = self.exit.isp / 9.8
 
@@ -73,7 +72,7 @@ class Rocket:
         self.chamber_length = 6.444650495*0.0254
 
         # this generates the chamber and nozzle contour that is used for calculations
-        self.my_contourPoints()
+        self.my_contourPoints(r1, r2, r3)
         self.genContour()
         self.areas()
         self.areaMach()

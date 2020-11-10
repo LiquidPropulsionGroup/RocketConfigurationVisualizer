@@ -17,7 +17,7 @@ cham_d = 3.75 * 0.0254 #in meters
 #cham_d = 0.08
 conv_angle = math.pi / 4 # rad, 45deg
 div_angle = math.pi / 12  # rad, 15deg
-rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle)
+rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle, 0.04, 0.02, 0.01)
 
 rocket.contour = rocket.contour / 0.0254
 
