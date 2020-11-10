@@ -25,7 +25,7 @@ def bartz(d_throat, p_chamber, c_star, d, c_p, visc, t_gas, t_wall):
 
 # chamber diameter(0.08m), lambda curve, 15degree nozzle.
 
-def nozzleAreaEquation(mdot, pres, temp, rbar, gam): 
+def throatAreaEquation(mdot, pres, temp, rbar, gam): 
     return (mdot / (pres * 101325)) * math.sqrt(temp * rbar / gam) * math.pow(
             (1 + ((gam - 1) / 2)), ((gam + 1) / (2 * (gam - 1))))
 
@@ -53,7 +53,7 @@ class Rocket:
         # Specific impulse in seconds
         self.isp_s = self.exit.isp / 9.8
 
-        self.thr.a = nozzleAreaEquation(self.mdot, self.thr.p, self.thr.t, self.thr.rbar, self.thr.gam)
+        self.thr.a = throatAreaEquation(self.mdot, self.thr.p, self.thr.t, self.thr.rbar, self.thr.gam)
         # p is in atm, conversion constant to Pa, might change to Pa later. area is in m^2
 
         # Nozzle Exit Area and diameters via Expansion Ratio and
@@ -68,6 +68,9 @@ class Rocket:
         # NOTE: this volume does not take injector and contour volumes into consideration and is theirfor not completly accurate
         self.chamber_volume = self.Lstar * self.thr.a
         self.chamber_length = self.chamber_volume / (math.pi * (self.cham.d / 2) ** 2)
+
+        # hardcode temp fix
+        self.chamber_length = 6.444650495*0.0254
 
         # this generates the chamber and nozzle contour that is used for calculations
         self.my_contourPoints()
@@ -90,6 +93,13 @@ class Rocket:
         b[0] = c[0] - (r1 * np.sin(self.conv_angle))
         a[0] = b[0] - self.chamber_length
         self.contourPoints = [a, b, c, d, o, n, e]
+        locs = ['inj', 'b', 'c', 'd', 'o', 'n', 'e']
+        xy = ['x', 'y']
+
+        txtout = open('dims.txt','w')
+        for i in range(len(self.contourPoints)):
+            for j in range(2):
+                txtout.write('"{0}_{1}"= {2}\n'.format(locs[i], xy[j], self.contourPoints[i][j]/0.0254))
 
     def genContour(self, r1=0.05, convergence_angle=30, r2=0.03, r3=0.025, step=1e-4): 
         # This is the function that draws the discrete contour

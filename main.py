@@ -19,7 +19,7 @@ conv_angle = math.pi / 4 # rad, 45deg
 div_angle = math.pi / 12  # rad, 15deg
 rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle)
 
-#rocket.contour = rocket.contour / 0.0254
+rocket.contour = rocket.contour / 0.0254
 
 print("Debug Outputs:\n")
 
@@ -31,12 +31,17 @@ print("Total Length: {0:.2f} in".format((rocket.contourPoints[6][0]-rocket.conto
 print("Volume: {0:.2f} cc".format(rocket.chamber_volume * 1000000))
 
 
-#fig1, ax = plt.figure()
+plt.figure()
 plt.plot(rocket.contour[0], rocket.contour[1])
 plt.axis('equal')
+plt.xlabel('Length (in)')
+plt.ylabel('Radius (in)')
+
+print(rocket.contourPoints)
 #plt.plot(rocket.area_arr[0], rocket.area_arr[1])
 #plt.plot(rocket.mach_arr[0], rocket.mach_arr[1])
 #plt.plot(rocket.temp_arr[0], rocket.temp_arr[1])
 #plt.plot(rocket.pressure_arr[0], rocket.pressure_arr[1])
 #plt.plot(rocket.density_arr[0], rocket.density_arr[1])
 plt.show()
+
