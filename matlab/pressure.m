@@ -1,5 +1,5 @@
 %% Pressurization
-% 
+% Makar Loktyukhin, Thomas W. C. Carlson, Diego Marquez, Yarden Elias
 clc, clear all
 %% Upper and Lower Bounds
 % Known values
@@ -28,7 +28,9 @@ fprintf('The lower bound supply pressure post-combustion is approx. %1.4f psi.\n
 % Upper Bound
 % The condition where the pressurant is released slowly enough that the
 % temperature remains constant throughout the process (non adiabatic), and 
-% the regulator is ideal, acting as a constant pressure source.
+% the regulator is ideal, acting as a constant pressure source. That is,
+% temperature is considered constant, as heat from the environment
+% counteracts the decrease in temperature from expanding the HE.
 N_HE = P_HE*Vol_HE/R_HE/T1;     % [mol], moles of HE in the HE tank alone
 N_OF = P_Reg*Vol_OF/R_HE/T1;    % [mol], moles of HE in the OF tank alone
 Ndiff = N_HE - N_OF;            % [mol]
