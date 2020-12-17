@@ -69,11 +69,11 @@ class Rocket:
         self.chamber_length = self.chamber_volume / (math.pi * (self.cham.d / 2) ** 2)
 
         # hardcode temp fix
-        self.chamber_length = 6.444650495*0.0254
+        # self.chamber_length = 6.444650495*0.0254
 
         # this generates the chamber and nozzle contour that is used for calculations
         self.my_contourPoints(r1, r2, r3)
-        self.genContour()
+        self.genContour(r1, r2, r3)
         self.areas()
         self.areaMach()
         self.tempPressureDensity()

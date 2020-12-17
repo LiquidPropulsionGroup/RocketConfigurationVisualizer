@@ -17,7 +17,8 @@ cham_d = 3.75 * 0.0254 #in meters
 #cham_d = 0.08
 conv_angle = math.pi / 4 # rad, 45deg
 div_angle = math.pi / 12  # rad, 15deg
-rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle, 0.04, 0.02, 0.01)
+rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle, 0.0254, 0.0127, 0.01905)
+#rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle)
 
 rocket.contour = rocket.contour / 0.0254
 
@@ -30,14 +31,22 @@ print("Throat Diameter: {0:.2f} in".format(rocket.thr.d / 0.0254))
 print("Total Length: {0:.2f} in".format((rocket.contourPoints[6][0]-rocket.contourPoints[0][0]) / 0.0254))
 print("Volume: {0:.2f} cc".format(rocket.chamber_volume * 1000000))
 
+x = []
+y = []
+for elem in rocket.contourPoints:
+    x.append(elem[0]/0.0254)
+    y.append(elem[1]/0.0254)
 
-plt.figure()
-plt.plot(rocket.contour[0], rocket.contour[1])
+plt.figure('mdot = 1, l_star = 1.1, cham_d = 3.75, p = 15atm')
+plt.plot(rocket.contour[0], rocket.contour[1], label="Contour")
+plt.scatter(x, y, color="red", label="Points")
 plt.axis('equal')
 plt.xlabel('Length (in)')
 plt.ylabel('Radius (in)')
+plt.title('mdot = 1, l_star = 1.1, cham_d = 3.75, p = 15atm')
+plt.legend()
 
-print(rocket.contourPoints)
+# print(rocket.contourPoints)
 #plt.plot(rocket.area_arr[0], rocket.area_arr[1])
 #plt.plot(rocket.mach_arr[0], rocket.mach_arr[1])
 #plt.plot(rocket.temp_arr[0], rocket.temp_arr[1])
