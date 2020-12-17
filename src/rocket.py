@@ -52,7 +52,7 @@ class Rocket:
         # Specific impulse in seconds
         self.isp_s = self.exit.isp / 9.8
 
-        self.thr.a = throatAreaEquation(self.mdot, self.thr.p, self.thr.t, self.thr.rbar, self.thr.gam)
+        self.thr.a = throatAreaEquation(self.mdot, self.cham.p, self.thr.t, self.thr.rbar, self.thr.gam)
         # p is in atm, conversion constant to Pa, might change to Pa later. area is in m^2
 
         # Nozzle Exit Area and diameters via Expansion Ratio and
@@ -74,9 +74,11 @@ class Rocket:
         # this generates the chamber and nozzle contour that is used for calculations
         self.my_contourPoints(r1, r2, r3)
         self.genContour(r1, r2, r3)
-        self.areas()
-        self.areaMach()
-        self.tempPressureDensity()
+        
+        # temporarily turn off all convergence dependent functions
+        # self.areas()
+        # self.areaMach()
+        # self.tempPressureDensity()
 
     # this generates the points that the gencontour function uses to make functions between
     # the points are referenced from left to right in the graph
