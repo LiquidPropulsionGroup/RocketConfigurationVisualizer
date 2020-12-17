@@ -100,7 +100,7 @@ class Rocket:
             for j in range(2):
                 txtout.write('"{0}_{1}"= {2}\n'.format(locs[i], xy[j], self.contourPoints[i][j]/0.0254))
 
-    def genContour(self, r1=0.05, convergence_angle=30, r2=0.03, r3=0.025, step=1e-4): 
+    def genContour(self, r1=0.05, r2=0.03, r3=0.025, step=1e-4): 
         # This is the function that draws the discrete contour
         # these functions are referenced from left to right of the graph
         functions = [
