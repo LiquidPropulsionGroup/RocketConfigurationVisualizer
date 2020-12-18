@@ -10,26 +10,19 @@ mach_arr = []
 gam = 1.1363
 area_ratio = 1.0 
     
-def machEqn(p):
-    (mach, area_ratio) = p
-    return ( 2 / (gam + 1) * ( 1 + (gam)/2 * mach**2 ))**((gam+1)/(2*(gam-1))) - mach * area_ratio
+def solveMach(area_ratio, mach_guess1=0.5, mach_guess2=1.5):
+  def machEqn(mach):
+    # return mach * area_ratio + 10
+    return ( 2 / (gam + 1) * ( 1 + (gam - 1)/2 * mach**2 ))**((gam+1)/(2*(gam-1))) - mach * area_ratio
+  
+  mach_arr.append(fsolve(machEqn, [mach_guess1, mach_guess2]))
 
-def machLine(p):
-    return 0
-
-def combo(p):
-    return (machEqn(p), machLine(p))
-
-def solveMach():
-    mach_arr.append(fsolve(combo, (area_arr[0][1], 0.5)))
-    mach_arr.append(fsolve(combo, (area_arr[1][1], 1.5)))
-    mach_arr.append(fsolve(combo, (area_arr[2][1], 1)))
-
-solveMach()
+for area in area_arr:
+  solveMach(area[1])
 print(mach_arr)
 
 def machEqn2(mach):
-    return ( 2 / (gam + 1) * ( 1 + (gam)/2 * mach**2 ))**((gam+1)/(2*(gam-1))) - mach * area_ratio
+    return ( 2 / (gam + 1) * ( 1 + (gam-1)/2 * mach**2 ))**((gam+1)/(2*(gam-1))) - mach * area_ratio
 
 def brentSolveMach():
     for elem in area_arr:

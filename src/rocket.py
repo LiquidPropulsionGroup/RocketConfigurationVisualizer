@@ -142,25 +142,24 @@ class Rocket:
     def areas(self):
         
         self.area_arr = self.contour.copy()
-        self.area_arr[1,:] = np.multiply(np.power(self.area_arr[1,:], 2),np.pi)# this is just pi*r^2 in array form
-    
-    def machEqn(self, p):
-        (area_ratio, mach) = p
-        return ( 2 / (self.gam + 1) * ( 1 + (self.gam)/2 * mach**2 ))**((self.gam+1)/(2*(self.gam-1))) - mach * area_ratio
-
-    def test(self, p):
-        return 0
-
-    def combo(self, p):
-        return (self.machEqn(p), self.test(p))
+        self.area_arr[1,:] = (self.area_arr[1,:] ** 2) * np.pi# this is just pi*r^2 in array form
 
     def solveMach(self):
-        for pos in (pos for pos in self.area_arr if pos[0] < 0): # generator for subsonic regime
-            self.mach_arr.append(fsolve(self.combo, (pos[1], 0.5))) #current area and subsonic M
-        for pos in (pos for pos in self.area_arr if pos[0] >= 0):
-            self.mach_arr.append(fsolve(self.combo, (pos[1], 1.5))) #current area and supersonic M
-        for pos in self.area_arr:
-            self.mach_arr.append(fsolve(self.combo, (pos[1], 0.5)))
+        def solveMatchForAreaRatio(area_ratio, mach_guess=0.7):
+            def machEqn(mach):
+                # return mach * area_ratio + 10
+                return ( 2 / (self.gam + 1) * ( 1 + (self.gam - 1)/2 * mach**2 ))**((self.gam+1)/(2*(self.gam-1))) - mach * area_ratio
+            
+            return fsolve(machEqn, mach_guess)
+
+        last = 0.7
+        for [x, area] in self.area_arr.transpose():
+            if x > 0:
+                last = last + 1
+            [mach] = solveMatchForAreaRatio(area/self.thr.a, last)
+            self.mach_arr.append([x, mach])
+            last = mach
+        self.mach_arr = np.array(self.mach_arr).transpose()
 
     #################################################
 
