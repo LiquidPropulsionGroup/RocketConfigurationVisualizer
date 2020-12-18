@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
 import time
+from scipy.optimize import fsolve
+
 # input values
 # mdot #total mass flowrate into engine (kg/s)
 # Lstar #characteristic length (m)
@@ -41,13 +43,14 @@ class Rocket:
         self.contourPoints = None
         self.contour = None
         self.area_arr = None
-        self.mach_arr = None
+        self.mach_arr = []
         self.pressure_arr = None
         self.temp_arr = None
         self.density_arr = None
         self.hoopStress_arr = None
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
+        self.gam = self.thr.gam
         
         # Specific impulse in seconds
         self.isp_s = self.exit.isp / 9.8
@@ -76,7 +79,8 @@ class Rocket:
         self.genContour(r1, r2, r3)
         
         # temporarily turn off all convergence dependent functions
-        # self.areas()
+        self.areas()
+        self.solveMach()
         # self.areaMach()
         # self.tempPressureDensity()
 
@@ -113,12 +117,12 @@ class Rocket:
             lambda x: -np.sqrt(r3 ** 2 - (x + self.contourPoints[4][0]) ** 2) + self.contourPoints[4][1] + r3, 
             lambda x: ((self.contourPoints[5][1] - self.contourPoints[6][1]) / (self.contourPoints[5][0] - self.contourPoints[6][0]))  * (x - self.contourPoints[5][0]) + self.contourPoints[5][1] 
         ]
-            # 1: stait line
+            # 1: straight line
             # 2: circle
-            # 3: stait line
+            # 3: straight line
             # 4: circle
             # 5: circle
-            # 6: stait line
+            # 6: straight line
 
         num = np.int32(np.rint((self.contourPoints[6][0] - self.contourPoints[0][0]) / step))
 
@@ -140,6 +144,26 @@ class Rocket:
         self.area_arr = self.contour.copy()
         self.area_arr[1,:] = np.multiply(np.power(self.area_arr[1,:], 2),np.pi)# this is just pi*r^2 in array form
     
+    def machEqn(self, p):
+        (area_ratio, mach) = p
+        return ( 2 / (self.gam + 1) * ( 1 + (self.gam)/2 * mach**2 ))**((self.gam+1)/(2*(self.gam-1))) - mach * area_ratio
+
+    def test(self, p):
+        return 0
+
+    def combo(self, p):
+        return (self.machEqn(p), self.test(p))
+
+    def solveMach(self):
+        for pos in (pos for pos in self.area_arr if pos[0] < 0): # generator for subsonic regime
+            self.mach_arr.append(fsolve(self.combo, (pos[1], 0.5))) #current area and subsonic M
+        for pos in (pos for pos in self.area_arr if pos[0] >= 0):
+            self.mach_arr.append(fsolve(self.combo, (pos[1], 1.5))) #current area and supersonic M
+        for pos in self.area_arr:
+            self.mach_arr.append(fsolve(self.combo, (pos[1], 0.5)))
+
+    #################################################
+
     def machAreaEquation(self, tempM, area):   #gamma used is for the chamber gamma, it is not changed throughout the chamber. fix later
         gam = self.cham.gam
         myreturn = (1/tempM)**2 * (2/(gam+1)*(1+((gam-1)/2)*tempM**2))**((gam+1)/(gam-1)) - (area/self.thr.a)**2
@@ -224,3 +248,4 @@ class Rocket:
         #hoopStress = internal_pressure * inside_diameter / 2 * wall_thickness
         self.hoopStress_arr = self.contour.copy()
         self.hoopStress_arr = np.multiply(self.hoopStress_arr,)#needs pressure at every point
+
