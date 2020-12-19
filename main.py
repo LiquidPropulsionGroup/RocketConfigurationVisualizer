@@ -17,7 +17,7 @@ cham_d = 3.75 * 0.0254 #in meters
 #cham_d = 0.08
 conv_angle = math.pi / 4 # rad, 45deg
 div_angle = math.pi / 12  # rad, 15deg
-rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle, 0.0254, 0.0127, 0.01905)
+rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle, 0.0254, 0.0127, 0.01905, 5e-2)
 #rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle)
 
 rocket.contour = rocket.contour / 0.0254
@@ -83,12 +83,12 @@ axs[3].set(ylabel="Pressure (atm)", xlabel="Axial Position (m)")
 #plt.plot(rocket.density_arr[0], rocket.density_arr[1])
 
 fig2, axs2 = plt.subplots(2,1, figsize=(8,14/2))
-axs[0].set_title("Nozzle Geometry")
-axs[0].plot(rocket.contour[0], rocket.contour[1])
-axs[0].set(xlabel="Axial Position (in)", ylabel="Radial Distance (in)")
-axs[0].axis('equal')
+axs2[0].set_title("Nozzle Geometry")
+axs2[0].scatter(rocket.contour[0], rocket.contour[1])
+axs2[0].set(xlabel="Axial Position (in)", ylabel="Radial Distance (in)")
+axs2[0].axis('equal')
 
-axs[1].plot(rocket.h_g_arr[0], rocket.h_g_arr[1])
-axs[1].set(ylabel="Pressure (atm)", xlabel="Axial Position (m)")
+axs2[1].scatter(rocket.h_g_arr[0], rocket.h_g_arr[1])
+axs2[1].set(ylabel="Coefficient of Heat Transfer (W/m^2*K)", xlabel="Axial Position (m)")
 
 plt.show()

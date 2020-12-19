@@ -32,7 +32,7 @@ def throatAreaEquation(mdot, pres, temp, rbar, gam):
             (1 + ((gam - 1) / 2)), ((gam + 1) / (2 * (gam - 1))))
 
 class Rocket:
-    def __init__(self, chem, mdot, l_star, cham_d, conv_angle, div_angle, r1=0.05, r2=0.03, r3=0.025):
+    def __init__(self, chem, mdot, l_star, cham_d, conv_angle, div_angle, r1=0.05, r2=0.03, r3=0.025, step=1e-4):
         self.inj = chem[0] # injector
         self.cham = chem[1] # converging starts (end of chamber)
         self.thr = chem[2] # throat
@@ -71,13 +71,14 @@ class Rocket:
         # NOTE: this volume does not take injector and contour volumes into consideration and is theirfor not completly accurate
         self.chamber_volume = self.Lstar * self.thr.a
         self.chamber_length = self.chamber_volume / (math.pi * (self.cham.d / 2) ** 2)
+        self.Cstar = self.cham.p*101325 * self.thr.a / self.mdot
 
         # hardcode temp fix
         # self.chamber_length = 6.444650495*0.0254
 
         # this generates the chamber and nozzle contour that is used for calculations
         self.my_contourPoints(r1, r2, r3)
-        self.genContour(r1, r2, r3)
+        self.genContour(r1, r2, r3, step)
         
         # temporarily turn off all convergence dependent functions
         self.areas()
@@ -108,7 +109,7 @@ class Rocket:
             for j in range(2):
                 txtout.write('"{0}_{1}"= {2}\n'.format(locs[i], xy[j], self.contourPoints[i][j]/0.0254))
 
-    def genContour(self, r1=0.05, r2=0.03, r3=0.025, step=1e-2): 
+    def genContour(self, r1=0.05, r2=0.03, r3=0.025, step=1e-4): 
         # This is the function that draws the discrete contour
         # these functions are referenced from left to right of the graph
         functions = [
@@ -263,5 +264,5 @@ class Rocket:
 
     def calcBartz(self):
         self.h_g_arr = self.contour.copy()
-        for pos in self.h_g_arr:
-            self.h_g_arr[1,i] = bartz(self.cham.d, self.cham.p*101325, self.c_star, self.contour[1,i]*2, self.cham.cp, 1.0420e-4, self.temp_arr[1,i], 800)
+        for i in range(len(self.h_g_arr)):
+            self.h_g_arr[1,i] = bartz(self.thr.d, self.cham.p*101325, self.Cstar, self.contour[1,i]*2, self.cham.cp, 1.0420e-4, self.temp_arr[1,i], 800)
