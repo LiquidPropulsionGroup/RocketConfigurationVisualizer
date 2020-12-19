@@ -48,6 +48,7 @@ class Rocket:
         self.temp_arr = None
         self.density_arr = None
         self.h_g_arr = []
+        self.heat_flux_arr = []
         self.hoopStress_arr = None
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
@@ -86,6 +87,7 @@ class Rocket:
         # self.areaMach()
         self.tempPressureDensity()
         self.calcBartz()
+        self.calcHeatFlux()
 
     # this generates the points that the gencontour function uses to make functions between
     # the points are referenced from left to right in the graph
@@ -257,12 +259,17 @@ class Rocket:
     
     def filewrite(self, filename):
         output = open(filename, "w")
-        output.write("X\tY\tMACH\tTEMP\tPressure\n")
+        output.write("X\tY\tMACH\tTEMP\tPressure\th_g\tFLUX\n")
         for i in range(len(self.contour[1,:])):
-            output.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\n".format(self.contour[0,i], self.contour[1,i], self.mach_arr[1,i], self.temp_arr[1,i], self.pressure_arr[1,i]))
+            output.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\n".format(self.contour[0,i], self.contour[1,i], self.mach_arr[1,i], self.temp_arr[1,i], self.pressure_arr[1,i], self.h_g_arr[1,i], self.heat_flux_arr[1,i]))
         output.close()
 
     def calcBartz(self):
         self.h_g_arr = self.contour.copy()
-        for i in range(len(self.h_g_arr)):
+        for i in range(len(self.h_g_arr[0])):
             self.h_g_arr[1,i] = bartz(self.thr.d, self.cham.p*101325, self.Cstar, self.contour[1,i]*2, self.cham.cp, 1.0420e-4, self.temp_arr[1,i], 800)
+
+    def calcHeatFlux(self):
+        self.heat_flux_arr = self.h_g_arr.copy()
+        for i in range(len(self.heat_flux_arr[0])):
+            self.heat_flux_arr[1,i] = self.h_g_arr[1,i]*(self.temp_arr[1,i]-800)
