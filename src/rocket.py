@@ -47,6 +47,7 @@ class Rocket:
         self.pressure_arr = None
         self.temp_arr = None
         self.density_arr = None
+        self.h_g_arr = []
         self.hoopStress_arr = None
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
@@ -82,7 +83,8 @@ class Rocket:
         self.areas()
         self.solveMach()
         # self.areaMach()
-        # self.tempPressureDensity()
+        self.tempPressureDensity()
+        self.calcBartz()
 
     # this generates the points that the gencontour function uses to make functions between
     # the points are referenced from left to right in the graph
@@ -106,7 +108,7 @@ class Rocket:
             for j in range(2):
                 txtout.write('"{0}_{1}"= {2}\n'.format(locs[i], xy[j], self.contourPoints[i][j]/0.0254))
 
-    def genContour(self, r1=0.05, r2=0.03, r3=0.025, step=1e-4): 
+    def genContour(self, r1=0.05, r2=0.03, r3=0.025, step=1e-2): 
         # This is the function that draws the discrete contour
         # these functions are referenced from left to right of the graph
         functions = [
@@ -213,13 +215,17 @@ class Rocket:
             count += 1
 
     def temp_eq(self, mach):
-        gam = self.cham.gam
-        t_stag = self.cham.t * (1 + ((gam-1)/2 * self.cham.mach**2))
+        gam = self.thr.gam
+        # t_stag = self.cham.t * (1 + ((gam-1)/2 * self.cham.mach**2))
+        # Note: ok technically, yes, the stagnation temperature needs to account for
+        # gas velocity, but in our assumptions, t_0 assumed == t_cham as given by CEA
+
+        t_stag = self.cham.t
         myreturn = t_stag * (1 + ((gam-1)/2 * mach**2))**(-1)
         return myreturn
 
     def pressure_eq(self, mach):
-        gam = self.cham.gam
+        gam = self.thr.gam
         p_stag = self.cham.p * (1 + ((gam-1)/2 * self.cham.mach**2))**(gam/(gam-1))
         myreturn = p_stag * (1 + ((gam-1)/2 * mach**2))**(-gam/(gam-1))
         return myreturn
@@ -234,12 +240,12 @@ class Rocket:
     def tempPressureDensity(self):
         self.pressure_arr = self.mach_arr.copy()
         self.temp_arr = self.mach_arr.copy()
-        self.density_arr = self.mach_arr.copy()
+        #self.density_arr = self.mach_arr.copy()
         count = 0
         for mach in self.mach_arr[1,:]:
             self.temp_arr[1,count] = self.temp_eq(mach)
             self.pressure_arr[1,count] = self.pressure_eq(mach)
-            self.density_arr[1,count] = self.density_eq(mach)
+            #self.density_arr[1,count] = self.density_eq(mach)
             count += 1
 
         
@@ -247,4 +253,15 @@ class Rocket:
         #hoopStress = internal_pressure * inside_diameter / 2 * wall_thickness
         self.hoopStress_arr = self.contour.copy()
         self.hoopStress_arr = np.multiply(self.hoopStress_arr,)#needs pressure at every point
+    
+    def filewrite(self, filename):
+        output = open(filename, "w")
+        output.write("X\tY\tMACH\tTEMP\tPressure\n")
+        for i in range(len(self.contour[1,:])):
+            output.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\n".format(self.contour[0,i], self.contour[1,i], self.mach_arr[1,i], self.temp_arr[1,i], self.pressure_arr[1,i]))
+        output.close()
 
+    def calcBartz(self):
+        self.h_g_arr = self.contour.copy()
+        for pos in self.h_g_arr:
+            self.h_g_arr[1,i] = bartz(self.cham.d, self.cham.p*101325, self.c_star, self.contour[1,i]*2, self.cham.cp, 1.0420e-4, self.temp_arr[1,i], 800)
