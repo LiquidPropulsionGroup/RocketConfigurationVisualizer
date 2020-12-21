@@ -31,8 +31,6 @@ print("Throat Diameter: {0:.2f} in".format(rocket.thr.d / 0.0254))
 print("Total Length: {0:.2f} in".format((rocket.contourPoints[6][0]-rocket.contourPoints[0][0]) / 0.0254))
 print("Volume: {0:.2f} cc".format(rocket.chamber_volume * 1000000))
 
-rocket.filewrite("dataTest.txt")
-
 x = []
 y = []
 for elem in rocket.contourPoints:
@@ -82,7 +80,7 @@ axs[3].set(ylabel="Pressure (atm)", xlabel="Axial Position (m)")
 #plt.plot(rocket.pressure_arr[0], rocket.pressure_arr[1])
 #plt.plot(rocket.density_arr[0], rocket.density_arr[1])
 
-fig2, axs2 = plt.subplots(3,1, figsize=(8,14))
+fig2, axs2 = plt.subplots(3,1, figsize=(8,10.5))
 axs2[0].set_title("Nozzle Geometry")
 axs2[0].plot(rocket.contour[0], rocket.contour[1])
 axs2[0].set(xlabel="Axial Position (in)", ylabel="Radial Distance (in)")
@@ -93,5 +91,8 @@ axs2[1].set(ylabel="Coefficient of Heat Transfer (W/m^2*K)", xlabel="Axial Posit
 
 axs2[2].plot(rocket.heat_flux_arr[0], rocket.heat_flux_arr[1])
 axs2[2].set(ylabel="Heat Flux Rate (W/m^2)", xlabel="Axial Position (m)")
+
+rocket.contour = rocket.contour * 0.0254
+rocket.filewrite("dataTest.txt")
 
 plt.show()

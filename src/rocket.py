@@ -259,17 +259,22 @@ class Rocket:
     
     def filewrite(self, filename):
         output = open(filename, "w")
-        output.write("X\tY\tMACH\tTEMP\tPressure\th_g\tFLUX\n")
+        offset = self.contour[0,0]
+        for i in range(len(self.contour[0])):
+            self.contour[0,i] += -offset
+        output.write("X,Y,MACH,TEMP,Pressure,h_g,FLUX\n")
         for i in range(len(self.contour[1,:])):
-            output.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\n".format(self.contour[0,i], self.contour[1,i], self.mach_arr[1,i], self.temp_arr[1,i], self.pressure_arr[1,i], self.h_g_arr[1,i], self.heat_flux_arr[1,i]))
+            output.write("{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}\n".format(self.contour[0,i], self.contour[1,i], self.mach_arr[1,i], self.temp_arr[1,i], self.pressure_arr[1,i], self.h_g_arr[1,i], self.heat_flux_arr[1,i]))
         output.close()
 
     def calcBartz(self):
         self.h_g_arr = self.contour.copy()
         for i in range(len(self.h_g_arr[0])):
-            self.h_g_arr[1,i] = bartz(self.thr.d, self.cham.p*101325, self.Cstar, self.contour[1,i]*2, self.cham.cp, 1.0420e-4, self.temp_arr[1,i], 800)
+            self.h_g_arr[1,i] = bartz(self.thr.d, self.cham.p*101325, self.Cstar, self.contour[1,i]*2, self.cham.cp, 1.0420e-4, self.temp_arr[1,i], 300)
 
     def calcHeatFlux(self):
         self.heat_flux_arr = self.h_g_arr.copy()
         for i in range(len(self.heat_flux_arr[0])):
-            self.heat_flux_arr[1,i] = self.h_g_arr[1,i]*(self.temp_arr[1,i]-800)
+            self.heat_flux_arr[1,i] = self.h_g_arr[1,i]*(self.temp_arr[1,i]-300)
+
+            
