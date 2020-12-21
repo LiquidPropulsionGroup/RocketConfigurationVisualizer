@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
 import time
+from scipy.optimize import fsolve
+
 # input values
 # mdot #total mass flowrate into engine (kg/s)
 # Lstar #characteristic length (m)
@@ -30,7 +32,7 @@ def throatAreaEquation(mdot, pres, temp, rbar, gam):
             (1 + ((gam - 1) / 2)), ((gam + 1) / (2 * (gam - 1))))
 
 class Rocket:
-    def __init__(self, chem, mdot, l_star, cham_d, conv_angle, div_angle, r1=0.05, r2=0.03, r3=0.025):
+    def __init__(self, chem, mdot, l_star, cham_d, conv_angle, div_angle, r1=0.05, r2=0.03, r3=0.025, step=1e-4):
         self.inj = chem[0] # injector
         self.cham = chem[1] # converging starts (end of chamber)
         self.thr = chem[2] # throat
@@ -41,13 +43,16 @@ class Rocket:
         self.contourPoints = None
         self.contour = None
         self.area_arr = None
-        self.mach_arr = None
+        self.mach_arr = []
         self.pressure_arr = None
         self.temp_arr = None
         self.density_arr = None
+        self.h_g_arr = []
+        self.heat_flux_arr = []
         self.hoopStress_arr = None
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
+        self.gam = self.thr.gam
         
         # Specific impulse in seconds
         self.isp_s = self.exit.isp / 9.8
@@ -67,18 +72,22 @@ class Rocket:
         # NOTE: this volume does not take injector and contour volumes into consideration and is theirfor not completly accurate
         self.chamber_volume = self.Lstar * self.thr.a
         self.chamber_length = self.chamber_volume / (math.pi * (self.cham.d / 2) ** 2)
+        self.Cstar = self.cham.p*101325 * self.thr.a / self.mdot
 
         # hardcode temp fix
         # self.chamber_length = 6.444650495*0.0254
 
         # this generates the chamber and nozzle contour that is used for calculations
         self.my_contourPoints(r1, r2, r3)
-        self.genContour(r1, r2, r3)
+        self.genContour(r1, r2, r3, step)
         
         # temporarily turn off all convergence dependent functions
-        # self.areas()
+        self.areas()
+        self.solveMach()
         # self.areaMach()
-        # self.tempPressureDensity()
+        self.tempPressureDensity()
+        self.calcBartz()
+        self.calcHeatFlux()
 
     # this generates the points that the gencontour function uses to make functions between
     # the points are referenced from left to right in the graph
@@ -113,12 +122,12 @@ class Rocket:
             lambda x: -np.sqrt(r3 ** 2 - (x + self.contourPoints[4][0]) ** 2) + self.contourPoints[4][1] + r3, 
             lambda x: ((self.contourPoints[5][1] - self.contourPoints[6][1]) / (self.contourPoints[5][0] - self.contourPoints[6][0]))  * (x - self.contourPoints[5][0]) + self.contourPoints[5][1] 
         ]
-            # 1: stait line
+            # 1: straight line
             # 2: circle
-            # 3: stait line
+            # 3: straight line
             # 4: circle
             # 5: circle
-            # 6: stait line
+            # 6: straight line
 
         num = np.int32(np.rint((self.contourPoints[6][0] - self.contourPoints[0][0]) / step))
 
@@ -138,8 +147,27 @@ class Rocket:
     def areas(self):
         
         self.area_arr = self.contour.copy()
-        self.area_arr[1,:] = np.multiply(np.power(self.area_arr[1,:], 2),np.pi)# this is just pi*r^2 in array form
-    
+        self.area_arr[1,:] = (self.area_arr[1,:] ** 2) * np.pi# this is just pi*r^2 in array form
+
+    def solveMach(self):
+        def solveMatchForAreaRatio(area_ratio, mach_guess=0.7):
+            def machEqn(mach):
+                # return mach * area_ratio + 10
+                return ( 2 / (self.gam + 1) * ( 1 + (self.gam - 1)/2 * mach**2 ))**((self.gam+1)/(2*(self.gam-1))) - mach * area_ratio
+            
+            return fsolve(machEqn, mach_guess)
+
+        last = 0.7
+        for [x, area] in self.area_arr.transpose():
+            if x > 0:
+                last = last + 1
+            [mach] = solveMatchForAreaRatio(area/self.thr.a, last)
+            self.mach_arr.append([x, mach])
+            last = mach
+        self.mach_arr = np.array(self.mach_arr).transpose()
+
+    #################################################
+
     def machAreaEquation(self, tempM, area):   #gamma used is for the chamber gamma, it is not changed throughout the chamber. fix later
         gam = self.cham.gam
         myreturn = (1/tempM)**2 * (2/(gam+1)*(1+((gam-1)/2)*tempM**2))**((gam+1)/(gam-1)) - (area/self.thr.a)**2
@@ -190,13 +218,17 @@ class Rocket:
             count += 1
 
     def temp_eq(self, mach):
-        gam = self.cham.gam
-        t_stag = self.cham.t * (1 + ((gam-1)/2 * self.cham.mach**2))
+        gam = self.thr.gam
+        # t_stag = self.cham.t * (1 + ((gam-1)/2 * self.cham.mach**2))
+        # Note: ok technically, yes, the stagnation temperature needs to account for
+        # gas velocity, but in our assumptions, t_0 assumed == t_cham as given by CEA
+
+        t_stag = self.cham.t
         myreturn = t_stag * (1 + ((gam-1)/2 * mach**2))**(-1)
         return myreturn
 
     def pressure_eq(self, mach):
-        gam = self.cham.gam
+        gam = self.thr.gam
         p_stag = self.cham.p * (1 + ((gam-1)/2 * self.cham.mach**2))**(gam/(gam-1))
         myreturn = p_stag * (1 + ((gam-1)/2 * mach**2))**(-gam/(gam-1))
         return myreturn
@@ -211,12 +243,12 @@ class Rocket:
     def tempPressureDensity(self):
         self.pressure_arr = self.mach_arr.copy()
         self.temp_arr = self.mach_arr.copy()
-        self.density_arr = self.mach_arr.copy()
+        #self.density_arr = self.mach_arr.copy()
         count = 0
         for mach in self.mach_arr[1,:]:
             self.temp_arr[1,count] = self.temp_eq(mach)
             self.pressure_arr[1,count] = self.pressure_eq(mach)
-            self.density_arr[1,count] = self.density_eq(mach)
+            #self.density_arr[1,count] = self.density_eq(mach)
             count += 1
 
         
@@ -224,3 +256,25 @@ class Rocket:
         #hoopStress = internal_pressure * inside_diameter / 2 * wall_thickness
         self.hoopStress_arr = self.contour.copy()
         self.hoopStress_arr = np.multiply(self.hoopStress_arr,)#needs pressure at every point
+    
+    def filewrite(self, filename):
+        output = open(filename, "w")
+        offset = self.contour[0,0]
+        for i in range(len(self.contour[0])):
+            self.contour[0,i] += -offset
+        output.write("X,Y,MACH,TEMP,Pressure,h_g,FLUX\n")
+        for i in range(len(self.contour[1,:])):
+            output.write("{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}\n".format(self.contour[0,i], self.contour[1,i], self.mach_arr[1,i], self.temp_arr[1,i], self.pressure_arr[1,i], self.h_g_arr[1,i], self.heat_flux_arr[1,i]))
+        output.close()
+
+    def calcBartz(self):
+        self.h_g_arr = self.contour.copy()
+        for i in range(len(self.h_g_arr[0])):
+            self.h_g_arr[1,i] = bartz(self.thr.d, self.cham.p*101325, self.Cstar, self.contour[1,i]*2, self.cham.cp, 1.0420e-4, self.temp_arr[1,i], 300)
+
+    def calcHeatFlux(self):
+        self.heat_flux_arr = self.h_g_arr.copy()
+        for i in range(len(self.heat_flux_arr[0])):
+            self.heat_flux_arr[1,i] = self.h_g_arr[1,i]*(self.temp_arr[1,i]-300)
+
+            
