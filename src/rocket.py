@@ -54,6 +54,14 @@ class Rocket:
         self.divergence_angle = div_angle
         self.gam = self.thr.gam
         
+        #unit conversions
+        #bar to atm
+        self.inj.p = self.inj.p*0.986923
+        self.cham.p = self.cham.p*0.986923
+        self.thr.p = self.thr.p*0.986923
+        self.exit.p = self.exit.p*0.986923
+
+
         # Specific impulse in seconds
         self.isp_s = self.exit.isp / 9.8
 
@@ -270,7 +278,7 @@ class Rocket:
     def calcBartz(self):
         self.h_g_arr = self.contour.copy()
         for i in range(len(self.h_g_arr[0])):
-            self.h_g_arr[1,i] = bartz(self.thr.d, self.cham.p*101325, self.Cstar, self.contour[1,i]*2, self.cham.cp, 1.0420e-4, self.temp_arr[1,i], 300)
+            self.h_g_arr[1,i] = bartz(self.thr.d, self.cham.p*101325, self.Cstar, self.contour[1,i]*2, self.cham.cp*1000, 0.85452e-4, self.temp_arr[1,i], 300)
 
     def calcHeatFlux(self):
         self.heat_flux_arr = self.h_g_arr.copy()
