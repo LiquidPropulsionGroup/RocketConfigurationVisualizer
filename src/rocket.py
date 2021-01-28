@@ -19,6 +19,7 @@ def hoop_stress(internal_pressure, inside_diameter, wall_thickness):
     return hoopStress
 
 def bartz(d_throat, p_chamber, c_star, d, c_p, visc, t_gas, t_wall):
+
     """bartz equation calculator"""
     t_boundary = (t_gas + t_wall) / 2
     return (0.026 / math.pow(d_throat, 0.2) * math.pow((p_chamber / c_star), 0.8) * math.pow((d_throat / d),
