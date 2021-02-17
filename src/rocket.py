@@ -33,7 +33,7 @@ def throatAreaEquation(mdot, pres, temp, rbar, gam):
             (1 + ((gam - 1) / 2)), ((gam + 1) / (2 * (gam - 1))))
 
 class Rocket:
-    def __init__(self, chem, mdot, l_star, cham_d, conv_angle, div_angle, r1=0.05, r2=0.03, r3=0.025, step=1e-4):
+    def __init__(self, chem, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1=0.05, r2=0.03, r3=0.025, step=1e-4):
         self.inj = chem[0] # injector
         self.cham = chem[1] # converging starts (end of chamber)
         self.thr = chem[2] # throat
@@ -41,6 +41,7 @@ class Rocket:
         self.mdot = mdot
         self.Lstar = l_star
         self.cham.d = cham_d #diameter of the chamber
+        self.wall_temp = wall_temp
         self.contourPoints = None
         self.contour = None
         self.area_arr = None
@@ -54,6 +55,7 @@ class Rocket:
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
         self.gam = self.thr.gam
+
         
         #unit conversions
         #bar to atm
@@ -61,7 +63,6 @@ class Rocket:
         self.cham.p = self.cham.p*0.986923
         self.thr.p = self.thr.p*0.986923
         self.exit.p = self.exit.p*0.986923
-
 
         # Specific impulse in seconds
         self.isp_s = self.exit.isp / 9.8
@@ -279,11 +280,11 @@ class Rocket:
     def calcBartz(self):
         self.h_g_arr = self.contour.copy()
         for i in range(len(self.h_g_arr[0])):
-            self.h_g_arr[1,i] = bartz(self.thr.d, self.cham.p*101325, self.Cstar, self.contour[1,i]*2, self.cham.cp*1000, 0.85452e-4, self.temp_arr[1,i], 300)
+            self.h_g_arr[1,i] = bartz(self.thr.d, self.cham.p*101325, self.Cstar, self.contour[1,i]*2, self.cham.cp*1000, 0.85452e-4, self.temp_arr[1,i], self.wall_temp)
 
     def calcHeatFlux(self):
         self.heat_flux_arr = self.h_g_arr.copy()
         for i in range(len(self.heat_flux_arr[0])):
-            self.heat_flux_arr[1,i] = self.h_g_arr[1,i]*(self.temp_arr[1,i]-300)
+            self.heat_flux_arr[1,i] = self.h_g_arr[1,i]*(self.temp_arr[1,i]-self.wall_temp)
 
             
