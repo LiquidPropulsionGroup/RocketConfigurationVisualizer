@@ -46,6 +46,7 @@ class Rocket:
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
         self.gam = self.thr.gam
+        self.total_watts = 0
         #unit conversions
         #bar to Pa
         self.inj.p = self.inj.p*100000
@@ -84,6 +85,8 @@ class Rocket:
         self.tempPressureDensity()
         self.calcBartz()
         self.calcHeatFlux()
+        self.totalWatts()
+        
 
     # this generates the points that the gencontour function uses to make functions between
     # the points are referenced from left to right in the graph
@@ -126,7 +129,6 @@ class Rocket:
             # 6: straight line
 
         num = np.int32(np.rint((self.contourPoints[6][0] - self.contourPoints[0][0]) / step))
-
         x = np.array([])
         y = np.array([])
 
@@ -162,58 +164,6 @@ class Rocket:
             last = mach
         self.mach_arr = np.array(self.mach_arr).transpose()
 
-    #################################################
-
-    def machAreaEquation(self, tempM, area):   #gamma used is for the chamber gamma, it is not changed throughout the chamber. fix later
-        gam = self.cham.gam
-        myreturn = (1/tempM)**2 * (2/(gam+1)*(1+((gam-1)/2)*tempM**2))**((gam+1)/(gam-1)) - (area/self.thr.a)**2
-        return myreturn
-
-    def binarySearchConvergence(self, area, regimeSwitch):
-        myMach = 1
-        testMach = 0
-        step = 0
-        testVal = self.machAreaEquation(myMach,area)
-        if (regimeSwitch): #supersonic
-            referenceMach = self.exit.mach+0.1 #this number is so the last iteration does not get stuck
-            step = abs(myMach - referenceMach)/2
-            testMach = referenceMach - step
-            testVal = self.machAreaEquation(testMach, area)
-        else: #subsonic
-            referenceMach = self.cham.mach
-            step = abs(myMach - referenceMach)/2
-            testMach = referenceMach + step
-            testVal = self.machAreaEquation(testMach, area)
-
-        while (testVal >= 0.00001 or testVal <= -0.00001):
-            step /= 2
-            if(regimeSwitch):
-                if (testVal < 0):
-                    testMach += step
-                else:
-                    testMach -= step
-            else:
-                if (testVal < 0):
-                    testMach -= step
-                else:
-                    testMach += step
-            testVal = self.machAreaEquation(testMach, area)
-        return testMach
-    
-    def areaMach(self):
-    # uses convergence solver to arrive at Machs
-        regimeSwitch = False
-        tempMach = self.cham.mach
-        self.mach_arr = self.area_arr.copy()
-        count = 0 #:kekw:
-        for area in self.area_arr[1,:]:
-            tempMach = self.binarySearchConvergence(area, regimeSwitch)
-            self.mach_arr[1,count] = tempMach
-            if (self.area_arr[1,count] == self.thr.a):
-                regimeSwitch = True                
-            count += 1
-    ########################################################
-
     def temp_eq(self, mach):
         gam = self.thr.gam
         # t_stag = self.cham.t * (1 + ((gam-1)/2 * self.cham.mach**2))
@@ -231,7 +181,6 @@ class Rocket:
         return myreturn
 
     def density_eq(self, mach):#need to find chamber density
-        self.cham.rho = 1 #THIS IS TEMPORARY... PLEASE DELETE LATER
         gam = self.cham.gam
         d_stag = self.cham.rho * (1 + ((gam-1)/2 * self.cham.mach**2))**(1/(gam-1))
         myreturn = d_stag * (1 + ((gam-1)/2 * mach**2))**(-1/(gam-1))
@@ -268,4 +217,86 @@ class Rocket:
         for i in range(len(self.heat_flux_arr[0])):
             self.heat_flux_arr[1,i] = self.h_g_arr[1,i]*(self.temp_arr[1,i]-self.wall_temp)
 
-            
+    def totalWatts(self):
+        for i in range(len(self.heat_flux_arr[0])-1):
+            self.total_watts = self.total_watts + abs(self.area_arr[0,i+1] - self.area_arr[0,i]) * self.heat_flux_arr[1,i]
+
+    #################################################################
+    def variablesDisplay(self):
+        print("Debug Outputs:\n")
+        print("Chamber Length: {0:.2f} in".format(self.chamber_length / 0.0254))
+        print("Chamber Diameter: {0:.2f} in".format(self.cham.d / 0.0254))
+        print("Exit Diameter: {0:.2f} in".format(self.exit.d / 0.0254))
+        print("Throat Diameter: {0:.2f} in".format(self.thr.d / 0.0254))
+        print("Total Length: {0:.2f} in".format((self.contourPoints[6][0]-self.contourPoints[0][0]) / 0.0254))
+        print("Volume: {0:.2f} cc".format(self.chamber_volume * 1000000))
+        print("Thrust: {0:.2f} N".format(self.thrust))
+        print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.h_g_arr[1,1]))
+        print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.heat_flux_arr[1,1]))
+        print("Total Watts: {0:.2f} W".format(self.total_watts))
+
+    def graphDisplay(self, pressure_units = 'bar', distance_units = 'in'):
+        #temperature units?
+        if(pressure_units == 'bar'):
+            Pcon = 100000 #bar
+        elif(pressure_units == 'atm'):
+            Pcon = 101325
+        elif(pressure_units == 'psi'):
+            Pcon = 6894.76
+        else:
+            Pcon = 1
+
+        if(distance_units == 'in'):
+            Dcon = 39.3701
+        elif(distance_units == 'cm'):
+            Dcon = 100
+        elif(distance_units == 'mm'):
+            Dcon = 1000
+        else:
+            Dcon = 1
+
+
+        self.contour = self.contour * Dcon
+
+        fig, axs = plt.subplots(2,1, figsize=(8,10.5))
+
+        axs[0].set_title("Nozzle Geometry")
+        axs[0].plot(self.contour[0], self.contour[1], label="self Contour")
+        axs[0].set(xlabel="Axial Position (in)", ylabel="Radial Distance (in)")
+        axs[0].axis('equal')
+
+        secaxs = axs[0].twinx()
+        secaxs.plot(self.mach_arr[0]*Dcon, self.mach_arr[1], label="Mach Number", color="green")
+        secaxs.set(ylabel="Mach Number (M)")
+        axs[0].legend(loc=(0,1))
+        secaxs.legend(loc=(0.75,1))
+
+        axs[1].plot(self.temp_arr[0], self.temp_arr[1], color="orange", label="Temperature")
+        axs[1].set(ylabel="Gas Core Temperature (K)")
+
+        secaxs1 = axs[1].twinx()
+        secaxs1.plot(self.pressure_arr[0], self.pressure_arr[1]*Pcon, color="purple", label="Pressure")
+        secaxs1.set(ylabel="Pressure (bar)", xlabel="Axial Position (m)")
+        axs[1].legend(loc=(0,1))
+        secaxs1.legend(loc=(0.8,1))
+
+        #---------------------------------------------------------
+        fig2, axs2 = plt.subplots(2,1, figsize=(8,10.5))
+        axs2[0].set_title("Nozzle Geometry")
+        axs2[0].plot(self.contour[0], self.contour[1])
+        axs2[0].set(xlabel="Axial Position (in)", ylabel="Radial Distance (in)")
+        axs2[0].axis('equal')
+
+        axs2[1].plot(self.h_g_arr[0], self.h_g_arr[1], label="h", color="blue")
+        axs2[1].set(ylabel="Coefficient of Heat Transfer (W/m^2*K)", xlabel="Axial Position (m)")
+
+        sax = axs2[1].twinx()
+        sax.plot(self.heat_flux_arr[0], self.heat_flux_arr[1], label="flux", color="g")
+        sax.set(ylabel="Heat Flux Rate (W/m^2)", xlabel="Axial Position (m)")
+        axs2[1].legend(loc=(0,1))
+        sax.legend(loc=(0.8,1))
+
+        self.contour = self.contour / Dcon
+        self.filewrite("dataTest.txt")
+
+        plt.show()
