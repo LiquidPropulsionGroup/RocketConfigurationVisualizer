@@ -10,14 +10,6 @@ from scipy.optimize import fsolve
 # mdot #total mass flowrate into engine (kg/s)
 # Lstar #characteristic length (m)
 
-def hoop_stress(internal_pressure, inside_diameter, wall_thickness):
-    """
-    hoop stress calculater
-    takes: internal pressure, inside diameter of hoop, and wall thickness
-    """
-    hoopStress = internal_pressure * inside_diameter / 2 * wall_thickness
-    return hoopStress
-
 def bartz(d_throat, p_chamber, c_star, d, c_p, visc, t_gas, t_wall):
 
     """bartz equation calculator"""
@@ -51,7 +43,6 @@ class Rocket:
         self.density_arr = None
         self.h_g_arr = []
         self.heat_flux_arr = []
-        self.hoopStress_arr = None
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
         self.gam = self.thr.gam
@@ -81,9 +72,6 @@ class Rocket:
         self.chamber_volume = self.Lstar * self.thr.a
         self.chamber_length = self.chamber_volume / (math.pi * (self.cham.d / 2) ** 2)
         self.Cstar = self.cham.p * self.thr.a / self.mdot
-
-        # hardcode temp fix
-        # self.chamber_length = 6.444650495*0.0254
 
         # this generates the chamber and nozzle contour that is used for calculations
         self.my_contourPoints(r1, r2, r3)
@@ -224,6 +212,7 @@ class Rocket:
             if (self.area_arr[1,count] == self.thr.a):
                 regimeSwitch = True                
             count += 1
+    ########################################################
 
     def temp_eq(self, mach):
         gam = self.thr.gam
@@ -258,12 +247,6 @@ class Rocket:
             self.pressure_arr[1,count] = self.pressure_eq(mach)
             #self.density_arr[1,count] = self.density_eq(mach)
             count += 1
-
-        
-    def hoopStress(self): #work in progress
-        #hoopStress = internal_pressure * inside_diameter / 2 * wall_thickness
-        self.hoopStress_arr = self.contour.copy()
-        self.hoopStress_arr = np.multiply(self.hoopStress_arr,)#needs pressure at every point
     
     def filewrite(self, filename):
         output = open(filename, "w")
