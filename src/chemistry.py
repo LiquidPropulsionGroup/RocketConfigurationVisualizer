@@ -9,8 +9,8 @@ class Chemistry:
     u = None #internal energy
     m = None #molar mass
     mw = None #molecular weight = 1/m
-    p = None #pressure
-    son = None #speen of sound
+    p = None #pressure in bar... is converted to Pa in rocket
+    son = None #speed of sound
     cp = None #specific heat capacity (constant pressure)
     t = None #temperature
     ae = None #exit area
@@ -28,8 +28,7 @@ class Chemistry:
     d = None #diameter
     
     def initCalculations(self):
-        #self.isp_s =     (not needed for every point)
-        self.rbar = 8.31446261815324 / self.m * 1000
+        self.rbar = 8.31446261815324 / self.m * 1000 #ADD TO MAIN
 
     @staticmethod
     def parse_initVeriables(file):

@@ -29,7 +29,7 @@ def bartz(d_throat, p_chamber, c_star, d, c_p, visc, t_gas, t_wall):
 # chamber diameter(0.08m), lambda curve, 15degree nozzle.
 
 def throatAreaEquation(mdot, pres, temp, rbar, gam): 
-    return (mdot / (pres * 101325)) * math.sqrt(temp * rbar / gam) * math.pow(
+    return (mdot / (pres)) * math.sqrt(temp * rbar / gam) * math.pow(
             (1 + ((gam - 1) / 2)), ((gam + 1) / (2 * (gam - 1))))
 
 class Rocket:
@@ -55,14 +55,12 @@ class Rocket:
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
         self.gam = self.thr.gam
-
-        
         #unit conversions
-        #bar to atm
-        self.inj.p = self.inj.p*0.986923
-        self.cham.p = self.cham.p*0.986923
-        self.thr.p = self.thr.p*0.986923
-        self.exit.p = self.exit.p*0.986923
+        #bar to Pa
+        self.inj.p = self.inj.p*100000
+        self.cham.p = self.cham.p*100000
+        self.thr.p = self.thr.p*100000
+        self.exit.p = self.exit.p*100000
 
         # Specific impulse in seconds
         self.isp_s = self.exit.isp / 9.8
@@ -82,7 +80,7 @@ class Rocket:
         # NOTE: this volume does not take injector and contour volumes into consideration and is theirfor not completly accurate
         self.chamber_volume = self.Lstar * self.thr.a
         self.chamber_length = self.chamber_volume / (math.pi * (self.cham.d / 2) ** 2)
-        self.Cstar = self.cham.p*101325 * self.thr.a / self.mdot
+        self.Cstar = self.cham.p * self.thr.a / self.mdot
 
         # hardcode temp fix
         # self.chamber_length = 6.444650495*0.0254
@@ -237,7 +235,7 @@ class Rocket:
         myreturn = t_stag * (1 + ((gam-1)/2 * mach**2))**(-1)
         return myreturn
 
-    def pressure_eq(self, mach):
+    def pressure_eq(self, mach):#THIS IS WRONG ... pressure is in bar and needs to be in Pa
         gam = self.thr.gam
         p_stag = self.cham.p * (1 + ((gam-1)/2 * self.cham.mach**2))**(gam/(gam-1))
         myreturn = p_stag * (1 + ((gam-1)/2 * mach**2))**(-gam/(gam-1))
@@ -280,7 +278,7 @@ class Rocket:
     def calcBartz(self):
         self.h_g_arr = self.contour.copy()
         for i in range(len(self.h_g_arr[0])):
-            self.h_g_arr[1,i] = bartz(self.thr.d, self.cham.p*101325, self.Cstar, self.contour[1,i]*2, self.cham.cp*1000, 0.85452e-4, self.temp_arr[1,i], self.wall_temp)
+            self.h_g_arr[1,i] = bartz(self.thr.d, self.cham.p, self.Cstar, self.contour[1,i]*2, self.cham.cp*1000, 0.85452e-4, self.temp_arr[1,i], self.wall_temp)
 
     def calcHeatFlux(self):
         self.heat_flux_arr = self.h_g_arr.copy()

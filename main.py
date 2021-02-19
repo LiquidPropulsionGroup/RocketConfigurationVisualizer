@@ -8,18 +8,19 @@ import scipy as sp
 
 chems = Chemistry.parse_initVeriables('test_2-3of_15atm')
 
-#print(chems)
-
 #set veriables
 mdot = 1
 l_star = 1.1
 cham_d = 3.75 * 0.0254 #in meters
-#cham_d = 0.08
 conv_angle = math.pi / 4 # rad, 45deg
 div_angle = math.pi / 12  # rad, 15deg
-wall_temp = 1000 # K
-rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, 0.0254, 0.0127, 0.01905, 5e-4)
-#rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle)
+wall_temp = 300 # K
+r1 = 0.0254
+r2 = 0.0127
+r3 = 0.01905
+step = 5e-4
+rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
+
 
 rocket.contour = rocket.contour / 0.0254
 
@@ -78,8 +79,8 @@ axs[1].set(ylabel="Gas Core Temperature (K)")
 
 #axs[3].set_title("Pressure")
 secaxs1 = axs[1].twinx()
-secaxs1.plot(rocket.pressure_arr[0], rocket.pressure_arr[1], color="purple", label="Pressure")
-secaxs1.set(ylabel="Pressure (atm)", xlabel="Axial Position (m)")
+secaxs1.plot(rocket.pressure_arr[0], rocket.pressure_arr[1]/100000, color="purple", label="Pressure")
+secaxs1.set(ylabel="Pressure (bar)", xlabel="Axial Position (m)")
 axs[1].legend(loc=(0,1))
 secaxs1.legend(loc=(0.8,1))
 #axs[3].xlabel("Length (m)")
