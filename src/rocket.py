@@ -165,19 +165,20 @@ class Rocket:
             last = mach
         self.mach_arr = np.array(self.mach_arr).transpose()
 
-    def temp_eq(self, mach):
+    def temp_eq(self, mach):#NOTE: stagnation values need improvment
         gam = self.thr.gam
-        # t_stag = self.cham.t * (1 + ((gam-1)/2 * self.cham.mach**2))
+        #t_stag = self.cham.t * (1 + ((gam-1)/2 * self.cham.mach**2))
         # Note: ok technically, yes, the stagnation temperature needs to account for
         # gas velocity, but in our assumptions, t_0 assumed == t_cham as given by CEA
 
-        t_stag = self.cham.t
+        t_stag = self.inj.t
         myreturn = t_stag * (1 + ((gam-1)/2 * mach**2))**(-1)
         return myreturn
 
-    def pressure_eq(self, mach):#THIS IS WRONG ... pressure is in bar and needs to be in Pa
+    def pressure_eq(self, mach):
         gam = self.thr.gam
-        p_stag = self.cham.p * (1 + ((gam-1)/2 * self.cham.mach**2))**(gam/(gam-1))
+        #p_stag = self.cham.p * (1 + ((gam-1)/2 * self.cham.mach**2))**(gam/(gam-1))
+        p_stag = self.inj.p
         myreturn = p_stag * (1 + ((gam-1)/2 * mach**2))**(-gam/(gam-1))
         return myreturn
 
@@ -235,6 +236,8 @@ class Rocket:
         print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.h_g_arr[1,1]))
         print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.heat_flux_arr[1,1]))
         print("Total Watts: {0:.2f} W".format(self.total_watts))
+        print("Mass Flow Rate: {0:.2f} mdot".format(self.mdot))
+        print("chamber pressure: {0:.2f} bar".format(self.pressure_arr[1,1]/100000))
         print()
 
     def graphDisplay(self, pressure_units = 'bar', distance_units = 'in'):

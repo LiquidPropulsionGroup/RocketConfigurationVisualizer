@@ -22,14 +22,14 @@ r3 = 0.01905
 step = 5e-4
 stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
 stinger.variablesDisplay()
-#stinger.graphDisplay()
+stinger.graphDisplay()
 
 #test
 title = 'Stinger Test Sizing'
 chems = Chemistry.parse_initVeriables('stinger_test_25bar')
-mdot = 2
+mdot = 3
 l_star = 1.1
-cham_d = 3.75 * 0.0254 #in meters
+cham_d = 5 * 0.0254 #in meters
 conv_angle = math.pi / 4 # rad, 45deg
 div_angle = math.pi / 12  # rad, 15deg
 wall_temp = 1000 # K
@@ -38,7 +38,7 @@ r2 = 0.0127
 r3 = 0.01905
 step = 5e-4
 stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
-stinger.variablesDisplay()
+#stinger.variablesDisplay()
 #stinger.graphDisplay()
 
 #methate engine test
