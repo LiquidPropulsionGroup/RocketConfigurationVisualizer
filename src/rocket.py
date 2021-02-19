@@ -25,7 +25,8 @@ def throatAreaEquation(mdot, pres, temp, rbar, gam):
             (1 + ((gam - 1) / 2)), ((gam + 1) / (2 * (gam - 1))))
 
 class Rocket:
-    def __init__(self, chem, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1=0.05, r2=0.03, r3=0.025, step=1e-4):
+    def __init__(self, title, chem, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1=0.05, r2=0.03, r3=0.025, step=1e-4):
+        self.title = title
         self.inj = chem[0] # injector
         self.cham = chem[1] # converging starts (end of chamber)
         self.thr = chem[2] # throat
@@ -223,7 +224,7 @@ class Rocket:
 
     #################################################################
     def variablesDisplay(self):
-        print("Debug Outputs:\n")
+        print("{}{}:{}".format('\033[33m', self.title, '\033[0m'))
         print("Chamber Length: {0:.2f} in".format(self.chamber_length / 0.0254))
         print("Chamber Diameter: {0:.2f} in".format(self.cham.d / 0.0254))
         print("Exit Diameter: {0:.2f} in".format(self.exit.d / 0.0254))
@@ -234,6 +235,7 @@ class Rocket:
         print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.h_g_arr[1,1]))
         print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.heat_flux_arr[1,1]))
         print("Total Watts: {0:.2f} W".format(self.total_watts))
+        print()
 
     def graphDisplay(self, pressure_units = 'bar', distance_units = 'in'):
         #temperature units?

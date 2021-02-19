@@ -6,6 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
 
+#stinger rocket sizing
+title = 'Stinger Engine Sizing'
 chems = Chemistry.parse_initVeriables('test_2-3of_15atm')
 #set veriables
 mdot = 1
@@ -18,11 +20,12 @@ r1 = 0.0254
 r2 = 0.0127
 r3 = 0.01905
 step = 5e-4
-stinger = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
+stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
 stinger.variablesDisplay()
 #stinger.graphDisplay()
 
 #test
+title = 'Stinger Test Sizing'
 chems = Chemistry.parse_initVeriables('stinger_test_25bar')
 mdot = 2
 l_star = 1.1
@@ -34,11 +37,12 @@ r1 = 0.0254
 r2 = 0.0127
 r3 = 0.01905
 step = 5e-4
-stinger = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
+stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
 stinger.variablesDisplay()
-stinger.graphDisplay()
+#stinger.graphDisplay()
 
 #methate engine test
+title = 'Methane Engine Test'
 chems = Chemistry.parse_initVeriables('methane_test_50bar')
 mdot = 10
 l_star = 1.1
@@ -50,6 +54,6 @@ r1 = 0.0254
 r2 = 0.0127
 r3 = 0.01905
 step = 5e-4
-methane = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
+methane = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
 #methane.variablesDisplay()
 #methane.graphDisplay()
