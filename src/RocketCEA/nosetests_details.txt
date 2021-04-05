@@ -1,0 +1,599 @@
+________tk_nosy UNITTEST RUN# 5_________
+
+{Item #1} test__main__, 
+FLOX80
+[[' oxid F2(L) F 2 ', ' h,cal=-3098. t(k)=82.02 wt%=80 ', ' oxid O2(L) O 2 ', ' h,cal=-3102. t(k)=90.18 wt%=20 ']]
+-------------------------------------------------------
+MON15
+[[' oxid N2O4(L) N 2 O 4 wt%=62.0077 ', ' h,cal=-4676.0 t(k)=298.15 ', ' oxid N2O3(L) N 2 O 3 wt%=37.9923 ', ' h,cal=12020.7 t(k)=298.15 ']]
+-------------------------------------------------------
+M13
+[[' fuel CH6N2(L) C 1 H 6 N 2 wt%=13 ', ' h,cal=12900.0 t(k)=298.15 rho=.874 ', ' fuel N2H4(L) N 2 H 4 wt%=87 ', ' h,cal=12100.0 t(k)=298.15 rho=1.0036 ']]
+-------------------------------------------------------
+Peroxide88
+[[' oxid H2O2(L) H 2 O 2 wt%=88 ', ' h,cal=-44880.0 t(k)=298.15 rho.g/cc=1.407 ', ' oxid water H 2.0 O 1.0 wt%=12 ', ' h,cal=-68308. t(k)=298.15 rho,g/cc=0.9998 ']]
+-------------------------------------------------------
+
+{Item #2} test_getFuelRefTempDegK, 
+298.15
+
+{Item #3} test_makeCardForNewTemperature, 
+CH4_m19028.6_536
+
+{Item #4} test_FLOX88, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #5} test_HYD30, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #6} test_M10, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #7} test_MON13, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #8} test_Peroxide83, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #9} test__main__, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+N2O4 / MMH    at Pc=1000.0, MR=1.000, eps=30.00...
+Isp =  300.7426761517114
+Cstar =  5134.94536514745
+Tcomb =  3894.46684374972
+  at eps    = 30.0
+PcOvPe =  0.0
+epsAtPcOvPe= 0.0
+Mach Number= 4.3009076785690565
+
+Chamber Sonic Vel = 3827.3738798835257
+Enthalpies = [-1.7564955738838012e-13, -259.3098430165029, nan]
+Densities = [0.40079455526280816, 0.25047298737764706, 0.003107850019444414]
+Cp        = [0.5650506327018152, 0.5504296095716663, 2.2487533543223637]
+=======================================
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+ ARC311    at Pc=1000.0, MR=1.000, eps=30.00...
+Isp =  262.2952107623197
+Cstar =  4444.320218304993
+Tcomb =  3315.5078442007034
+  at eps    = 30.0
+PcOvPe =  0.0
+epsAtPcOvPe= 0.0
+Mach Number= 3.9276064348977338
+
+Chamber Sonic Vel = 3380.546149884455
+Enthalpies = [-1.4371070704248329e-11, -197.9636883578134, nan]
+Densities = [0.5271574696918462, 0.3312135630890024, 0.0042632969395448314]
+Cp        = [0.47903690306414526, 0.5191274797122336, 3.0298627419443456]
+=======================================
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+ N2O    at Pc=1000.0, MR=1.000, eps=30.00...
+Isp =  197.55309076259832
+Cstar =  1393.1259200539753
+Tcomb =  536.6700000118775
+  at eps    = 30.0
+PcOvPe =  0.0
+epsAtPcOvPe= 0.0
+Mach Number= 4.8397102500106035
+
+Chamber Sonic Vel = 1127.503758264017
+Enthalpies = [5.380387210031544e-14, -21.20080771986274, -0.08240764363683666]
+Densities = [5.094630612313868, 3.228788870963245, 0.006903943748909802]
+Cp        = [0.23792361036030935, 0.23737433814871362, 0.23997598276998824]
+=======================================
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+LOX / H2    at Pc=1000.0, MR=1.000, eps=30.00...
+Isp =  372.46984960878615
+Cstar =  7902.637784443348
+Tcomb =  2308.172401427185
+  at eps    = 30.0
+PcOvPe =  0.0
+epsAtPcOvPe= 0.0
+Mach Number= 4.526836147589177
+
+Chamber Sonic Vel = 6167.195466526333
+Enthalpies = [2.546205560154532e-12, -655.1063982087992, nan]
+Densities = [0.16276412503037702, 0.1023948765508455, 0.0019585575670736893]
+Cp        = [1.9589736826319017, 1.8998335951862542, 11.363251074063136]
+=======================================
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+LOX / GH2_160    at Pc=1000.0, MR=1.000, eps=30.00...
+Isp =  399.6013023721478
+Cstar =  7902.637784443348
+Tcomb =  2308.172401427185
+  at eps    = 30.0
+PcOvPe =  0.0
+epsAtPcOvPe= 0.0
+Mach Number= 4.802488641009086
+
+Chamber Sonic Vel = 6167.195466526333
+Enthalpies = [2.546205560154532e-12, -655.1063982087992, nan]
+Densities = [0.16276412503037702, 0.1023948765508455, 0.0016808015613490618]
+Cp        = [1.9589736826319017, 1.8998335951862542, 15.506588007700158]
+=======================================
+
+amb_amb_amb_amb_amb_amb_amb_amb_amb_amb_amb_amb_amb_amb_
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+Pc= 100  eps=  2  IspAmb=    269.06 IspVac=    338.05  Mode=OverExpanded (Pe=13.3115)
+Pc= 100  eps=  5  IspAmb=    252.38 IspVac=    384.40  Mode=Separated (Psep=6.67866, epsSep=3.25837)
+Pc= 100  eps= 10  IspAmb=    248.67 IspVac=    410.58  Mode=Separated (Psep=6.67866, epsSep=3.25837)
+Pc= 100  eps= 20  IspAmb=    241.01 IspVac=    431.46  Mode=Separated (Psep=6.67866, epsSep=3.25837)
+Pc= 100  eps= 50  IspAmb=    216.63 IspVac=    452.84  Mode=Separated (Psep=6.67866, epsSep=3.25837)
+Pc= 100  eps=100  IspAmb=    174.11 IspVac=    465.35  Mode=Separated (Psep=6.67866, epsSep=3.25837)
+  ---
+Pc= 500  eps=  2  IspAmb=    329.17 IspVac=    343.22  Mode=UnderExpanded (Pe=65.3707)
+Pc= 500  eps=  5  IspAmb=    353.97 IspVac=    389.09  Mode=UnderExpanded (Pe=17.7524)
+Pc= 500  eps= 10  IspAmb=    344.34 IspVac=    414.56  Mode=OverExpanded (Pe=6.96516)
+Pc= 500  eps= 20  IspAmb=    327.65 IspVac=    434.70  Mode=Separated (Psep=4.84056, epsSep=14.255)
+Pc= 500  eps= 50  IspAmb=    325.47 IspVac=    455.27  Mode=Separated (Psep=4.84056, epsSep=14.255)
+Pc= 500  eps=100  IspAmb=    318.88 IspVac=    467.30  Mode=Separated (Psep=4.84056, epsSep=14.255)
+  ---
+Pc=1500  eps=  2  IspAmb=    341.42 IspVac=    346.15  Mode=UnderExpanded (Pe=193.502)
+Pc=1500  eps=  5  IspAmb=    379.75 IspVac=    391.58  Mode=UnderExpanded (Pe=51.9839)
+Pc=1500  eps= 10  IspAmb=    392.95 IspVac=    416.61  Mode=UnderExpanded (Pe=20.3069)
+Pc=1500  eps= 20  IspAmb=    389.03 IspVac=    436.35  Mode=OverExpanded (Pe=8.07225)
+Pc=1500  eps= 50  IspAmb=    369.34 IspVac=    456.50  Mode=Separated (Psep=3.88572, epsSep=40.7255)
+Pc=1500  eps=100  IspAmb=    363.58 IspVac=    468.29  Mode=Separated (Psep=3.88572, epsSep=40.7255)
+  ---
+Pc=5000  eps=  2  IspAmb=    347.27 IspVac=    348.70  Mode=UnderExpanded (Pe=635.853)
+Pc=5000  eps=  5  IspAmb=    390.06 IspVac=    393.64  Mode=UnderExpanded (Pe=169.396)
+Pc=5000  eps= 10  IspAmb=    411.11 IspVac=    418.28  Mode=UnderExpanded (Pe=66.0304)
+Pc=5000  eps= 20  IspAmb=    423.35 IspVac=    437.68  Mode=UnderExpanded (Pe=26.2442)
+Pc=5000  eps= 50  IspAmb=    421.66 IspVac=    457.49  Mode=OverExpanded (Pe=7.84522)
+Pc=5000  eps=100  IspAmb=    397.42 IspVac=    469.09  Mode=OverExpanded (Pe=3.14832)
+  ---
+
+{Item #10} test_ambient_Isp, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #11} test_badFLOX888, 
+ERROR... bad oxidizer name (FLOX888) in cea_obj.py
+
+{Item #12} test_badM1000, 
+ERROR... bad fuel name (M1000) in cea_obj.py
+
+{Item #13} test_badMON1300, 
+ERROR... bad oxidizer name (MON1300) in cea_obj.py
+
+{Item #14} test_badMONxyz, 
+ERROR... bad oxidizer name (MONxyz) in cea_obj.py
+
+{Item #15} test_ceaobj_existence, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #16} test_froz_get_Densities, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #17} test_froz_get_Enthalpies, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+[164.7512748095877, -170.86958591531848, -2017.4177422825114]
+
+{Item #18} test_froz_get_HeatCapacities, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #19} test_froz_get_Isp, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #20} test_froz_get_IvacCstrTc, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #21} test_froz_get_IvacCstrTc_exitMwGam, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #22} test_froz_get_MachNumber, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #23} test_froz_get_PcOvPe, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #24} test_froz_get_SonicVelocities, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+[4327.439684148885, 4098.098918935073, 2222.6599715896796]
+
+{Item #25} test_froz_get_Throat_Isp, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #26} test_froz_get_Throat_MolWt_gamma, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #27} test_froz_get_eps_at_PcOvPe, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #28} test_froz_get_exit_MolWt_gamma, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #29} test_full_cea_output, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #30} test_getFrozen_IvacCstrTc, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #31} test_getMRforER, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #32} test_get_Chamber_Cp, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #33} test_get_Chamber_Density, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #34} test_get_Chamber_H, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #35} test_get_Chamber_MolWt_gamma, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #36} test_get_Chamber_SonicVel, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #37} test_get_Cstar, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+6073.157251192654
+
+{Item #38} test_get_Densities, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #39} test_get_Enthalpies, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+[164.7512748095877, -161.94034179755695, -2198.8446721161367]
+
+{Item #40} test_get_HeatCapacities, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #41} test_get_Isp, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #42} test_get_IvacCstrTc_ChmMwGam, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #43} test_get_IvacCstrTc_ThtMwGam, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #44} test_get_IvacCstrTc_exitMwGam, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #45} test_get_MachNumber, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #46} test_get_PcOvPe, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #47} test_get_SonicVelocities, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+[4187.8341406036525, 4043.220288296704, 2446.3294662536046]
+
+{Item #48} test_get_Tcomb, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #49} test_get_Temperatures, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #50} test_get_Throat_Isp, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #51} test_get_Throat_MolWt_gamma, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #52} test_get_Throat_PcOvPe, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #53} test_get_ambient_Cf, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #54} test_get_description, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #55} test_get_eps_at_PcOvPe, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #56} test_get_eqratio, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #57} test_get_exit_MolWt_gamma, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #58} test_isp_cache, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #59} test_lox_mmh_existence, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #60} test_mass_fraction_species_conc_w_fac, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #61} test_mass_fraction_species_concentration, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #62} test_mole_fraction_species_conc_w_fac, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #63} test_mole_fraction_species_concentration, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #64} test_new_propellants, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #65} test_M10, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #66} test_MON13, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #67} test_ambient_Isp, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #68} test_full_cea_output, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #69} test_getFrozen_IvacCstrTc, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #70} test_getMRforER, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #71} test_get_Chamber_Cp, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #72} test_get_Chamber_Density, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #73} test_get_Chamber_H, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #74} test_get_Chamber_MolWt_gamma, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #75} test_get_Chamber_SonicVel, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #76} test_get_Cstar, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+6071.98790105685
+
+{Item #77} test_get_Densities, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+  dList [0.028721999143010185, 0.018269705631498576, 0.0001697484462619544]
+rhoList [4.600822955453002e-06, 2.9265261321206994e-06, 2.7191092943282844e-08]
+
+{Item #78} test_get_Enthalpies, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+[143.61895142033558, -161.68130699554115, -2198.5652665486314]
+
+{Item #79} test_get_HeatCapacities, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #80} test_get_Isp, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #81} test_get_IvacCstrTc_ChmMwGam, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #82} test_get_IvacCstrTc_ThtMwGam, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #83} test_get_IvacCstrTc_exitMwGam, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #84} test_get_MachNumber, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #85} test_get_PcOvPe, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #86} test_get_Pinj_over_Pcomb, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #87} test_get_SonicVelocities, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+[4176.701394069315, 4041.617016570013, 2446.6959331682588]
+[1273.0624244685994, 1231.8885820265034, 745.7551696272768]
+
+{Item #88} test_get_Tcomb, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #89} test_get_Throat_Isp, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #90} test_get_Throat_MolWt_gamma, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #91} test_get_Throat_PcOvPe, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #92} test_get_description, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #93} test_get_eps_at_PcOvPe, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #94} test_get_eqratio, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #95} test_get_exit_MolWt_gamma, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #96} test_lox_mmh_existence, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #97} test_Goal__main__, 
+======================================================
+----->Answer should be = 2.5
+with tolerance=1.0E-3  =
+(2.499999999275627, 0)
+with tolerance=1.0E-20 =
+(2.5, 0)
+
+{Item #98} test_Isp__main__, 
+for gam=1.25 and eps=2
+
+solvePCoPE(1.25,2)= 8.828960623207562
+CalcEps(gam,PCoPE)= 2.0000000000000004
+
+CalcPCoPE(1.25,2)= 8.82896062320756     Pe/Pc= 0.11326361535370627
+CalcEps(gam,PCoPE)= 2.0
+CalcCFvac(gam,PCoPE) 1.4631435664023358
+for T=5000 degR and WtMol=20 lbm/lbmole
+CalcCstar(Gam,Temp,WtMol) 5356.956495962318
+for Pc=250  and Pamb=0
+CalcIdealIsVac(Gam,Temp,WtMol,eps) 243.6127442209382
+
+CalcCFvac(gam,PCoPE) 1.4631435664023358   in gray book= 1.4411964129063006
+CalcCstar(Gam,Temp,WtMol) 5356.956495962318
+
+{Item #99} test_bad_goal_func, 
+ERROR unrecoverable in Goal.py
+returned an ERROR=1 from cren_goal in goalFind.py
+
+{Item #100} test_cea_w_units__main__, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+Chk: get_IvacCstrTc ALL GOOD:3 --> ['302.906', '5378.76', '4231.59']
+Chk: get_IvacCstrTc ALL GOOD:3 --> ['296.863', '5356.76', '4231.59']
+Chk: getFrozen_IvacCstrTc ALL GOOD:3 --> ['296.863', '5356.76', '4231.59']
+Chk: get_IvacCstrTc_exitMwGam ALL GOOD:5 --> ['302.906', '5378.76', '4231.59', '17.4208', '1.1199']
+Chk: get_IvacCstrTc_exitMwGam ALL GOOD:5 --> ['296.863', '5356.76', '4231.59', '16.7247', '1.37547']
+Chk: get_IvacCstrTc_ChmMwGam ALL GOOD:5 --> ['302.906', '5378.76', '4231.59', '16.7247', '1.24802']
+Chk: get_IvacCstrTc_ThtMwGam ALL GOOD:5 --> ['302.906', '5378.76', '4231.59', '16.7434', '1.264']
+Chk: get_Isp ALL GOOD:1 --> ['296.863']
+Chk: get_Cstar ALL GOOD:1 --> ['5378.76']
+Chk: get_Tcomb ALL GOOD:1 --> ['4231.59']
+Chk: get_PcOvPe ALL GOOD:1 --> ['554.5']
+Chk: get_eps_at_PcOvPe ALL GOOD:1 --> ['40.0007']
+Chk: get_eps_at_PcOvPe ALL GOOD:1 --> ['30.8803']
+Chk: get_Throat_PcOvPe ALL GOOD:1 --> ['1.81151']
+Chk: get_MachNumber ALL GOOD:1 --> ['4.64055']
+Chk: get_MachNumber ALL GOOD:1 --> ['5.03152']
+Chk: get_Temperatures ALL GOOD:3 --> ['4231.59', '3752.65', '1272.19']
+Chk: get_SonicVelocities ALL GOOD:3 --> ['3962.32', '3753.06', '2016.5']
+Chk: get_SonicVelocities ALL GOOD:3 --> ['3993.93', '3757.52', '1845.29']
+Chk: get_Chamber_SonicVel ALL GOOD:1 --> ['3962.32']
+Chk: get_Enthalpies ALL GOOD:3 --> ['206.26', '-75.2243', '-1543.66']
+Chk: get_Enthalpies ALL GOOD:3 --> ['206.26', '-75.8851', '-1516.45']
+Chk: get_Chamber_H ALL GOOD:1 --> ['206.26']
+Chk: get_Densities ALL GOOD:3 --> ['0.0368287', '0.0229507', '0.000230116']
+Chk: get_Densities ['0.0368287', '0.023018', '0.000232883'] Ngood=2  NBAD=1
+   r1L ['0.0368287', '0.023018', '0.000232883']
+   r2L ['0.0368287', '0.023018', '0.000232884']
+Chk: get_Chamber_Density ALL GOOD:1 --> ['0.0368287']
+Chk: get_HeatCapacities ALL GOOD:3 --> ['0.618347', '0.574791', '2.75696']
+Chk: get_HeatCapacities ALL GOOD:3 --> ['0.562162', '0.550784', '0.435278']
+Chk: get_Chamber_Cp ALL GOOD:1 --> ['0.618347']
+Chk: get_Throat_Isp ALL GOOD:1 --> ['208.935']
+Chk: get_Throat_Isp ALL GOOD:1 --> ['208.381']
+Chk: get_Chamber_MolWt_gamma ALL GOOD:2 --> ['16.7247', '1.24802']
+Chk: get_Throat_MolWt_gamma ALL GOOD:2 --> ['16.7434', '1.264']
+Chk: get_Throat_MolWt_gamma ALL GOOD:2 --> ['16.7247', '1.27507']
+Chk: get_exit_MolWt_gamma ALL GOOD:2 --> ['17.4208', '1.1199']
+Chk: get_eqratio ALL GOOD:2 --> ['2.49641', '2.49641']
+Chk: getMRforER ALL GOOD:1 --> ['2.49641']
+Chk: get_description ALL GOOD:1 --> ['N2O4 / MMH']
+Chk: estimate_Ambient_Isp ALL GOOD:1 --> ['161.414']
+Chk: get_Chamber_Transport ALL GOOD:4 --> ['0.618347', '0.952188', '1.84655', '0.318856']
+Chk: get_Chamber_Transport ALL GOOD:4 --> ['0.562162', '0.952188', '1.45841', '0.367033']
+Chk: get_Throat_Transport ALL GOOD:4 --> ['0.574791', '0.88028', '1.46741', '0.344811']
+Chk: get_Throat_Transport ALL GOOD:4 --> ['0.551545', '0.88028', '1.32715', '0.365834']
+Chk: get_Exit_Transport ALL GOOD:4 --> ['4.22152', '0.452493', '1.63987', '0.586173']
+Chk: get_Exit_Transport ALL GOOD:4 --> ['0.917393', '0.452493', '0.633899', '0.329535']
+Chk: get_PambCf ALL GOOD:2 --> ['1.73974', '0.965525']
+Chk: getFrozen_PambCf ALL GOOD:2 --> ['1.73155', '0.982003']
+Chk: get_SpeciesMassFractions ALL GOOD:1 --> ["{'CH4': 16.04246, '*CO': 28.0101, '*CO2': 44.0095, '*H': 1.00794, '*H2': 2.01588, 'H2O': 18.01528, 'NH3': 17.03052, '*NO': 30.0061, '*N2': 28.0134, '*OH': 17.00734, 'C(gr)': 12.0107}"]
+Chk: get_SpeciesMoleFractions ALL GOOD:1 --> ["{'CH4': 16.04246, '*CO': 28.0101, '*CO2': 44.0095, '*H': 1.00794, '*H2': 2.01588, 'H2O': 18.01528, 'NH3': 17.03052, '*NO': 30.0061, '*N2': 28.0134, '*OH': 17.00734, 'C(gr)': 12.0107}"]
+
+{Item #101} test_goal_func_bad_range, 
+returned an ERROR=1 from cren_goal in goalFind.py
+goalVal, minX, maxX, funcOfX 0.0 2.6 2.9 FofX
+using X value= 2.9
+
+{Item #102} test_goal_func_early_terminate, 
+returned an ERROR=2 from cren_goal in goalFind.py
+goalVal, minX, maxX, funcOfX 0.0 0.0 57.123 FofX
+using X value= 57.123
+
+{Item #103} test_goal_func_err, 
+ERROR unrecoverable in Goal.py
+returned an ERROR=1 from cren_goal in goalFind.py
+goalVal, minX, maxX, funcOfX 0.0 0.0 57.123 FofX
+using X value= 57.123
+ERROR unrecoverable in Goal.py
+
+{Item #104} test_mr_t_limits__main__, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+Stoich MR = 2.496405605692339 for N2O4/MMH
+
+Min MR = 0   Tc at Min MR = 2145.1178929460416
+Max MR = 53.5632   Tc at Max MR = 1000.0000131980624
+
+{Item #105} test_mr_temperature_limits_1, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #106} test_mr_temperature_limits_1b, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #107} test_mr_temperature_limits_2, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #108} test_mr_temperature_limits_3, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #109} test_run_cea_w_error_corr__main__, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+Searching....................._NOT_FOUND_
+Estimated CEA_Isp Frozen at Pc=100, MR=1, eps=40 ispFroz=0
+Estimated CEA_Isp at Pc=100, MR=1, eps=40 ispODE374.303
+Searching....................._NOT_FOUND_
+Estimated CEA_Isp Frozen at Pc=100, MR=1, eps=40 ispFroz=0
+     isp_ode = 374.30361765576265
+     isp_odf = 0.0
+     isp_est = 374.30264440377096
+isp_froz_est = 0.0
+
+Estimated CEA_Isp at Pc=100, MR=2, eps=40 ispODE424.36
+     isp_ode = 424.35970857360184
+     isp_odf = 424.2731751154918
+     isp_est = 424.3597077558516
+isp_froz_est = 424.27309382819874
+
+Estimated CEA_Isp at Pc=400, MR=1.24535, eps=32 ispODE388.159
+Estimated CEA_Isp at Pc=400, MR=1.24535, eps=32 ispODE388.159
+     isp_ode = 388.1593036754975
+     isp_odf = 386.4526708695236
+     isp_est = 388.1593036754975
+isp_froz_est = 386.4526708353625
+
+Estimated CEA_Isp at Pc=400, MR=2.5, eps=32 ispODE434.381
+     isp_ode = 434.3809063410057
+     isp_odf = 433.98853368123196
+     isp_est = 434.38089881620033
+isp_froz_est = 433.98817133764663
+
+Run All: 448.1902329983554 414.8125904013141 7210.171598261272 5787.742274248721
+
+{Item #110} test_separated_Cf__main__, 
+saving data to CSV file separated_Noz.csv
+gam=1.25, epsTot=25, Pc=200, Pamb=14.7
+CfOvCfvacAtEsep, CfOvCfvac 0.7359305787100278 0.6648559059513175
+Cfsep, CfiAmbSimple 1.1966281482300833 1.261913054725679
+CfiVac CfVac 1.6260068311437568 1.7998308167509964
+epsSep 4.953656822014666
+
+gam=1.25, epsTot=20.45, Pc=250, Pamb=14.7
+CfOvCfvacAtEsep, CfOvCfvac 0.75598113986346 0.7004380591744589
+Cfsep, CfiAmbSimple 1.2490682952528125 1.3001984600230723
+CfiVac CfVac 1.6522479588292511 1.783267312351606
+epsSep 5.987236374254742
+
+{Item #111} test_chamber_transport_props, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
+{Item #112} test_use_Mpa_as_input_Pc, 
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+self.pathPrefix --> C:\Users\Charlie\RocketCEA\
+
