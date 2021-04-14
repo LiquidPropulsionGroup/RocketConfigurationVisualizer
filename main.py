@@ -1,5 +1,6 @@
 from src.chemistry import Chemistry
 from src.rocket import Rocket
+from src.flight import Flight
 import math
 
 import numpy as np
@@ -21,7 +22,7 @@ r2 = 0.0127
 r3 = 0.01905
 step = 5e-4
 propellant_ratio = 2.3
-stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
+#stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
 #stinger.variablesDisplay()
 #stinger.graphDisplay()
 
@@ -39,9 +40,9 @@ r2 = 0.0127
 r3 = 0.01905
 step = 5e-4
 propellant_ratio = 2.3
-stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
-stinger.variablesDisplay()
-stinger.graphDisplay()
+#stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
+#stinger.variablesDisplay()
+#stinger.graphDisplay()
 
 #methate engine test
 title = 'Methane Engine Test'
@@ -57,6 +58,16 @@ r2 = 0.0127
 r3 = 0.01905
 step = 5e-4
 propellant_ratio = 2.7
-methane = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
+#methane = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
 #methane.variablesDisplay()
 #methane.graphDisplay()
+
+#rocket trajectory test
+mRocket = 300
+thrust = 9000*10
+mDot = 3
+htarget = 13716
+dragCd = 0.3
+vehicleArea = 30.0
+hInit = 0.0
+my_flight = Flight(mRocket, thrust, mDot, htarget, dragCd, vehicleArea, hInit)
