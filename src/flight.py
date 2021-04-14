@@ -17,7 +17,7 @@ def drag(Cd, density, area, velocity):
 
 def hightPrediction(h, v, g): #note, gravity is constant and therefor inaccurate
     return h + v**2 / (2 * g)
-
+'''
 def densityAltitude(h, t = 288.14):
     if(h<=11000): #troposphere
         t -= 0.006545*h
@@ -26,10 +26,50 @@ def densityAltitude(h, t = 288.14):
     else: #upper stratosphere
         t = 216 + 0.001*h
     p = 101290 * math.exp(0.034159*h)
-    roe = 0.003483*p/t
+    roe = 0.2869*p/t
+    roe = 
+    print("temp: {0:.2f} K".format(t))
+    print("pressure: {0:.2f} Pa".format(p))
+    return roe
+'''
+def density1(roeB, tempB, h, hB, lapse, g = 9.8):
+    roe = roeB * (tempB/(tempB + lapse*(h-hB)))**(1+ g * 0.003484/lapse)
     return roe
 
-print(densityAltitude(1000)/100000)
+def density2(roeB, tempB, h, hB, g = 9.8):
+    roe = roeB * math.exp(-g * 0.003484 * (h-hB) / tempB)
+    return roe
+
+def densityAltitude(h):
+    hB = [0, 11000, 20000, 32000, 47000, 51000, 71000]
+    tempB = [288.15, 216.65, 216.65, 228.65, 270.65, 270.65, 214.65]
+    roeB = [1.225, 0.36391, 0.08803, 0.01322, 0.00143, 0.00086, 0.000064]
+    lapse = [-0.0065, 0.0, 0.001, 0.0028, 0.0, -0.0028, -0.002]
+    if(h<=11000):
+        B = 0
+    elif(h<=20000):
+        B = 1
+    elif(h<=32000):
+        B = 2
+    elif(h<=47000):
+        B = 3
+    elif(h<=51000):
+        B = 4
+    elif(h<=71000):
+        B = 5
+    elif(h<=100000):
+        B = 6
+    else:
+        B = 7
+    
+    if(B == 7):
+        return 0.0
+    elif(lapse[B] == 0):
+        return density2(roeB[B], tempB[B], h, hB[B])
+    else:
+        return density1(roeB[B], tempB[B], h, hB[B], lapse[B])
+
+#print("density: {0:.2f}".format(densityAltitude(0.01)))
 
 class Flight:
     def __init__(self, mRocket, thrust, mDot, htarget, dragCd, vehicleArea = 0, hInit = 0):
@@ -47,22 +87,29 @@ class Flight:
 
     def calculateFuelNeeded(self):
         guess = 120.0 #seconds
-        step = 1e-4
+        guessStep = guess/2
+        step = 1e-3
         hPrediction = 0.0
         while(abs(self.hTarget - hPrediction) > 1): #hight within 1 meter
-            guess /= 2
-            m = self.mRocket + (guess * self.mDot)
+            if(self.hTarget < hPrediction):
+                guess -= guessStep
+            else:
+                guess += guessStep
+            guessStep /= 2
+            mFuel = guess * self.mDot
+            m = self.mRocket + mFuel
             h = self.hInit
             v = 0.0
             a = 0.0
             print("number of iterations: {0:.2f} ".format(math.ceil(guess/step)))
             for j in range(math.ceil(guess/step)):
-                print("acceleration: {0:.2f} ".format(a))
-                print("velocity: {0:.2f} ".format(v))
-                print("hight: {0:.2f} ".format(h))
-                print("mass: {0:.2f} ".format(m))
-                time.sleep(0.001)
+                #print("acceleration: {0:.2f} ".format(a))
+                #print("velocity: {0:.2f} ".format(v))
+                #print("hight: {0:.2f} ".format(h))
+                #print("mass: {0:.2f} ".format(m))
+                #time.sleep(0.001)
                 h1 = h + v*step
+                #print(h)
                 m1 = m - self.mDot*step
                 v1 = v + a * step
                 a1 = (self.thrust - fGravity(m, h) - drag(self.dragCd, densityAltitude(h), self.vehicleArea, v))/m
@@ -78,8 +125,8 @@ class Flight:
             print("mass: {0:.2f} ".format(m))
             hPrediction = hightPrediction(h, v, (fGravity(m, h)/m))
             print("hight prediction: {0:.2f} ".format(hPrediction))
-            time.sleep(0.1)
+            time.sleep(1)
 
-        self.mPropellants = guess * self.mDot
+        self.mPropellants = mFuel
 
 
