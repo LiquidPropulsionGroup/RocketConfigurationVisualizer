@@ -45,19 +45,19 @@ def densityAltitude(h):
     tempB = [288.15, 216.65, 216.65, 228.65, 270.65, 270.65, 214.65]
     roeB = [1.225, 0.36391, 0.08803, 0.01322, 0.00143, 0.00086, 0.000064]
     lapse = [-0.0065, 0.0, 0.001, 0.0028, 0.0, -0.0028, -0.002]
-    if(h<=11000):
+    if(h<=11000): # toposphere
         B = 0
-    elif(h<=20000):
+    elif(h<=20000): # lower stratosphere
         B = 1
-    elif(h<=32000):
+    elif(h<=32000): # upper stratosphere
         B = 2
-    elif(h<=47000):
+    elif(h<=47000): # lower mesosphere
         B = 3
-    elif(h<=51000):
+    elif(h<=51000): # upper mesosphere
         B = 4
-    elif(h<=71000):
+    elif(h<=71000): # lower thermosphere
         B = 5
-    elif(h<=100000):
+    elif(h<=100000): #upper thermosphere
         B = 6
     else:
         B = 7
@@ -69,7 +69,7 @@ def densityAltitude(h):
     else:
         return density1(roeB[B], tempB[B], h, hB[B], lapse[B])
 
-#print("density: {0:.2f}".format(densityAltitude(0.01)))
+print("density: {0:.20f}".format(densityAltitude(200000)))
 
 class Flight:
     def __init__(self, mRocket, thrust, mDot, htarget, dragCd, vehicleArea = 0, hInit = 0):
@@ -91,11 +91,14 @@ class Flight:
         step = 1e-3
         hPrediction = 0.0
         while(abs(self.hTarget - hPrediction) > 1): #hight within 1 meter
-            if(self.hTarget < hPrediction):
-                guess -= guessStep
-            else:
-                guess += guessStep
-            guessStep /= 2
+            if(hPrediction != 0.0):
+                if(self.hTarget < hPrediction):
+                    guess -= guessStep
+                else:
+                    guess += guessStep
+                guessStep /= 2
+            print("guess: {0:.2f}".format(guess))
+            print("guessStep: {0:.2f}".format(guessStep))
             mFuel = guess * self.mDot
             m = self.mRocket + mFuel
             h = self.hInit
