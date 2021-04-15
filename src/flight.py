@@ -69,7 +69,7 @@ def densityAltitude(h):
     else:
         return density1(roeB[B], tempB[B], h, hB[B], lapse[B])
 
-print("density: {0:.20f}".format(densityAltitude(200000)))
+#print("density: {0:.20f}".format(densityAltitude(200000)))
 
 class Flight:
     def __init__(self, mRocket, thrust, mDot, htarget, dragCd, vehicleArea = 0, hInit = 0):
@@ -82,7 +82,6 @@ class Flight:
         self.dragCd = dragCd #drag coeffecient
         self.hInit = hInit #initial altitude of rocket above sea level in m
         self.mPropellants = None #mass of propellants in kg
-        print("starting calculate funtion")
         self.calculateFuelNeeded()
 
     def calculateFuelNeeded(self):
@@ -97,22 +96,14 @@ class Flight:
                 else:
                     guess += guessStep
                 guessStep /= 2
-            print("guess: {0:.2f}".format(guess))
-            print("guessStep: {0:.2f}".format(guessStep))
+
             mFuel = guess * self.mDot
             m = self.mRocket + mFuel
             h = self.hInit
             v = 0.0
             a = 0.0
-            print("number of iterations: {0:.2f} ".format(math.ceil(guess/step)))
             for j in range(math.ceil(guess/step)):
-                #print("acceleration: {0:.2f} ".format(a))
-                #print("velocity: {0:.2f} ".format(v))
-                #print("hight: {0:.2f} ".format(h))
-                #print("mass: {0:.2f} ".format(m))
-                #time.sleep(0.001)
                 h1 = h + v*step
-                #print(h)
                 m1 = m - self.mDot*step
                 v1 = v + a * step
                 a1 = (self.thrust - fGravity(m, h) - drag(self.dragCd, densityAltitude(h), self.vehicleArea, v))/m
@@ -121,15 +112,20 @@ class Flight:
                 v = v1
                 a = a1
                 j += j #delete
-            print("Fuel Mass: {0:.2f} kg".format(guess * self.mDot))
-            print("acceleration: {0:.2f} ".format(a))
-            print("velocity: {0:.2f} ".format(v))
-            print("hight: {0:.2f} ".format(h))
-            print("mass: {0:.2f} ".format(m))
             hPrediction = hightPrediction(h, v, (fGravity(m, h)/m))
-            print("hight prediction: {0:.2f} ".format(hPrediction))
-            time.sleep(1)
-
+            #print("Fuel Mass: {0:.2f} kg".format(guess * self.mDot))
+            #print("acceleration: {0:.2f} ".format(a))
+            #print("velocity: {0:.2f} ".format(v))
+            #print("hight: {0:.2f} ".format(h))
+            #print("mass: {0:.2f} ".format(m))
+            #print("hight prediction: {0:.2f} ".format(hPrediction))
+            #time.sleep(1)
         self.mPropellants = mFuel
-
-
+        self.fireTime = guess
+    
+    def printInfo(self):
+        print("mass of fuel: {0:.2f} kg".format(self.mPropellants))
+        print("fire time: {0:.2f} s".format(self.fireTime))
+        print("thrust: {0:.2f} N".format(self.thrust))
+        print("mass flow rate: {0:.2f} kg/s".format(self.mDot))
+        print("max elevation of flight: {0:.2f} kg".format(self.hTarget))

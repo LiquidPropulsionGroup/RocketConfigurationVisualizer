@@ -65,9 +65,10 @@ propellant_ratio = 2.7
 #rocket trajectory test
 mRocket = 200
 thrust = 9000
-mDot = 3
+mDot = 1
 htarget = 13716
-dragCd = 0.3
+dragCd = 0.5
 vehicleArea = 1.0
 hInit = 0.0
 my_flight = Flight(mRocket, thrust, mDot, htarget, dragCd, vehicleArea, hInit)
+my_flight.printInfo()
