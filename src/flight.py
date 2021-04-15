@@ -17,21 +17,7 @@ def drag(Cd, density, area, velocity):
 
 def hightPrediction(h, v, g): #note, gravity is constant and therefor inaccurate
     return h + v**2 / (2 * g)
-'''
-def densityAltitude(h, t = 288.14):
-    if(h<=11000): #troposphere
-        t -= 0.006545*h
-    elif(h<=20000): #lower stratosphere
-        t = 216
-    else: #upper stratosphere
-        t = 216 + 0.001*h
-    p = 101290 * math.exp(0.034159*h)
-    roe = 0.2869*p/t
-    roe = 
-    print("temp: {0:.2f} K".format(t))
-    print("pressure: {0:.2f} Pa".format(p))
-    return roe
-'''
+
 def density1(roeB, tempB, h, hB, lapse, g = 9.8):
     roe = roeB * (tempB/(tempB + lapse*(h-hB)))**(1+ g * 0.003484/lapse)
     return roe
@@ -72,7 +58,8 @@ def densityAltitude(h):
 #print("density: {0:.20f}".format(densityAltitude(200000)))
 
 class Flight:
-    def __init__(self, mRocket, thrust, mDot, htarget, dragCd, vehicleArea = 0, hInit = 0):
+    def __init__(self, title, mRocket, thrust, mDot, htarget, dragCd, vehicleArea = 0, hInit = 0, stepSize = 1e-3):
+        self.title = title
         self.mRocket = mRocket #mass of rocket and payload in kg
         self.thrust = thrust #Newtons
         self.mDot = mDot #mass flow in kg/s
@@ -82,12 +69,13 @@ class Flight:
         self.dragCd = dragCd #drag coeffecient
         self.hInit = hInit #initial altitude of rocket above sea level in m
         self.mPropellants = None #mass of propellants in kg
+        self.stepSize = stepSize
         self.calculateFuelNeeded()
 
     def calculateFuelNeeded(self):
         guess = 120.0 #seconds
         guessStep = guess/2
-        step = 1e-3
+        step = self.stepSize
         hPrediction = 0.0
         while(abs(self.hTarget - hPrediction) > 1): #hight within 1 meter
             if(hPrediction != 0.0):
@@ -124,6 +112,7 @@ class Flight:
         self.fireTime = guess
     
     def printInfo(self):
+        print("{}{}:{}".format('\033[33m', self.title, '\033[0m'))
         print("mass of fuel: {0:.2f} kg".format(self.mPropellants))
         print("fire time: {0:.2f} s".format(self.fireTime))
         print("thrust: {0:.2f} N".format(self.thrust))
