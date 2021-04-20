@@ -22,8 +22,9 @@ r2 = 0.0127
 r3 = 0.01905
 step = 5e-4
 propellant_ratio = 2.3
-#stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
-#stinger.variablesDisplay()
+nozzle_type = 'conical' 
+stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
+stinger.variablesDisplay()
 #stinger.graphDisplay()
 
 #test
@@ -40,7 +41,8 @@ r2 = 0.0127
 r3 = 0.01905
 step = 5e-4
 propellant_ratio = 2.3
-#stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
+nozzle_type = 'bell80'
+#stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
 #stinger.variablesDisplay()
 #stinger.graphDisplay()
 
@@ -58,9 +60,12 @@ r2 = 0.0127
 r3 = 0.01905
 step = 5e-4
 propellant_ratio = 2.7
-#methane = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1, r2, r3, step)
+nozzle_type = 'conical'
+#methane = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
 #methane.variablesDisplay()
 #methane.graphDisplay()
+
+
 
 #rocket trajectory test
 title = "test rocket trajectory"
@@ -71,5 +76,5 @@ htarget = 13716
 dragCd = 0.5
 vehicleArea = 1.0
 hInit = 0.0
-my_flight = Flight(title, mRocket, thrust, mDot, htarget, dragCd, vehicleArea, hInit)
-my_flight.printInfo()
+#my_flight = Flight(title, mRocket, thrust, mDot, htarget, dragCd, vehicleArea, hInit)
+#my_flight.printInfo()

@@ -5,18 +5,15 @@ import matplotlib.pyplot as plt
 import scipy as sp
 import time
 from scipy.optimize import fsolve
-
 # input values
 # mdot #total mass flowrate into engine (kg/s)
 # Lstar #characteristic length (m)
 
 def bartz(d_throat, p_chamber, c_star, d, c_p, visc, t_gas, t_wall):
-
     """bartz equation calculator"""
     t_boundary = (t_gas + t_wall) / 2
     return (0.026 / math.pow(d_throat, 0.2) * math.pow((p_chamber / c_star), 0.8) * math.pow((d_throat / d),
-                                                                                             1.8) * c_p * math.pow(
-        visc, 0.2) * math.pow((t_gas / t_boundary), (0.8 - 0.2 * 0.6)))
+         1.8) * c_p * math.pow(visc, 0.2) * math.pow((t_gas / t_boundary), (0.8 - 0.2 * 0.6)))
 
 # chamber diameter(0.08m), lambda curve, 15degree nozzle.
 
@@ -25,8 +22,9 @@ def throatAreaEquation(mdot, pres, temp, rbar, gam):
             (1 + ((gam - 1) / 2)), ((gam + 1) / (2 * (gam - 1))))
 
 class Rocket:
-    def __init__(self, title, chem, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, r1=0.05, r2=0.03, r3=0.025, step=1e-4):
+    def __init__(self, title, chem, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1=0.05, r2=0.03, r3=0.025, contourStep=1e-4):
         self.title = title
+        self.nozzle_type = nozzle_type
         self.inj = chem[0] # injector
         self.cham = chem[1] # converging starts (end of chamber)
         self.thr = chem[2] # throat
@@ -48,6 +46,10 @@ class Rocket:
         self.divergence_angle = div_angle
         self.gam = self.thr.gam
         self.total_watts = 0
+        self.r1 = r1
+        self.r2 = r2
+        self.r3 = r3
+        self.contourStep = contourStep
         #unit conversions
         #bar to Pa
         self.inj.p = self.inj.p*100000
@@ -75,12 +77,15 @@ class Rocket:
         self.chamber_length = self.chamber_volume / (math.pi * (self.cham.d / 2) ** 2)
         self.Cstar = self.cham.p * self.thr.a / self.mdot
 
+        # new methods for generating chamber and nozzle contour
+        self.contourPoints, self.contour = self.nozzleGeneration()
+
         # this generates the chamber and nozzle contour that is used for calculations
-        self.my_contourPoints(r1, r2, r3)
-        self.genContour(r1, r2, r3, step)
+        #self.my_contourPoints(r1, r2, r3)
+        #self.genContour(r1, r2, r3, step)
         
         # temporarily turn off all convergence dependent functions
-        self.areas()
+        self.area_arr = self.areas(self.contour)
         self.solveMach()
         # self.areaMach()
         self.tempPressureDensity()
@@ -91,6 +96,101 @@ class Rocket:
 
     # this generates the points that the gencontour function uses to make functions between
     # the points are referenced from left to right in the graph
+    def TOPnozzleCoefficients(self, Rn, Re, Xn, thetaN, thetaE): # finds a,b,c for TOP parobolic function
+        A = np.array(
+            [2*Rn, 1, 0],
+            [2*Re, 1, 0],
+            [Rn**2, Rn, 1])
+        B = np.array([1/np.tan(thetaN), 1/np.tan(thetaE), Xn])
+        X = np.linalg.solve(A, B)
+        return X
+    def nozzleGeneration(self):
+        r1 = self.r1
+        r2 = self.r2
+        o = [0,self.thr.d / 2]
+        d = [-r2 * np.sin(self.conv_angle),o[1] + r2 * (1 - np.cos(self.conv_angle))]
+        c = [None,self.cham.d / 2 - (r1 * (1 - np.cos(self.conv_angle)))]
+        c[0] = d[0] - (c[1] - d[1]) * (np.sin(math.pi/2 - self.conv_angle)/np.sin(self.conv_angle))
+        b = [c[0] - (r1 * np.sin(self.conv_angle)), self.cham.d / 2]
+        a = [b[0] - self.chamber_length, self.cham.d / 2]
+        if self.nozzle_type == 'conical':
+            r3 = self.r3
+            n = [r3 * np.sin(self.divergence_angle), o[1] + r3 * np.sin(1 - np.cos(self.divergence_angle))]
+            e = [n[0] + ((self.exit.d / 2) - n[1]) * np.sin(math.pi/2 - self.divergence_angle)/np.sin(self.divergence_angle), self.exit.d / 2]
+            contourPoints = [a, b, c, d, o, n, e] # temporary
+            nozzleCurve = lambda x: ((contourPoints[5][1] - contourPoints[6][1]) / (contourPoints[5][0] - contourPoints[6][0]))  * (x - contourPoints[5][0]) + contourPoints[5][1]
+        elif self.nozzle_type == 'bell80':
+            r3 = self.r3
+            thetaE = 7 # theta values found in table... hard coded temporarily
+            thetaN = 33
+            n = [r3 * np.sin(thetaN), o[1] + r3 * np.sin(1 - np.cos(thetaN))]
+            e = [ 0.8 * (((math.sqrt(self.exit.ae)-1)*self.thr.d/2 / np.tan(15))), self.exit.d / 2] # specificly for 80% bell nozzles
+            contourPoints = [a, b, c, d, o, n, e] # temporary
+            #X = TOPnozzleCoefficients(n[1], e[1], n[0], thetaN, thetaE)
+            A = np.array(
+                [2*n[1], 1, 0],
+                [2*e[1], 1, 0],
+                [n[1]**2, n[1], 1])
+            B = np.array([1/np.tan(thetaN), 1/np.tan(thetaE), n[0]])
+            X = np.linalg.solve(A, B)
+            nozzleCurve = lambda x: (-X[1] + math.sqrt(X[1]**2 - 4*X[0]*(X[2]-x)))/ 2*X[0] # might need to change sign
+
+        elif self.nozzle_type == 'dualbell': #work in progress
+            r3 = self.r3
+            thetaE1 = 7 # theta values found in table... hard coded temporarily
+            thetaN1 = 33
+            thetaE2 = 7 
+            thetaN2 = 33
+            curvePercent1 = .7
+            curvePercent2 = .8
+            curve1ae = None #low altitude optimized area ratio
+            curve2ae = self.exit.ae
+            curve1rad = None #low altitude optimized radius
+            curve2rad = self.exit.d / 2
+            n = [r3 * np.sin(thetaN1), o[1] + r3 * np.sin(1 - np.cos(thetaN1))]
+            m = [ curvePercent1 * (((math.sqrt(curve1ae)-1)*self.thr.d/2 / np.tan(15))), curve1rad]
+            e = [ curvePercent2 * (((math.sqrt(curve2ae)-1)*self.thr.d/2 / np.tan(15))), curve2rad]
+            contourPoints = [a, b, c, d, o, n, m, e] # temporary
+            #X1 = TOPnozzleCoefficients(n[1], m[1], n[0], thetaN1, thetaE1)
+            A = np.array(
+                [2*n[1], 1, 0],
+                [2*m[1], 1, 0],
+                [n[1]**2, n[1], 1])
+            B = np.array([1/np.tan(thetaN1), 1/np.tan(thetaE1), n[0]])
+            X1 = np.linalg.solve(A, B)
+            nozzleCurve1 = lambda x: (-X1[1] + math.sqrt(X1[1]**2 - 4*X1[0]*(X1[2]-x)))/ 2*X1[0]
+            A = np.array(
+                [2*m[1], 1, 0],
+                [2*e[1], 1, 0],
+                [n[1]**2, n[1], 1])
+            B = np.array([1/np.tan(thetaN2), 1/np.tan(thetaE2), m[0]])
+            X2 = np.linalg.solve(A, B)
+            nozzleCurve2 = lambda x: (-X2[1] + math.sqrt(X2[1]**2 - 4*X2[0]*(X2[2]-x)))/ 2*X2[0]
+
+        else:
+            print("invalid nozzle type")
+        contourPoints = [a, b, c, d, o, n, e]
+        functions = [
+            lambda x: contourPoints[0][1],
+            lambda x: np.sqrt(r1 ** 2 - (x - contourPoints[1][0]) ** 2) + contourPoints[1][1] - r1,
+            lambda x: ((contourPoints[2][1] - contourPoints[3][1]) / (contourPoints[2][0] - contourPoints[3][0]))  * (x - contourPoints[2][0]) + contourPoints[2][1],
+            lambda x: -np.sqrt(r2 ** 2 - (x - contourPoints[4][0]) ** 2) + contourPoints[4][1] + r2, 
+            lambda x: -np.sqrt(r3 ** 2 - (x + contourPoints[4][0]) ** 2) + contourPoints[4][1] + r3, 
+            nozzleCurve
+        ]
+
+        num = np.int32(np.rint((contourPoints[6][0] - contourPoints[0][0]) / self.contourStep))
+        x = np.array([])
+        y = np.array([])
+        for i, fun in enumerate(functions):
+            temp_x = np.linspace(contourPoints[i][0], contourPoints[i + 1][0], num)
+            f = np.vectorize(fun)
+            y = np.append(y, f(temp_x))
+            x = np.append(x, temp_x)
+        contour = np.array([x, y])
+
+        return contourPoints, contour
+
     def my_contourPoints(self, r1=0.05, r2=0.03, r3=0.025):
         o = [0,self.thr.d / 2]
         d = [-r2 * np.sin(self.conv_angle),o[1] + r2 * (1 - np.cos(self.conv_angle))]
@@ -143,10 +243,10 @@ class Rocket:
 
     #array functions:
     #this finds area over the contour
-    def areas(self):
-        
-        self.area_arr = self.contour.copy()
-        self.area_arr[1,:] = (self.area_arr[1,:] ** 2) * np.pi# this is just pi*r^2 in array form
+    def areas(self, contour):
+        area_arr = contour.copy()
+        area_arr[1,:] = (area_arr[1,:] ** 2) * np.pi# this is just pi*r^2 in array form
+        return area_arr
 
     def solveMach(self):
         def solveMatchForAreaRatio(area_ratio, mach_guess=0.7):
@@ -222,8 +322,7 @@ class Rocket:
     def totalWatts(self):
         for i in range(len(self.heat_flux_arr[0])-1):
             self.total_watts = self.total_watts + abs(self.area_arr[0,i+1] - self.area_arr[0,i]) * self.heat_flux_arr[1,i]
-
-    #################################################################
+    ##################################################################
     def variablesDisplay(self):
         print("{}{}:{}".format('\033[33m', self.title, '\033[0m'))
         print("Chamber Length: {0:.2f} in".format(self.chamber_length / 0.0254))
