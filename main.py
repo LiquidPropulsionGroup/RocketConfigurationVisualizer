@@ -44,14 +44,8 @@ propellant_ratio = 2.3
 nozzle_type = 'bell80'
 stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
 stinger.variablesDisplay()
-stinger.graphDisplay()
-'''
-title = 'Stinger Test Sizing conical'
-nozzle_type = 'conical'
-stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
-stinger.variablesDisplay()
-stinger.graphDisplay()
-'''
+#stinger.graphDisplay()
+
 #methate engine test
 title = 'Methane Engine Test'
 chems = Chemistry.parse_initVeriables('methane_test_50bar')
@@ -75,9 +69,9 @@ nozzle_type = 'bell80'
 
 #rocket trajectory test
 title = "test rocket trajectory"
-mRocket = 200
+mRocket = 10
 thrust = 9000
-mDot = 1
+mDot = 2
 htarget = 13716
 dragCd = 0.5
 vehicleArea = 1.0

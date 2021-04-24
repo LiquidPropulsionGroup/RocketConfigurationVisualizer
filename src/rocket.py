@@ -104,7 +104,8 @@ class Rocket:
         B = np.array([1/np.tan(thetaN), 1/np.tan(thetaE), Xn])
         X = np.linalg.solve(A, B)
         return X
-    def nozzleGeneration(self):####################################################################################################
+    def nozzleGeneration(self): #this function creates contour points and functions for the chamber and nozzle geometry
+        #this first section sets up points for the chamber and throat.  with the left being the chamber the right being the exit, the points go in order of a, b, c, d, o, n, e
         r1 = self.r1 * self.thr.d/2
         r2 = self.r2 * self.thr.d/2
         o = [0,self.thr.d / 2]
@@ -114,46 +115,43 @@ class Rocket:
         b = [c[0] - (r1 * np.sin(self.conv_angle)), self.cham.d / 2]
         a = [b[0] - self.chamber_length, self.cham.d / 2]
         
-        if self.nozzle_type == 'conical':
+        if self.nozzle_type == 'conical': # this sets the points and equations for a conical nozzle
             r3 = self.r3 * self.thr.d/2
             n = [r3 * np.sin(self.divergence_angle), o[1] + r3 * np.sin(1 - np.cos(self.divergence_angle))]
             e = [n[0] + ((self.exit.d / 2) - n[1]) * np.sin(math.pi/2 - self.divergence_angle)/np.sin(self.divergence_angle), self.exit.d / 2]
-            print('n variable: {}'.format(n))
-            print('e variable: {}'.format(e))
+            #print('n variable: {}'.format(n))
+            #print('e variable: {}'.format(e))
             contourPoints = [a, b, c, d, o, n, e] # temporary
             nozzleCurve = lambda x: ((contourPoints[5][1] - contourPoints[6][1]) / (contourPoints[5][0] - contourPoints[6][0]))  * (x - contourPoints[5][0]) + contourPoints[5][1]
 
-        elif self.nozzle_type == 'bell80':
+        elif self.nozzle_type == 'bell80': # this sets the points and equations for an 80% bell nozzle
             r3 = self.r3 * self.thr.d/2
             thetaE = 7 *np.pi/180 # theta values found in table... hard coded temporarily
             thetaN = 33 *np.pi/180
             n = [r3 * np.sin(thetaN), o[1] + r3 * np.sin(1 - np.cos(thetaN))]
-            print('exit r:{}'.format(self.exit.d/2))
-            print('thr r:{}'.format(self.thr.d/2))
-            print('exit area ratio:{}'.format(self.exit.ae))
             e = [ 0.8 * (((math.sqrt(self.exit.ae)-1)*self.thr.d/2 / np.tan(15*np.pi/180))), self.exit.d / 2] # specificly for 80% bell nozzles
-            #0.8 * (((math.sqrt(self.exit.ae)-1)*self.thr.d/2 / np.tan(thetaE)))
             contourPoints = [a, b, c, d, o, n, e] # temporary
-            #X = TOPnozzleCoefficients(n[1], e[1], n[0], thetaN, thetaE)
-            print('n variable: {}'.format(n))
-            print('e variable: {}'.format(e))
             A = np.array([
                 [2*n[1], 1, 0],
                 [2*e[1], 1, 0],
                 [n[1]**2, n[1], 1]])
-            print('A variable: {}'.format(A))
             B = np.array([1/np.tan(thetaN), 1/np.tan(thetaE), n[0]])
-            print('B variable: {}'.format(B))
             X = np.linalg.solve(A, B)
-            print('X variable: {}'.format(X))
             aa = X[0]
             bb = X[1]
             cc = X[2]
-            print('a: {}\nb: {}\nc: {}'.format(aa,bb,cc))
+            #print('exit r:{}'.format(self.exit.d/2))
+            #print('thr r:{}'.format(self.thr.d/2))
+            #print('exit area ratio:{}'.format(self.exit.ae))
+            #print('n variable: {}'.format(n))
+            #print('e variable: {}'.format(e))
+            #print('A variable: {}'.format(A))
+            #print('B variable: {}'.format(B))
+            #print('X variable: {}'.format(X))
+            #print('a: {}\nb: {}\nc: {}'.format(aa,bb,cc))
             nozzleCurve = lambda x: (-X[1] + (X[1]**2 - 4 * X[0] * (X[2]-x))**0.5) / (2*X[0]) # might need to change sign
-            #nozzleCurve = lambda x: X[0]*x**2 + X[1]*x + X[2]
 
-        elif self.nozzle_type == 'dualbell': #work in progress
+        elif self.nozzle_type == 'dualbell': #work in progress, this sets the points and equations for a duel bell nozzle, in this there is an extra point 'm' between the n and e points
             r3 = self.r3 * self.thr.d/2
             thetaE1 = 7 *np.pi/180 # theta values found in table... hard coded temporarily
             thetaN1 = 33 *np.pi/180
@@ -185,10 +183,10 @@ class Rocket:
             X2 = np.linalg.solve(A, B)
             nozzleCurve2 = lambda x: (-X2[1] + math.sqrt(X2[1]**2 - 4*X2[0]*(X2[2]-x)))/ 2*X2[0]
 
-        else:
+        else: #this runs if the nozzle type input does not match any of the above nozzle types
             print("invalid nozzle type")
         
-        contourPoints = [a, b, c, d, o, n, e]
+
         functions = [
             lambda x: contourPoints[0][1],
             lambda x: np.sqrt(r1 ** 2 - (x - contourPoints[1][0]) ** 2) + contourPoints[1][1] - r1,
@@ -209,8 +207,16 @@ class Rocket:
             x = np.append(x, temp_x)
         contour = np.array([x, y])
 
+        #exports contour points for use in cad
+        locs = ['inj', 'b', 'c', 'd', 'o', 'n', 'e']
+        xy = ['x', 'y']
+        txtout = open('dims.txt','w')
+        for i in range(len(contourPoints)):
+            for j in range(2):
+                txtout.write('"{0}_{1}"= {2}\n'.format(locs[i], xy[j], contourPoints[i][j]/0.0254))
+
         return contourPoints, contour
-##########################################################################################################################
+    '''
     def my_contourPoints(self, r1=0.05, r2=0.03, r3=0.025):
         o = [0,self.thr.d / 2]
         d = [-r2 * np.sin(self.conv_angle),o[1] + r2 * (1 - np.cos(self.conv_angle))]
@@ -260,7 +266,7 @@ class Rocket:
             x = np.append(x, temp_x)
 
         self.contour = np.array([x, y])
-
+    '''
     #array functions:
     #this finds area over the contour
     def areas(self, contour):

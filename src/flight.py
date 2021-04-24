@@ -54,9 +54,7 @@ def densityAltitude(h):
         return density2(roeB[B], tempB[B], h, hB[B])
     else:
         return density1(roeB[B], tempB[B], h, hB[B], lapse[B])
-
-#print("density: {0:.20f}".format(densityAltitude(200000)))
-
+        
 class Flight:
     def __init__(self, title, mRocket, thrust, mDot, htarget, dragCd, vehicleArea = 0, hInit = 0, stepSize = 1e-3):
         self.title = title
@@ -70,6 +68,8 @@ class Flight:
         self.hInit = hInit #initial altitude of rocket above sea level in m
         self.mPropellants = None #mass of propellants in kg
         self.stepSize = stepSize
+        self.aMax = None
+        self.vMax = None
         self.calculateFuelNeeded()
 
     def calculateFuelNeeded(self):
@@ -90,6 +90,8 @@ class Flight:
             h = self.hInit
             v = 0.0
             a = 0.0
+            aMax = 0.0
+            vMax = 0.0
             for j in range(math.ceil(guess/step)):
                 h1 = h + v*step
                 m1 = m - self.mDot*step
@@ -100,6 +102,10 @@ class Flight:
                 v = v1
                 a = a1
                 j += j #delete
+                if v > vMax:
+                    vMax = v
+                if a > aMax:
+                    aMax = a
             hPrediction = hightPrediction(h, v, (fGravity(m, h)/m))
             #print("Fuel Mass: {0:.2f} kg".format(guess * self.mDot))
             #print("acceleration: {0:.2f} ".format(a))
@@ -108,6 +114,8 @@ class Flight:
             #print("mass: {0:.2f} ".format(m))
             #print("hight prediction: {0:.2f} ".format(hPrediction))
             #time.sleep(1)
+        self.vMax = vMax
+        self.aMax = aMax
         self.mPropellants = mFuel
         self.fireTime = guess
     
@@ -118,3 +126,5 @@ class Flight:
         print("thrust: {0:.2f} N".format(self.thrust))
         print("mass flow rate: {0:.2f} kg/s".format(self.mDot))
         print("max elevation of flight: {0:.2f} kg".format(self.hTarget))
+        print("max acceleration: {0:.2f} m/s^2".format(self.aMax))
+        print("max velocity: {0:.2f} m/s".format(self.vMax))
