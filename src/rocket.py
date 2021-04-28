@@ -44,7 +44,6 @@ class Rocket:
         self.heat_flux_arr = []
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
-        self.gam = self.thr.gam
         self.total_watts = 0
         self.r1 = r1
         self.r2 = r2
@@ -278,7 +277,7 @@ class Rocket:
         def solveMatchForAreaRatio(area_ratio, mach_guess=0.7):
             def machEqn(mach):
                 # return mach * area_ratio + 10
-                return ( 2 / (self.gam + 1) * ( 1 + (self.gam - 1)/2 * mach**2 ))**((self.gam+1)/(2*(self.gam-1))) - mach * area_ratio
+                return ( 2 / (self.thr.gam + 1) * ( 1 + (self.thr.gam - 1)/2 * mach**2 ))**((self.thr.gam+1)/(2*(self.thr.gam-1))) - mach * area_ratio
             
             return fsolve(machEqn, mach_guess)
 

@@ -1,5 +1,7 @@
 from src.chemistry import Chemistry
+from src.chemistryCEA import ChemistryCEA
 from src.rocket import Rocket
+from src.ceaRocket import ceaRocket
 from src.flight import Flight
 import math
 
@@ -9,6 +11,11 @@ import scipy as sp
 
 #stinger rocket sizing
 title = 'Stinger Engine Sizing'
+oxidizer = 'LOX'        # full propellant selection is availible at https://rocketcea.readthedocs.io/en/latest/propellants.html
+fuel = 'RP1'
+Pcham = 15.2      #in bar
+propellant_ratio = 2.3
+pAmbient = 1.01325
 chems = Chemistry.parse_initVeriables('test_2-3of_15atm')
 #set veriables
 mdot = 1
@@ -21,15 +28,18 @@ r1 = 1
 r2 = 1
 r3 = 0.4
 step = 5e-4
-propellant_ratio = 2.3
 nozzle_type = 'conical'
-#stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
-#stinger.variablesDisplay()
+stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
+stinger.variablesDisplay()
+stinger = ceaRocket(title, oxidizer, fuel, Pcham, pAmbient, propellant_ratio, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
+stinger.variablesDisplay()
 #stinger.graphDisplay()
 
 #test
 title = 'Stinger Test Sizing'
-chems = Chemistry.parse_initVeriables('stinger_test_25bar')
+oxidizer = 'LOX'
+fuel = 'RP1'
+#chems = Chemistry.parse_initVeriables('stinger_test_25bar')
 mdot = 3
 l_star = 1.1
 cham_d = 5.5 * 0.0254 #in meters
@@ -42,12 +52,14 @@ r3 = .5
 step = 5e-4
 propellant_ratio = 2.3
 nozzle_type = 'bell80'
-stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
-stinger.variablesDisplay()
+#stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
+#stinger.variablesDisplay()
 #stinger.graphDisplay()
 
 #methate engine test
 title = 'Methane Engine Test'
+oxidizer = 'LOX'
+fuel = 'CH4'
 chems = Chemistry.parse_initVeriables('methane_test_50bar')
 mdot = 5
 l_star = 1.1

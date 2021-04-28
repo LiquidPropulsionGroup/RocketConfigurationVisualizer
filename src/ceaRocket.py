@@ -5,6 +5,9 @@ import scipy as sp
 import time
 from scipy.optimize import fsolve
 from rocketcea.cea_obj import CEA_Obj
+from .chemistryCEA import ChemistryCEA
+
+
 # input values
 # mdot #total mass flowrate into engine (kg/s)
 # Lstar #characteristic length (m)
@@ -22,17 +25,17 @@ def throatAreaEquation(mdot, pres, temp, rbar, gam):
             (1 + ((gam - 1) / 2)), ((gam + 1) / (2 * (gam - 1))))
 
 class ceaRocket:
-    def __init__(self, title, oxidizer, fuel, Pcham, Mr, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1=0.05, r2=0.03, r3=0.025, contourStep=1e-4):
+    def __init__(self, title, oxidizer, fuel, Pcham, Pambient, Mr, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1=0.05, r2=0.03, r3=0.025, contourStep=1e-4):
         self.title = title
         self.nozzle_type = nozzle_type
         self.Mr = Mr
-        self.cea = CEA_Obj( oxName= oxidizer, fuelName= fuel, cstar_units='m/sec', pressure_units='bar', temperature_units='K', sonic_velocity_units='m/sec', enthalpy_units='J/kg', density_units='kg/m^3', specific_heat_units='J/kg-K', viscosity_units='millipoise', thermal_cond_units='W/cm-degC')
-        self.inj = {} # injector
-        self.cham = {} # converging starts (end of chamber)
-        self.thr = {} # throat
-        self.exit = {} # exit
-        self.cham.p = Pcham
-        self.ambientP = 1.013
+        self.ambientP = Pambient
+        self.cea = CEA_Obj( oxName= oxidizer, fuelName= fuel)
+        chems = ChemistryCEA.create(self.cea, Pcham, self.Mr, pAmbient = Pambient)
+        self.inj = None # injector
+        self.cham = chems[0] # converging starts (end of chamber)
+        self.thr = chems[1] # throat
+        self.exit = chems[2] # exit
         self.mdot = mdot
         self.Lstar = l_star
         self.cham.d = cham_d #diameter of the chamber
@@ -48,10 +51,10 @@ class ceaRocket:
         self.heat_flux_arr = []
         self.conv_angle = conv_angle
         self.divergence_angle = div_angle
-        self.exit.ae = self.findAe(self.cham.p, self.Mr, self.ambientP)
+        #self.exit.ae = self.findAe(self.cham.p, self.Mr, self.ambientP)
         #throat
-        self.thr.gam = self.cea.get_Throat_MolWt_gamma(Pc=self.cham.p, MR=self.Mr, eps=self.exit.ae)#fix
-        self.thr.t = 
+        #self.thr.gam = self.cea.get_Throat_MolWt_gamma(Pc=self.cham.p, MR=self.Mr, eps=self.exit.ae)#fix
+        #self.thr.t = None  #fix
         self.total_watts = 0
         self.r1 = r1
         self.r2 = r2
@@ -63,12 +66,11 @@ class ceaRocket:
 
         # Specific impulse in seconds
         #self.isp_s = self.exit.isp / 9.8
-
         self.thr.a = throatAreaEquation(self.mdot, self.cham.p, self.thr.t, self.thr.rbar, self.thr.gam)
         # p is in atm, conversion constant to Pa, might change to Pa later. area is in m^2
 
         # Nozzle Exit Area and diameters via Expansion Ratio and
-        self.exit.a = self.thr.a * self.exit.ae
+        self.exit.a = self.thr.a * self.exit.aeat
         self.thr.d = 2 * math.sqrt(self.thr.a / math.pi)
         self.exit.d = 2 * math.sqrt(self.exit.a / math.pi)
 
@@ -146,7 +148,7 @@ class ceaRocket:
             thetaE = 7 *np.pi/180 # theta values found in table... hard coded temporarily
             thetaN = 33 *np.pi/180
             n = [r3 * np.sin(thetaN), o[1] + r3 * np.sin(1 - np.cos(thetaN))]
-            e = [ 0.8 * (((math.sqrt(self.exit.ae)-1)*self.thr.d/2 / np.tan(15*np.pi/180))), self.exit.d / 2] # specificly for 80% bell nozzles
+            e = [ 0.8 * (((math.sqrt(self.exit.aeat)-1)*self.thr.d/2 / np.tan(15*np.pi/180))), self.exit.d / 2] # specificly for 80% bell nozzles
             contourPoints = [a, b, c, d, o, n, e] # temporary
             A = np.array([
                 [2*n[1], 1, 0],
@@ -177,7 +179,7 @@ class ceaRocket:
             curvePercent1 = .7
             curvePercent2 = .8
             curve1ae = None #low altitude optimized area ratio
-            curve2ae = self.exit.ae
+            curve2ae = self.exit.aeat
             curve1rad = None #low altitude optimized radius
             curve2rad = self.exit.d / 2
             n = [r3 * np.sin(thetaN1), o[1] + r3 * np.sin(1 - np.cos(thetaN1))]
@@ -295,7 +297,7 @@ class ceaRocket:
         def solveMatchForAreaRatio(area_ratio, mach_guess=0.7):
             def machEqn(mach):
                 # return mach * area_ratio + 10
-                return ( 2 / (self.gam + 1) * ( 1 + (self.gam - 1)/2 * mach**2 ))**((self.gam+1)/(2*(self.gam-1))) - mach * area_ratio
+                return ( 2 / (self.thr.gam + 1) * ( 1 + (self.thr.gam - 1)/2 * mach**2 ))**((self.thr.gam+1)/(2*(self.thr.gam-1))) - mach * area_ratio
             
             return fsolve(machEqn, mach_guess)
 
@@ -310,23 +312,23 @@ class ceaRocket:
 
     def temp_eq(self, mach):#NOTE: stagnation values need improvment
         gam = self.thr.gam
-        #t_stag = self.cham.t * (1 + ((gam-1)/2 * self.cham.mach**2))
+        t_stag = self.cham.t * (1 + ((gam-1)/2 * self.cham.mach**2))
         # Note: ok technically, yes, the stagnation temperature needs to account for
         # gas velocity, but in our assumptions, t_0 assumed == t_cham as given by CEA
+        #t_stag = self.inj.t
 
-        t_stag = self.inj.t
         myreturn = t_stag * (1 + ((gam-1)/2 * mach**2))**(-1)
         return myreturn
 
     def pressure_eq(self, mach):
-        gam = self.thr.gam
-        #p_stag = self.cham.p * (1 + ((gam-1)/2 * self.cham.mach**2))**(gam/(gam-1))
-        p_stag = self.inj.p
+        gam = self.thr.gam# CHECK THIS!!!
+        p_stag = self.cham.p * (1 + ((gam-1)/2 * self.cham.mach**2))**(gam/(gam-1))
+        #p_stag = self.inj.p
         myreturn = p_stag * (1 + ((gam-1)/2 * mach**2))**(-gam/(gam-1))
         return myreturn
 
     def density_eq(self, mach):#need to find chamber density
-        gam = self.cham.gam
+        gam = self.cham.gam# CHECK THIS!!!
         d_stag = self.cham.rho * (1 + ((gam-1)/2 * self.cham.mach**2))**(1/(gam-1))
         myreturn = d_stag * (1 + ((gam-1)/2 * mach**2))**(-1/(gam-1))
         return myreturn
