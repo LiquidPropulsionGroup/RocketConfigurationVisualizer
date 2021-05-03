@@ -26,15 +26,19 @@ class ChemistryCEA:
     d = None #diameter
 
     def initCalculations(self):
+
         self.rbar = 8.31446261815324 / self.m * 1000 #ADD TO MAIN
 
     @staticmethod
     def create(cea, pCham, Mr, ae = None, pAmbient = None):
+        #print('cea:{}\npCham:{}\nMr:{}\nae:{}\npAmbient{}'.format(cea, pCham, Mr, ae, pAmbient))
         if ae == None:
             Pratio = pCham/pAmbient
+            #print('Pratio:{}'.format(Pratio))
             string = cea.get_full_cea_output(Pc = pCham, MR = Mr, eps = ae, PcOvPe = Pratio, pc_units='bar', output='KJ', short_output=1)
         elif ae != None:
-            string = cea.get_full_cea_output(Pc = pCham, MR = Mr, eps = ae, pc_units='bar', output='KJ', short_output=1)
+            #print('this chem')
+            string = cea.get_full_cea_output(Pc = pCham, MR = Mr, eps = ae, PcOvPe = None, pc_units='bar', output='KJ', short_output=1)
         else:
             print('chem needs a pAmbient or ae value')
         lines = string.splitlines()

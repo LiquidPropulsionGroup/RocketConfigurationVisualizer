@@ -29,9 +29,29 @@ r2 = 1
 r3 = 0.4
 step = 5e-4
 nozzle_type = 'conical'
-stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
-stinger.variablesDisplay()
-stinger = ceaRocket(title, oxidizer, fuel, Pcham, pAmbient, propellant_ratio, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
+#stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
+#stinger.variablesDisplay()
+stinger = ceaRocket(
+    title = 'Stinger Engine Sizing',
+    ox = 'LOX',
+    fuel = 'RP1',
+    Pcham = 15.2, #bar
+    Mr = 2.3, #propellant mixture ratio
+    mdot = 1,
+    l_star = 1.1,
+    cham_d = 3.75 * 0.0254, #in meters
+    conv_angle = math.pi / 4, # rad, 45deg
+    div_angle = math.pi / 12, # rad, 15deg
+    wall_temp = 850, # K
+    nozzle_type = 'conical',
+    pAmbient = 1.01325, # bar
+    r1 = 1,
+    r2 = 1,
+    r3 = 0.4,
+    contourStep = 5e-4,
+    pMinExit = 0.9*1.01325 # bar
+)
+stinger.runCalculations()
 stinger.variablesDisplay()
 #stinger.graphDisplay()
 
@@ -90,3 +110,4 @@ vehicleArea = 1.0
 hInit = 0.0
 #my_flight = Flight(title, mRocket, thrust, mDot, htarget, dragCd, vehicleArea, hInit)
 #my_flight.printInfo()
+
