@@ -6,181 +6,80 @@ import time
 from scipy.optimize import fsolve
 from rocketcea.cea_obj import CEA_Obj
 from .chemistryCEA import ChemistryCEA
+from .thrustLevel import ThrustLevel
 
-
-# input values
-# mdot #total mass flowrate into engine (kg/s)
-# Lstar #characteristic length (m)
-
-def bartz(d_throat, p_chamber, c_star, d, c_p, visc, t_gas, t_wall):
-    """bartz equation calculator"""
-    t_boundary = (t_gas + t_wall) / 2
-    return (0.026 / math.pow(d_throat, 0.2) * math.pow((p_chamber / c_star), 0.8) * math.pow((d_throat / d),
-         1.8) * c_p * math.pow(visc, 0.2) * math.pow((t_gas / t_boundary), (0.8 - 0.2 * 0.6)))
-
-# chamber diameter(0.08m), lambda curve, 15degree nozzle.
-
-def throatAreaEquation(mdot, pres, temp, rbar, gam): 
-    return (mdot / (pres)) * math.sqrt(temp * rbar / gam) * math.pow(
-            (1 + ((gam - 1) / 2)), ((gam + 1) / (2 * (gam - 1))))
-
-class ceaRocket:
-    def __init__(self, ox = None, fuel = None, Pcham = None, Mr = None, mdot = None, title = 'default title', conv_angle = None, div_angle = None, wall_temp = None, nozzle_type = '', l_star = None, cham_d = None, pAmbient = None, ae = None, pMinExit = None, r1=0.05, r2=0.03, r3=0.025, contourStep=1e-4):
+class Engine:
+    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, div_angle = None, contourStep = 1e-4):
         self.title = title
         self.fuel = fuel
         self.ox = ox
+        self.cea = CEA_Obj( oxName= ox, fuelName= fuel)
         self.nozzle_type = nozzle_type
         self.Mr = Mr
-        self.cea = CEA_Obj( oxName= ox, fuelName= fuel)
-        if pAmbient != None:
-            self.ambientP = pAmbient*100000
-            chems = ChemistryCEA.create(self.cea, Pcham, self.Mr, pAmbient = pAmbient)
-        else:
-            self.ambientP = pAmbient
-            chems = ChemistryCEA.create(self.cea, Pcham, self.Mr, ae = ae)
-        self.inj = None # injector
-        self.cham = chems[0] # converging starts (end of chamber)
-        self.thr = chems[1] # throat
-        self.exit = chems[2] # exit
-        self.mdot = mdot
-        self.pMinExit = pMinExit
-        self.Lstar = l_star
-        self.cham.d = cham_d #diameter of the chamber
+        self.pMaxCham = pMaxCham
+        self.mdotMax = mdotMax
+        self.pMinExitRatio = pMinExitRatio
+        self.Lstar = Lstar
+        self.Dcham = Dcham #diameter of the chamber
         self.wall_temp = wall_temp
-        self.contourPoints = None
-        self.contour = None
-        self.area_arr = None
-        self.mach_arr = []
-        self.pressure_arr = None
-        self.temp_arr = None
-        self.density_arr = None
-        self.h_g_arr = []
-        self.heat_flux_arr = []
-        self.conv_angle = conv_angle
-        self.divergence_angle = div_angle
-        self.total_watts = 0
         self.r1 = r1
         self.r2 = r2
         self.r3 = r3
+        self.conv_angle = conv_angle
+        self.div_angle = div_angle
         self.contourStep = contourStep
-        #unit conversions
-        #bar to Pa
-        self.cham.p *= 100000
-        self.exit.p *= 100000
-        self.thr.p *= 100000
-        # Specific impulse in seconds
-        #self.isp_s = self.exit.isp / 9.8
-        self.thr.a = throatAreaEquation(self.mdot, self.cham.p, self.thr.t, self.thr.rbar, self.thr.gam)
-
-        # Nozzle Exit Area and diameters via Expansion Ratio and
-        self.exit.a = self.thr.a * self.exit.aeat
-        self.thr.d = 2 * math.sqrt(self.thr.a / math.pi)
-        self.exit.d = 2 * math.sqrt(self.exit.a / math.pi)
-
-    def calcThrust(self):
-        # Thrust by fundamental rocket eq F = mdot * exhaust_velocity 
-        #self.thrust = self.mdot * self.exit.isp  # + self.a_noz*(self.p-self.p_amb) not included as sea level expanded
-        self.thrust = self.mdot * self.exit.mach * self.exit.son + (self.exit.p - self.ambientP)*self.exit.a
-
-    def runCalculations(self):
-        self.calcThrust()
-        self.max, self.min = self.variableThrustOptimizer(self.cham.p, self.mdot, self.pMinExit, thrustRatio = None, nozzle = 'bell80')
-        # Total Chamber Volume via Characteristic Length
-        # NOTE: this volume does not take injector and contour volumes into consideration and is theirfor not completly accurate
+        self.contourPoints = None
+        self.contour = None
+        self.area_arr = None
+        self.max, self.min = self.variableThrustOptimizer()
         self.chamber_volume = self.Lstar * self.max.thr.a
-        self.chamber_length = self.chamber_volume / (math.pi * (self.cham.d / 2) ** 2)
-        self.Cstar = self.max.cham.p * self.max.thr.a / self.max.mdot
-        #self.min.Cstar = self.min.cham.p * self.min.thr.a / self.min.mdot
-        #print('max cstar:{}\nmin cstar:{}'.format(self.max.Cstar, self.min.Cstar))
-        # new methods for generating chamber and nozzle contour
+        self.chamber_length = self.chamber_volume / (math.pi * (self.Dcham / 2) ** 2)
         self.contourPoints, self.contour = self.nozzleGeneration()
-        self.area_arr = self.areas(self.contour)
-        
-    def throttleLevelCalcs(self):
-        mach_arr = self.solveMach(area_arr, aThr, gamThr)
-        pressure_arr, temp_arr = self.tempPressureDensity(mach_arr, gamThr, tCham, pCham, machCham)
-        h_g_arr = self.calcBartz(contour, dThr, pCham, Cstar, cpCham, temp_arr, wall_temp)
-        heat_flux_arr = self.calcHeatFlux(h_g_arr, temp_arr, wall_temp)
-        self.totalWatts(heat_flux_arr, area_arr)
+        self.area_arr = self.areas()
 
 
-    def variableThrustOptimizer(self, pMax, mdotMax, minExitPressure, thrustRatio = None, nozzle = 'bell80'):
-        pMax /= 100000
-        if nozzle == 'bell80' or 'conical':
+    def throttleLevelCalculator(self, pRation, ae):
+        cpGuess = self.pMaxCham
+        cpStep = cpGuess
+        mdotGuess = self.mdotMax
+        mdotStep = mdotGuess
+        pGuess = 0.0
+        while abs(pGuess-pRation) > 0.001:
+            #print('cpGuess:{}\ncpStep:{}\nmdotGuess:{}\nmdotStep:{}\npGuess:{}\nminExitPressure:{}'.format(cpGuess, cpStep, mdotGuess, mdotStep, pGuess, pRation))
+            if pGuess != 0:
+                cpStep /= 2
+                mdotStep /= 2
+                if pGuess < pRation:
+                    cpGuess += cpStep
+                    mdotGuess += mdotStep
+                else:
+                    cpGuess -= cpStep
+                    mdotGuess -= mdotStep
+            #print('chamber pressure:{}\nmr:{}\nmdot:{}\narea array:{}\nae:{}'.format(cpGuess, self.Mr, mdotGuess, self.area_arr, ae))
+            nozmin = ThrustLevel(self.cea, cpGuess, self.Mr, mdotGuess, self.area_arr, ae = ae)
+            pGuess = nozmin.exit.p/100000
+        return nozmin
+
+    def variableThrustOptimizer(self):
+
+        if self.nozzle_type == 'bell80' or 'conical':
             optimalP = 0.9
-            nozmax = ceaRocket(ox = self.ox, fuel = self.fuel, Pcham = pMax, Mr = self.Mr, mdot = self.mdot, title = 'AE', pAmbient = optimalP)
-            ae = nozmax.exit.aeat
-            cpGuess = pMax
-            cpStep = cpGuess
-            mdotGuess = self.mdot
-            mdotStep = mdotGuess
-            pGuess = 0.0
-            while abs(pGuess-minExitPressure) > 0.001:
-                #print('cpGuess:{}\ncpStep:{}\nmdotGuess:{}\nmdotStep:{}\npGuess:{}\nminExitPressure:{}'.format(cpGuess, cpStep, mdotGuess, mdotStep, pGuess, minExitPressure))
-                if pGuess != 0:
-                    cpStep /= 2
-                    mdotStep /= 2
-                    if pGuess < minExitPressure:
-                        cpGuess += cpStep
-                        mdotGuess += mdotStep
-                    else:
-                        cpGuess -= cpStep
-                        mdotGuess -= mdotStep
-                nozmin = ceaRocket(ox = self.ox, fuel = self.fuel, Pcham = cpGuess, Mr = self.Mr, mdot = mdotGuess, title = 'smallAE', ae = ae)
-                pGuess = nozmin.exit.p/100000
-                #time.sleep(0.5)
-            #print('min thrust throat area: {}'.format(nozmin.thr.a))
-            #print('max thrust throat area: {}'.format(nozmax.thr.a))
-            #print('min thrust throat area: {}'.format(nozmin.thr.d))
-            #print('max thrust throat area: {}'.format(nozmax.thr.d))
+
+            nozmax = ThrustLevel(self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = optimalP)
+            nozmin = self.throttleLevelCalculator(self.pMinExitRatio, nozmax.exit.aeat)
             return nozmax, nozmin
 
-        elif nozzle == 'duelbell':
+        elif self.nozzle_type == 'duelbell':
             optimalP1 = 0.9
             optimalp2 = 0.4
-            pGuess = 1
-            cpGuess = pMax*2
-            cpStep = cpGuess*2
-            mdotGuess = self.mdot
-            mdotStep = mdotGuess
-            noz1max = ceaRocket(ox = self.ox, fuel = self.fuel, Pcham = pMax, Mr = self.Mr, mdot = self.mdot, title = 'smallAE', pAmbient = optimalP1)
-            ae1 = noz1max.exit.aeat
-            while abs(pGuess-minExitPressure) > 0.001:
-                cpStep /= 2
-                mdotStep /= 2
-                if pGuess < minExitPressure:
-                    cpGuess += cpStep
-                    mdotGuess += mdotStep
-                else:
-                    cpGuess -= cpStep
-                    mdotGuess -= mdotStep
-                noz1min = ceaRocket(ox = self.ox, fuel = self.fuel, Pcham = cpGuess, Mr = self.Mr, mdot = mdotGuess, title = 'smallAE', ae = ae1)
-                pGuess = noz1min.exit.p/100000
+            noz1max = ThrustLevel(self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = optimalP1)
+            self.throttleLevelCalculator(self.pMinExitRatio, noz1max.exit.aeat)#fix
             print('min thrust throat area: {}'.format(noz1min.thr.a))
             print('max thrust throat area: {}'.format(noz1max.thr.a))
-
-            pGuess = 1
-            cpGuess = pMax*2
-            cpStep = cpGuess*2
-            mdotGuess = self.mdot
-            mdotStep = mdotGuess
-            noz2max = ceaRocket(ox = self.ox, fuel = self.fuel, Pcham = pMax, Mr = self.Mr, mdot = self.mdot, title = 'largeAE', pAmbient = optimalP2)
-            ae2 = noz2max.exit.aeat
-            while abs(pGuess-minExitPressure) > 0.001:
-                cpStep /= 2
-                mdotStep /= 2
-                if pGuess < minExitPressure:
-                    cpGuess += cpStep
-                    mdotGuess += mdotStep
-                else:
-                    cpGuess -= cpStep
-                    mdotGuess -= mdotStep
-                noz1min = ceaRocket(ox = self.ox, fuel = self.fuel, Pcham = cpGuess, Mr = self.Mr, mdot = mdotGuess, title = 'largeAE', ae = ae2)
-                pGuess = noz1min.exit.p/100000
+            noz2max = ThrustLevel(self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = optimalP2)
+            self.throttleLevelCalculator(self.pMinExitRatio, noz2max.exit.aeat)
             print('min thrust throat area: {}'.format(noz1min.thr.a))
             print('max thrust throat area: {}'.format(noz1max.thr.a))
-
-    #def nozzleEfficiency(self):
 
     def nozzleGeneration(self):#, r1 = self.r1, r2 = self.r2, r3 = self.r3, dThr = self.max.thr.d, dCham = self.cham.d, dExit = self.exit.d, lenCham = self.chamber_length, convAngle = self.conv_angle, divAngle = self.divergence_angle, aeExit = self.max.exit.aeat): #this function creates contour points and functions for the chamber and nozzle geometry
         #this first section sets up points for the chamber and throat.  with the left being the chamber the right being the exit, the points go in order of a, b, c, d, o, n, e
@@ -195,8 +94,8 @@ class ceaRocket:
         
         if self.nozzle_type == 'conical': # this sets the points and equations for a conical nozzle
             r3 = self.r3 * self.max.thr.d/2
-            n = [r3 * np.sin(self.divergence_angle), o[1] + r3 * np.sin(1 - np.cos(self.divergence_angle))]
-            e = [n[0] + ((self.max.exit.d / 2) - n[1]) * np.sin(math.pi/2 - self.divergence_angle)/np.sin(self.divergence_angle), self.max.exit.d / 2]
+            n = [r3 * np.sin(self.div_angle), o[1] + r3 * np.sin(1 - np.cos(self.div_angle))]
+            e = [n[0] + ((self.max.exit.d / 2) - n[1]) * np.sin(math.pi/2 - self.div_angle)/np.sin(self.div_angle), self.max.exit.d / 2]
             contourPoints = [a, b, c, d, o, n, e] # temporary
             nozzleCurve = lambda x: ((contourPoints[5][1] - contourPoints[6][1]) / (contourPoints[5][0] - contourPoints[6][0]))  * (x - contourPoints[5][0]) + contourPoints[5][1]
 
@@ -290,66 +189,12 @@ class ceaRocket:
 
         return contourPoints, contour
 
-    #array functions:
-    #this finds area over the contour
-    def areas(self, contour):
-        area_arr = contour.copy()
+    def areas(self):
+        area_arr = self.contour.copy()
         area_arr[1,:] = (area_arr[1,:] ** 2) * np.pi# this is just pi*r^2 in array form
         return area_arr
 
-    def solveMach(self, area_arr, aThr, gamThr):
-        def solveMatchForAreaRatio(area_ratio, gamThr, mach_guess=0.7):
-            def machEqn(mach):
-                # return mach * area_ratio + 10
-                return ( 2 / (gamThr + 1) * ( 1 + (gamThr - 1)/2 * mach**2 ))**((gamThr+1)/(2*(gamThr-1))) - mach * area_ratio
-            
-            return fsolve(machEqn, mach_guess)
-
-        last = 0.7
-        for [x, area] in area_arr.transpose():
-            if x > 0:
-                last = last + 1
-            [mach] = solveMatchForAreaRatio(area/aThr, gamThr, last)
-            mach_arr.append([x, mach])
-            last = mach
-        mach_arr = np.array(mach_arr).transpose()
-        return mach_arr
-
-    def temp_eq(self, mach, gamThr, tCham, machCham):#NOTE: stagnation values need improvment
-        gam = gamThr
-        t_stag = tCham * (1 + ((gam-1)/2 * machCham**2))
-        # Note: ok technically, yes, the stagnation temperature needs to account for
-        # gas velocity, but in our assumptions, t_0 assumed == t_cham as given by CEA
-        #t_stag = self.inj.t
-
-        myreturn = t_stag * (1 + ((gam-1)/2 * mach**2))**(-1)
-        return myreturn
-
-    def pressure_eq(self, mach, gamThr, pCham, machCham):
-        gam = gamThr# CHECK THIS!!!
-        p_stag = pCham * (1 + ((gam-1)/2 * machCham**2))**(gam/(gam-1))
-        #p_stag = self.inj.p
-        myreturn = p_stag * (1 + ((gam-1)/2 * mach**2))**(-gam/(gam-1))
-        return myreturn
-
-    def density_eq(self, mach, gamThr, rhoCham, machCham):#need to find chamber density
-        gam = self.cham.gam# CHECK THIS!!!
-        d_stag = self.cham.rho * (1 + ((gam-1)/2 * self.cham.mach**2))**(1/(gam-1))
-        myreturn = d_stag * (1 + ((gam-1)/2 * mach**2))**(-1/(gam-1))
-        return myreturn
-
-    def tempPressureDensity(self, mach_arr, gamThr, tCham, pCham, machCham):
-        pressure_arr = mach_arr.copy()
-        temp_arr = mach_arr.copy()
-        #self.density_arr = self.mach_arr.copy()
-        count = 0
-        for mach in mach_arr[1,:]:
-            temp_arr[1,count] = self.temp_eq(mach)
-            pressure_arr[1,count] = self.pressure_eq(mach)
-            #self.density_arr[1,count] = self.density_eq(mach)
-            count += 1
-        return pressure_arr, temp_arr #density_arr
-    
+########################################################################################################################################################################
     def filewrite(self, filename): #needs update
         output = open(filename, "w")
         offset = self.contour[0,0]
@@ -360,23 +205,6 @@ class ceaRocket:
             output.write("{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}\n".format(self.contour[0,i], self.contour[1,i], self.mach_arr[1,i], self.temp_arr[1,i], self.pressure_arr[1,i], self.h_g_arr[1,i], self.heat_flux_arr[1,i]))
         output.close()
 
-    def calcBartz(self, contour, dThr, pCham, Cstar, cpCham, temp_arr, wall_temp):
-        h_g_arr = contour.copy()
-        for i in range(len(h_g_arr[0])):
-            h_g_arr[1,i] = bartz(dThr, pCham, Cstar, contour[1,i]*2, cpCham*1000, 0.85452e-4, temp_arr[1,i], wall_temp)
-        return h_g_arr
-
-    def calcHeatFlux(self, h_g_arr, temp_arr, wall_temp):
-        heat_flux_arr = h_g_arr.copy()
-        for i in range(len(heat_flux_arr[0])):
-            heat_flux_arr[1,i] = h_g_arr[1,i]*(temp_arr[1,i]-wall_temp)
-        return heat_flux_arr
-
-    def totalWatts(self, heat_flux_arr, area_arr):
-        for i in range(len(heat_flux_arr[0])-1):
-            total_watts = total_watts + abs(area_arr[0,i+1] - area_arr[0,i]) * heat_flux_arr[1,i]
-        return total_watts
-    ##################################################################
     def variablesDisplay(self):
         print("{}{}:{}".format('\033[33m', self.title, '\033[0m'))
         print("Chamber Length: {0:.2f} in".format(self.chamber_length / 0.0254))

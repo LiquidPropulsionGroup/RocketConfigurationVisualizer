@@ -4,6 +4,7 @@ from src.rocket import Rocket
 from src.ceaRocket import ceaRocket
 from src.flight import Flight
 import math
+from src.engine import Engine
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,16 +12,17 @@ import scipy as sp
 
 #stinger rocket sizing
 title = 'Stinger Engine Sizing'
-oxidizer = 'LOX'        # full propellant selection is availible at https://rocketcea.readthedocs.io/en/latest/propellants.html
+ox = 'LOX'        # full propellant selection is availible at https://rocketcea.readthedocs.io/en/latest/propellants.html
 fuel = 'RP1'
-Pcham = 15.2      #in bar
-propellant_ratio = 2.3
+pMaxCham = 15.2     #max thrust chamber pressure in bar
+Mr = 2.3 # propellant mixture ratio
 pAmbient = 1.01325
+pMinExitRatio = 0.45
 chems = Chemistry.parse_initVeriables('test_2-3of_15atm')
 #set veriables
-mdot = 1
-l_star = 1.1
-cham_d = 3.75 * 0.0254 #in meters
+mdotMax = 1         #max thrust mass flow rate
+Lstar = 1.1
+Dcham = 3.75 * 0.0254 #in meters
 conv_angle = math.pi / 4 # rad, 45deg
 div_angle = math.pi / 12  # rad, 15deg
 wall_temp = 850 # K
@@ -29,29 +31,8 @@ r2 = 1
 r3 = 0.4
 step = 5e-4
 nozzle_type = 'conical'
+stinger = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, div_angle = div_angle, contourStep = step)
 #stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)
-#stinger.variablesDisplay()
-stinger = ceaRocket(
-    title = 'Stinger Engine Sizing',
-    ox = 'LOX',
-    fuel = 'RP1',
-    Pcham = 15.2, #bar
-    Mr = 2.3, #propellant mixture ratio
-    mdot = 1,
-    l_star = 1.1,
-    cham_d = 3.75 * 0.0254, #in meters
-    conv_angle = math.pi / 4, # rad, 45deg
-    div_angle = math.pi / 12, # rad, 15deg
-    wall_temp = 850, # K
-    nozzle_type = 'conical',
-    pAmbient = 1.01325, # bar
-    r1 = 1,
-    r2 = 1,
-    r3 = 0.4,
-    contourStep = 5e-4,
-    pMinExit = 0.9*1.01325 # bar
-)
-stinger.runCalculations()
 stinger.variablesDisplay()
 #stinger.graphDisplay()
 

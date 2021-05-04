@@ -20,13 +20,10 @@ class ChemistryCEA:
     mach = None #mach number
     pip = None #pressure ratio to chamber
     isp = None #the exhaust velocity of the gas (m/s)
-
-
     a = None #area
     d = None #diameter
 
     def initCalculations(self):
-
         self.rbar = 8.31446261815324 / self.m * 1000 #ADD TO MAIN
 
     @staticmethod
@@ -34,10 +31,8 @@ class ChemistryCEA:
         #print('cea:{}\npCham:{}\nMr:{}\nae:{}\npAmbient{}'.format(cea, pCham, Mr, ae, pAmbient))
         if ae == None:
             Pratio = pCham/pAmbient
-            #print('Pratio:{}'.format(Pratio))
             string = cea.get_full_cea_output(Pc = pCham, MR = Mr, eps = ae, PcOvPe = Pratio, pc_units='bar', output='KJ', short_output=1)
         elif ae != None:
-            #print('this chem')
             string = cea.get_full_cea_output(Pc = pCham, MR = Mr, eps = ae, PcOvPe = None, pc_units='bar', output='KJ', short_output=1)
         else:
             print('chem needs a pAmbient or ae value')
@@ -71,7 +66,6 @@ class ChemistryCEA:
                     temp = None
                 myVals.append(temp)
             classVals.append(myVals)
-        #print(classVals)
         chems = []
         count = 1
         for i in range(3):
@@ -82,16 +76,12 @@ class ChemistryCEA:
                 count2 += 1
             r.initCalculations()
             count += 1
-            #print('pressure:{}'.format(r.p))
-            #print('temp:{}'.format(r.t))
-            #print('h:{}'.format(r.h))
-            #print('m:{}'.format(r.m))
             chems.append(r)
         
         # this prints cea raw output with numbered lines
-        #j = 0
-        #for i in lines:
-        #    print('{}:{}'.format(j, i))
-        #    j+=1
+        j = 0
+        for i in lines:
+            print('{}:{}'.format(j, i))
+            j+=1
         
         return chems

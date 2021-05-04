@@ -1,2 +1,0 @@
-
-.. image:: https://travis-ci.org/sonofeft/RocketCEA.svg?branch=master
