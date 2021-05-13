@@ -5,7 +5,6 @@ from src.ceaRocket import ceaRocket
 from src.flight import Flight
 import math
 from src.engine import Engine
-
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
@@ -18,7 +17,7 @@ pMaxCham = 15.2     #max thrust chamber pressure in bar
 Mr = 2.3 # propellant mixture ratio
 pAmbient = 1.01325
 pMinExitRatio = 0.45
-chems = Chemistry.parse_initVeriables('test_2-3of_15atm')
+#chems = Chemistry.parse_initVeriables('test_2-3of_15atm')
 #set veriables
 mdotMax = 1         #max thrust mass flow rate
 Lstar = 1.1
@@ -29,7 +28,7 @@ wall_temp = 850 # K
 r1 = 1
 r2 = 1
 r3 = 0.4
-step = 5e-4
+step = 5e-3
 nozzle_type = 'conical'
 stinger = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, div_angle = div_angle, contourStep = step)
 #stinger = Rocket(title, chems, mdot, l_star, cham_d, conv_angle, div_angle, wall_temp, nozzle_type, r1, r2, r3, step)

@@ -22,8 +22,8 @@ class ChemistryCEA:
     isp = None #the exhaust velocity of the gas (m/s)
     a = None #area
     d = None #diameter
-
     def initCalculations(self):
+        #print('m:{}'.format(self.m))
         self.rbar = 8.31446261815324 / self.m * 1000 #ADD TO MAIN
 
     @staticmethod
@@ -37,51 +37,50 @@ class ChemistryCEA:
         else:
             print('chem needs a pAmbient or ae value')
         lines = string.splitlines()
+        lines.reverse()
         my_vars = [
-            [51, 'p'],
-            [52, 't'],
-            [54, 'h'],
-            [59, 'm'],
-            [62, 'cp'],
-            [63, 'gam'],
-            [64, 'son'],
-            [65, 'mach'],
-            [86, 'aeat'],
-            #[87, 'cstar'],
-            [89, 'ivac'],
-            [90, 'isp']
+            ['P,', 'p'],
+            ['T,', 't'],
+            ['H,', 'h'],
+            ['M,', 'm'],
+            ['Cp,', 'cp'],
+            ['GAMMAs', 'gam'],
+            ['SON', 'son'],
+            ['MACH', 'mach'],
+            ['Ae/At', 'aeat'],
+            #['CSTAR,', 'cstar'],
+            ['Ivac,', 'ivac'],
+            ['Isp,', 'isp']
         ]
         classVals = []
-        for i in my_vars:
-            strSplit = lines[i[0]].split(' ')
-            strList = []
-            myVals =  []
-            for j in strSplit:
-                if j != '':
-                    strList.append(j)
-            for j in range(3):
-                try:
-                    temp = float(strList[-(j+1)])
-                except:
-                    temp = None
-                myVals.append(temp)
-            classVals.append(myVals)
+        #lineNum = 0
         chems = []
-        count = 1
         for i in range(3):
             r = ChemistryCEA()
-            count2 = 0
-            for j in classVals:
-                r.__setattr__(my_vars[count2][1], j[-count])
-                count2 += 1
-            r.initCalculations()
-            count += 1
             chems.append(r)
-        
-        # this prints cea raw output with numbered lines
-        j = 0
-        for i in lines:
-            print('{}:{}'.format(j, i))
-            j+=1
-        
+        for line in lines:
+            #lineNum += 1
+            #print('{}:{}|||'.format(lineNum, line))
+            line = line.split(' ')
+            strList = []
+            for string in line:
+                if string != '':
+                    strList.append(string)
+            if len(strList) != 0:
+                for varName in my_vars:
+                    if strList[0] == varName[0]:
+                        #print(strList)
+                        myVals =  []
+                        for k in range(3):
+                            try:
+                                temp = float(strList[-(k+1)])
+                            except:
+                                temp = None
+                            #print('chem:{}\ntemp:{}\nvarName:{}'.format(chems[-(k+1)], temp, varName[1]))
+                            setattr(chems[-(k+1)], varName[1], temp)
+                            #chems[-(k+1)].__setattr__(varName[1], temp)
+        #print('chems:{}'.format(chems))
+        for i in range(len(chems)):
+            chems[i].initCalculations()
+
         return chems

@@ -36,20 +36,24 @@ class Engine:
         self.chamber_length = self.chamber_volume / (math.pi * (self.Dcham / 2) ** 2)
         self.contourPoints, self.contour = self.nozzleGeneration()
         self.area_arr = self.areas()
+        self.max.heatCalcs(self.area_arr, self.contour, self.wall_temp)
+        self.min.heatCalcs(self.area_arr, self.contour, self.wall_temp)
 
 
-    def throttleLevelCalculator(self, pRation, ae):
+    def throttleLevelCalculator(self, pMin, ae):
+        #print('pressure ratio:{}'.format(pMin))
+        pMin *= 1.013
         cpGuess = self.pMaxCham
         cpStep = cpGuess
         mdotGuess = self.mdotMax
         mdotStep = mdotGuess
         pGuess = 0.0
-        while abs(pGuess-pRation) > 0.001:
-            #print('cpGuess:{}\ncpStep:{}\nmdotGuess:{}\nmdotStep:{}\npGuess:{}\nminExitPressure:{}'.format(cpGuess, cpStep, mdotGuess, mdotStep, pGuess, pRation))
+        while abs(pGuess-pMin) > 0.0001:
+            #print('cpGuess:{}\ncpStep:{}\nmdotGuess:{}\nmdotStep:{}\npGuess:{}\nminExitPressure:{}'.format(cpGuess, cpStep, mdotGuess, mdotStep, pGuess, pMin))
             if pGuess != 0:
                 cpStep /= 2
                 mdotStep /= 2
-                if pGuess < pRation:
+                if pGuess < pMin:
                     cpGuess += cpStep
                     mdotGuess += mdotStep
                 else:
@@ -57,7 +61,8 @@ class Engine:
                     mdotGuess -= mdotStep
             #print('chamber pressure:{}\nmr:{}\nmdot:{}\narea array:{}\nae:{}'.format(cpGuess, self.Mr, mdotGuess, self.area_arr, ae))
             nozmin = ThrustLevel(self.cea, cpGuess, self.Mr, mdotGuess, self.area_arr, ae = ae)
-            pGuess = nozmin.exit.p/100000
+            pGuess = nozmin.exit.p
+            #print('pressure guess:{}'.format(pGuess))
         return nozmin
 
     def variableThrustOptimizer(self):
@@ -74,11 +79,11 @@ class Engine:
             optimalp2 = 0.4
             noz1max = ThrustLevel(self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = optimalP1)
             self.throttleLevelCalculator(self.pMinExitRatio, noz1max.exit.aeat)#fix
-            print('min thrust throat area: {}'.format(noz1min.thr.a))
+            #print('min thrust throat area: {}'.format(noz1min.thr.a))
             print('max thrust throat area: {}'.format(noz1max.thr.a))
             noz2max = ThrustLevel(self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = optimalP2)
             self.throttleLevelCalculator(self.pMinExitRatio, noz2max.exit.aeat)
-            print('min thrust throat area: {}'.format(noz1min.thr.a))
+            #print('min thrust throat area: {}'.format(noz1min.thr.a))
             print('max thrust throat area: {}'.format(noz1max.thr.a))
 
     def nozzleGeneration(self):#, r1 = self.r1, r2 = self.r2, r3 = self.r3, dThr = self.max.thr.d, dCham = self.cham.d, dExit = self.exit.d, lenCham = self.chamber_length, convAngle = self.conv_angle, divAngle = self.divergence_angle, aeExit = self.max.exit.aeat): #this function creates contour points and functions for the chamber and nozzle geometry
@@ -87,10 +92,10 @@ class Engine:
         r2 = self.r2 * self.max.thr.d/2
         o = [0,self.max.thr.d / 2]
         d = [-r2 * np.sin(self.conv_angle),o[1] + r2 * (1 - np.cos(self.conv_angle))]
-        c = [None,self.cham.d / 2 - (r1 * (1 - np.cos(self.conv_angle)))]
+        c = [None, self.Dcham / 2 - (r1 * (1 - np.cos(self.conv_angle)))]
         c[0] = d[0] - (c[1] - d[1]) * (np.sin(math.pi/2 - self.conv_angle)/np.sin(self.conv_angle))
-        b = [c[0] - (r1 * np.sin(self.conv_angle)), self.cham.d / 2]
-        a = [b[0] - self.chamber_length, self.cham.d / 2]
+        b = [c[0] - (r1 * np.sin(self.conv_angle)), self.Dcham / 2]
+        a = [b[0] - self.chamber_length, self.Dcham / 2]
         
         if self.nozzle_type == 'conical': # this sets the points and equations for a conical nozzle
             r3 = self.r3 * self.max.thr.d/2
@@ -208,17 +213,25 @@ class Engine:
     def variablesDisplay(self):
         print("{}{}:{}".format('\033[33m', self.title, '\033[0m'))
         print("Chamber Length: {0:.2f} in".format(self.chamber_length / 0.0254))
-        print("Chamber Diameter: {0:.2f} in".format(self.cham.d / 0.0254))
-        print("Exit Diameter: {0:.2f} in".format(self.exit.d / 0.0254))
-        print("Throat Diameter: {0:.2f} in".format(self.thr.d / 0.0254))
+        print("Chamber Diameter: {0:.2f} in".format(self.Dcham / 0.0254))
+        print("Exit Diameter: {0:.2f} in".format(self.max.exit.d / 0.0254))
+        print("Throat Diameter: {0:.2f} in".format(self.max.thr.d / 0.0254))
         print("Total Length: {0:.2f} in".format((self.contourPoints[6][0]-self.contourPoints[0][0]) / 0.0254))
         print("Volume: {0:.2f} cc".format(self.chamber_volume * 1000000))
-        print("Thrust: {0:.2f} N".format(self.thrust))
-        print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.h_g_arr[1,1]))
-        print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.heat_flux_arr[1,1]))
-        print("Total Watts: {0:.2f} W".format(self.total_watts))
-        print("Mass Flow Rate: {0:.2f} mdot".format(self.mdot))
-        print("chamber pressure: {0:.2f} bar".format(self.pressure_arr[1,1]/100000))
+        print("{}{}:{}".format('\033[92m', 'Max Thrust', '\033[0m'))
+        print("Max Thrust: {0:.2f} N".format(self.max.thrust))
+        print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.max.h_g_arr[1,1]))
+        print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.max.heat_flux_arr[1,1]))
+        print("Total Watts: {0:.2f} W".format(self.max.total_watts))
+        print("Mass Flow Rate: {0:.2f} mdot".format(self.max.mdot))
+        print("chamber pressure: {0:.2f} bar".format(self.max.pressure_arr[1,1]))
+        print("{}{}:{}".format('\033[92m', 'Min Thrust', '\033[0m'))
+        print("Min Thrust: {0:.2f} N".format(self.min.thrust))
+        print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.min.h_g_arr[1,1]))
+        print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.min.heat_flux_arr[1,1]))
+        print("Total Watts: {0:.2f} W".format(self.min.total_watts))
+        print("Mass Flow Rate: {0:.2f} mdot".format(self.min.mdot))
+        print("chamber pressure: {0:.2f} bar".format(self.min.pressure_arr[1,1]))
         print()
 
     def graphDisplay(self, pressure_units = 'bar', distance_units = 'in'):
