@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
 
-chems = Chemistry.parse_initVeriables('test_2-3of_15atm')
+chems = Chemistry.parse_initVeriables('test')
 
 #print(chems)
 
