@@ -12,8 +12,8 @@ chems = Chemistry.parse_initVeriables('test')
 
 #set veriables
 mdot = 1
-l_star = 1.1
-cham_d = 3.75 * 0.0254 #in meters
+l_star = 0.8
+cham_d = 6 * 0.0254 #in meters
 #cham_d = 0.08
 conv_angle = math.pi / 4 # rad, 45deg
 div_angle = math.pi / 12  # rad, 15deg
