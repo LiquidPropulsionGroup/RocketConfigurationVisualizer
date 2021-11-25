@@ -4,3 +4,4 @@ pyparsing
 python-dateutil
 scipy
 rocketcea
+CEA_Wrap

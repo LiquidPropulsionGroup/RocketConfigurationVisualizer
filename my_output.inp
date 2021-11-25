@@ -1,0 +1,10 @@
+problem rocket equilibrium
+   p(psi) = 220.44000
+   o/f = 2.70000
+   sup = 3.07500
+react  
+   fuel=CH4(L) wt=100.00000  t,k=110.00000 
+   ox=O2(L) wt=100.00000  t,k=90.00000 
+output trans
+   plot p t isp ivac m mw cp gam o/f cf rho son mach phi h
+end

@@ -1,0 +1,9 @@
+problem hp
+   p(psi) = 500.00000
+   phi = 1.00000
+react  
+   fuel=CH4 wt=100.00000  t,k=298.00000 
+   ox=O2 wt=100.00000  t,k=298.00000 
+output trans
+   plot p t h mw cp gammas phi rho son
+end
