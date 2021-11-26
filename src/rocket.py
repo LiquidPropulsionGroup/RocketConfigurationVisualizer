@@ -105,6 +105,7 @@ class Rocket:
         d = [-r2 * np.sin(self.conv_angle),o[1] + r2 * (1 - np.cos(self.conv_angle))]
         n = [r3 * np.sin(self.divergence_angle), o[1] + r3 * np.sin(1 - np.cos(self.divergence_angle))]
         e = [n[0] + ((self.exit.d / 2) - n[1]) * np.sin(math.pi/2 - self.divergence_angle)/np.sin(self.divergence_angle), self.exit.d / 2]
+        #e = 0.137
         a = [None, self.cham.d / 2]
         b = [None, self.cham.d / 2]
         c = [None,self.cham.d / 2 - (r1 * (1 - np.cos(self.conv_angle)))]
@@ -130,6 +131,7 @@ class Rocket:
             lambda x: -np.sqrt(r2 ** 2 - (x - self.contourPoints[4][0]) ** 2) + self.contourPoints[4][1] + r2, 
             lambda x: -np.sqrt(r3 ** 2 - (x + self.contourPoints[4][0]) ** 2) + self.contourPoints[4][1] + r3, 
             lambda x: ((self.contourPoints[5][1] - self.contourPoints[6][1]) / (self.contourPoints[5][0] - self.contourPoints[6][0]))  * (x - self.contourPoints[5][0]) + self.contourPoints[5][1] 
+            
         ]
             # 1: straight line
             # 2: circle
@@ -284,6 +286,6 @@ class Rocket:
     def calcHeatFlux(self):
         self.heat_flux_arr = self.h_g_arr.copy()
         for i in range(len(self.heat_flux_arr[0])):
-            self.heat_flux_arr[1,i] = self.h_g_arr[1,i]*(self.temp_arr[1,i]-300)
+            self.heat_flux_arr[1,i] = self.h_g_arr[1,i]*(self.temp_arr[1,i]-753)
 
             

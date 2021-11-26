@@ -11,13 +11,13 @@ chems = Chemistry.parse_initVeriables('test')
 #print(chems)
 
 #set veriables
-mdot = 1
+mdot = 0.66138
 l_star = 0.8
-cham_d = 6 * 0.0254 #in meters
+cham_d = 0.111 #in meters
 #cham_d = 0.08
-conv_angle = math.pi / 4 # rad, 45deg
+conv_angle = math.pi / 6 # rad, 30deg
 div_angle = math.pi / 12  # rad, 15deg
-rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle, 0.0254, 0.0127, 0.01905, 5e-4)
+rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle, 0.09588475, 0.03723132, 0.00948157, 5e-4)
 #rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle)
 
 rocket.contour = rocket.contour / 0.0254
@@ -30,6 +30,7 @@ print("Exit Diameter: {0:.2f} in".format(rocket.exit.d / 0.0254))
 print("Throat Diameter: {0:.2f} in".format(rocket.thr.d / 0.0254))
 print("Total Length: {0:.2f} in".format((rocket.contourPoints[6][0]-rocket.contourPoints[0][0]) / 0.0254))
 print("Volume: {0:.2f} cc".format(rocket.chamber_volume * 1000000))
+print("Thrust: {0:.2f} N".format(rocket.thrust))
 
 x = []
 y = []
@@ -86,17 +87,19 @@ secaxs1.legend(loc=(0.8,1))
 #plt.plot(rocket.pressure_arr[0], rocket.pressure_arr[1])
 #plt.plot(rocket.density_arr[0], rocket.density_arr[1])
 
+rocket.contour = rocket.contour*0.0254
+
 fig2, axs2 = plt.subplots(2,1, figsize=(8,10.5))
 axs2[0].set_title("Nozzle Geometry")
-axs2[0].plot(rocket.contour[0], rocket.contour[1])
+axs2[0].plot(rocket.contour[0], rocket.contour[1], label="Rocket Contour")
 axs2[0].set(xlabel="Axial Position (in)", ylabel="Radial Distance (in)")
 axs2[0].axis('equal')
 
-axs2[1].plot(rocket.h_g_arr[0], rocket.h_g_arr[1], label="h", color="blue")
-axs2[1].set(ylabel="Coefficient of Heat Transfer (W/m^2*K)", xlabel="Axial Position (m)")
+#axs2[1].plot(rocket.h_g_arr[0], rocket.h_g_arr[1], label="h", color="blue")
+#axs2[1].set(ylabel="Coefficient of Heat Transfer (W/m^2*K)", xlabel="Axial Position (m)")
 
-sax = axs2[1].twinx()
-sax.plot(rocket.heat_flux_arr[0], rocket.heat_flux_arr[1], label="flux", color="g")
+sax = axs2[0].twinx()
+sax.plot(rocket.h_g_arr[0], rocket.h_g_arr[1], label="h", color="g")
 sax.set(ylabel="Heat Flux Rate (W/m^2)", xlabel="Axial Position (m)")
 axs2[1].legend(loc=(0,1))
 sax.legend(loc=(0.8,1))
