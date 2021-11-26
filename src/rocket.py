@@ -33,12 +33,12 @@ def throatAreaEquation(mdot, pres, temp, rbar, gam):
             (1 + ((gam - 1) / 2)), ((gam + 1) / (2 * (gam - 1))))
 
 class Rocket:
-    def __init__(self, chem, mdot, l_star, cham_d, conv_angle, div_angle, r1=0.05, r2=0.03, r3=0.025, step=1e-4):
+    def __init__(self, chem, thrust, l_star, cham_d, conv_angle, div_angle, r1=0.05, r2=0.03, r3=0.025, step=1e-4):
         self.inj = chem[0] # injector
         self.cham = chem[1] # converging starts (end of chamber)
         self.thr = chem[2] # throat
         self.exit = chem[3] # exit
-        self.mdot = mdot
+        self.thrust = thrust
         self.Lstar = l_star
         self.cham.d = cham_d #diameter of the chamber
         self.contourPoints = None
@@ -66,6 +66,9 @@ class Rocket:
         # Specific impulse in seconds
         self.isp_s = self.exit.isp / 9.8
 
+        # Thrust by fundamental rocket eq F = mdot * exhaust_velocity
+        self.mdot = self.thrust / self.exit.isp  # + self.a_noz*(self.p-self.p_amb) not included as sea level expanded
+
         self.thr.a = throatAreaEquation(self.mdot, self.cham.p, self.thr.t, self.thr.rbar, self.thr.gam)
         # p is in atm, conversion constant to Pa, might change to Pa later. area is in m^2
 
@@ -73,9 +76,6 @@ class Rocket:
         self.exit.a = self.thr.a * self.exit.ae
         self.thr.d = 2 * math.sqrt(self.thr.a / math.pi)
         self.exit.d = 2 * math.sqrt(self.exit.a / math.pi)
-
-        # Thrust by fundamental rocket eq F = mdot * exhaust_velocity
-        self.thrust = self.mdot * self.exit.isp  # + self.a_noz*(self.p-self.p_amb) not included as sea level expanded
 
         # Total Chamber Volume via Characteristic Length
         # NOTE: this volume does not take injector and contour volumes into consideration and is theirfor not completly accurate
