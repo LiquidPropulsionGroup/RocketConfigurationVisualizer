@@ -13,11 +13,11 @@ chems = Chemistry.parse_initVeriables('test')
 #set veriables
 thrust = 190 # N
 l_star = 1.1 # m
-cham_d = 1.75 * 0.0254 # in, to meters
+cham_d = 1.5 * 0.0254 # in, to meters
 #cham_d = 0.08
 conv_angle = math.pi / 4 # rad, 45deg
 div_angle = math.pi / 12  # rad, 15deg
-rocket = Rocket(chems, thrust, l_star, cham_d, conv_angle, div_angle, 0.0254, 0.0127, 0.01905, 5e-4)
+rocket = Rocket(chems, thrust, l_star, cham_d, conv_angle, div_angle, 0.5*0.0254, 1/4*0.0254, 1/8*0.0254, 5e-4)
 #rocket = Rocket(chems, mdot, l_star, cham_d, conv_angle, div_angle)
 
 rocket.contour = rocket.contour / 0.0254
