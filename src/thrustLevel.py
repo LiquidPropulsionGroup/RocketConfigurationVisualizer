@@ -30,6 +30,7 @@ class ThrustLevel:
         self.h_g_arr = []
         self.heat_flux_arr = []
         self.total_watts = 0
+        self.max_fuel_heat = 0
         #print('mdot:{}\nchamber pressure:{}\nthroat temperature:{}\nthroat rbar:{}\nthroat gamma:{}'.format(self.mdot, self.cham.p, self.thr.t, self.thr.rbar, self.thr.gam))
         self.thr.a = self.throatAreaEquation(self.mdot, self.cham.p, self.thr.t, self.thr.rbar, self.thr.gam)
         self.exit.a = self.thr.a * self.exit.aeat
@@ -42,16 +43,20 @@ class ThrustLevel:
         self.calcThrust(1.01325)
 
 
-    def heatCalcs(self, area_arr, contour, wall_temp):
+    def heatCalcs(self, area_arr, contour, wall_temp, fuel_delta_t, fuel_cp, mr):
         self.area_arr = area_arr
         self.contour = contour
         self.wall_temp = wall_temp
+        self.fuel_delta_t = fuel_delta_t
+        self.fuel_cp = fuel_cp
+        self.mr = mr
         #if self.area_arr != None:
         self.mach_arr = self.solveMach()
         self.temp_arr, self.pressure_arr = self.tempPressureDensity()
         self.h_g_arr = self.calcBartz()
         self.heat_flux_arr = self.calcHeatFlux()
         self.total_watts = self.totalWatts()
+        self.max_fuel_heat = self.fuelWatts()
 
     def calcThrust(self, pAmbient):#make dependant on altitude input
         self.thrust = self.mdot * self.exit.mach * self.exit.son + (self.exit.p - pAmbient)*self.exit.a
@@ -140,3 +145,7 @@ class ThrustLevel:
         for i in range(len(self.heat_flux_arr[0])-1):
             total_watts = total_watts + abs(self.area_arr[0,i+1] - self.area_arr[0,i]) * self.heat_flux_arr[1,i]
         return total_watts
+    
+    def fuelWatts(self):
+        return (self.fuel_cp*self.fuel_delta_t*self.mdot/(self.mr+1))
+

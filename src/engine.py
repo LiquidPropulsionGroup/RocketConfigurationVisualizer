@@ -9,7 +9,7 @@ from .chemistryCEA import ChemistryCEA
 from .thrustLevel import ThrustLevel
 
 class Engine:
-    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, div_angle = None, contourStep = 1e-4):
+    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, div_angle = None, contourStep = 1e-4):
         self.title = title
         self.fuel = fuel
         self.ox = ox
@@ -22,6 +22,8 @@ class Engine:
         self.Lstar = Lstar
         self.Dcham = Dcham #diameter of the chamber
         self.wall_temp = wall_temp
+        self.fuel_delta_t = fuel_delta_t
+        self.fuel_cp = fuel_cp
         self.r1 = r1
         self.r2 = r2
         self.r3 = r3
@@ -36,8 +38,9 @@ class Engine:
         self.chamber_length = self.chamber_volume / (math.pi * (self.Dcham / 2) ** 2)
         self.contourPoints, self.contour = self.nozzleGeneration()
         self.area_arr = self.areas()
-        self.max.heatCalcs(self.area_arr, self.contour, self.wall_temp)
-        self.min.heatCalcs(self.area_arr, self.contour, self.wall_temp)
+        self.max.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel_cp, self.Mr)
+        self.min.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel_cp, self.Mr)
+        
 
 
     def throttleLevelCalculator(self, pMin, ae):
@@ -199,6 +202,7 @@ class Engine:
         area_arr[1,:] = (area_arr[1,:] ** 2) * np.pi# this is just pi*r^2 in array form
         return area_arr
 
+
 ########################################################################################################################################################################
     def filewrite(self, filename): #needs update
         output = open(filename, "w")
@@ -223,6 +227,7 @@ class Engine:
         print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.max.h_g_arr[1,1]))
         print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.max.heat_flux_arr[1,1]))
         print("Total Watts: {0:.2f} W".format(self.max.total_watts))
+        print("Max Fuel Heat Transfer: {0:.2f} W".format(self.max.max_fuel_heat))
         print("Mass Flow Rate: {0:.2f} mdot".format(self.max.mdot))
         print("chamber pressure: {0:.2f} bar".format(self.max.pressure_arr[1,1]))
         print("{}{}:{}".format('\033[92m', 'Min Thrust', '\033[0m'))
@@ -230,6 +235,7 @@ class Engine:
         print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.min.h_g_arr[1,1]))
         print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.min.heat_flux_arr[1,1]))
         print("Total Watts: {0:.2f} W".format(self.min.total_watts))
+        print("Max Fuel Heat Transfer: {0:.2f} W".format(self.min.max_fuel_heat))
         print("Mass Flow Rate: {0:.2f} mdot".format(self.min.mdot))
         print("chamber pressure: {0:.2f} bar".format(self.min.pressure_arr[1,1]))
         print()
