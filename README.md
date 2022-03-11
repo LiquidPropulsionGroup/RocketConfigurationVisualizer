@@ -10,6 +10,12 @@ This code sizes a rocket engine contour based on design specifications and therm
 2. Pull a clone of this repository
 3. Create a python virtual enviorment with the following command in the root directory of the Rocket Configuration Visualizer. `python -m venv venv/`
 4. Finally install all the dependencys once in your virtual enviorment of python with `pip3 install -r requirements.txt` (do this in the Terminal of VS Code, not cmd)
+5. install rocketcea library. this is different per operating system but this  goes over how to do it(https://rocketcea.readthedocs.io/en/latest/quickstart.html) 
+note: this library can be rather difficult to install correctly on windows
+sometimes the interpreter won't be able to find rocketcea when using a venv, if that happens you can either not use a venv or use the following code to manually locate rocketcea
+# import sys
+# sys.path.insert(0, r"C:\Users\<insert_user>\AppData\Local\Programs\Python\Python310\Lib\site-packages")
+the specific file location and names will be defferent depenging on the version and location of your python files
 
 ## Basic Overview
 
