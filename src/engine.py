@@ -213,7 +213,9 @@ class Engine:
         for i in range(len(self.contour[1,:])):
             output.write("{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}\n".format(self.contour[0,i], self.contour[1,i], self.mach_arr[1,i], self.temp_arr[1,i], self.pressure_arr[1,i], self.h_g_arr[1,i], self.heat_flux_arr[1,i]))
         output.close()
+###############################
 
+    #printing veriables
     def variablesDisplay(self):
         print("{}{}:{}".format('\033[33m', self.title, '\033[0m'))
         print("Chamber Length: {0:.2f} in".format(self.chamber_length / 0.0254))
