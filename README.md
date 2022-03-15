@@ -10,10 +10,16 @@ This code sizes a rocket engine contour based on design specifications and therm
 2. Pull a clone of this repository
 3. Create a python virtual enviorment with the following command in the root directory of the Rocket Configuration Visualizer. `python -m venv venv/`
 4. Finally install all the dependencys once in your virtual enviorment of python with `pip3 install -r requirements.txt` (do this in the Terminal of VS Code, not cmd)
+5. install rocketcea library. this is different per operating system but this  goes over how to do it(https://rocketcea.readthedocs.io/en/latest/quickstart.html) 
+note: this library can be rather difficult to install correctly on windows
+sometimes the interpreter won't be able to find rocketcea when using a virtual enviernment; if that happens you can either not use a venv or use the following code to manually locate rocketcea
+# import sys
+# sys.path.insert(0, r"C:\Users\<insert_user>\AppData\Local\Programs\Python\Python310\Lib\site-packages")
+the specific file location and names will be defferent depenging on the version and location of your python files
 
 ## Basic Overview
 
-Chemistry class is instantiated per every imported chemistry data point from CEA. Rocket class generates a unique rocket contour and computes flow and heat properties upon instantiation. Mulitple Rocket objects represent different rocket sizes. There are inline comments where possible in the code. Further documentation coming soon.
+The engine class takes the input veriables creates the optimal engine contour for the given constraints and throttle range. To create this contour chemistryCEA is used. this class takes the raw data output, which is from the nasaCEA code that is run through the rocketcea library, and parces the data into veriables. durring this optimization of the contour, thrustLevel instances are created for the max and min thrusts. when thrustLevel is instantiated basic veriables are calculated. from there we go back to rocket where the contour is made into an array and this array is then given back to the thrust level instances in the heatCalcs method, which calculates the heat flux at every point int eh contour array using the bartz approximation and other simple operations. at this point all of the calculations have been done and you can view the data using the variablesDisplay and graphDisplay methods in engine. 
 
 ## Conventions
 
