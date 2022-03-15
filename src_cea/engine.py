@@ -125,6 +125,7 @@ class Engine:
             cc = X[2]
             nozzleCurve = lambda x: (-X[1] + (X[1]**2 - 4 * X[0] * (X[2]-x))**0.5) / (2*X[0]) # might need to change sign
 
+
         elif self.nozzle_type == 'dualbell': #work in progress, this sets the points and equations for a duel bell nozzle, in this there is an extra point 'm' between the n and e points
             r3 = self.r3 * self.max.thr.d/2
             thetaE1 = 7 *np.pi/180 # theta values found in table... hard coded temporarily
@@ -304,6 +305,6 @@ class Engine:
         sax.legend(loc=(0.8,1))
 
         self.contour = self.contour / Dcon
-        self.filewrite("dataTest.txt")
+        #self.filewrite("dataTest.txt")
 
         plt.show()
