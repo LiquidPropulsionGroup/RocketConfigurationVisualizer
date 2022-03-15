@@ -242,69 +242,67 @@ class Engine:
         print("Mass Flow Rate: {0:.2f} mdot".format(self.min.mdot))
         print("chamber pressure: {0:.2f} bar".format(self.min.pressure_arr[1,1]))
         print()
+        
+    def graphDisplay(self):
+        self.max.graphDisplay()
+        self.min.graphDisplay()
 
-    def graphDisplay(self, pressure_units = 'bar', distance_units = 'in'):
-        #temperature units?
-        if(pressure_units == 'bar'):
-            Pcon = 100000 #bar
-        elif(pressure_units == 'atm'):
-            Pcon = 101325
-        elif(pressure_units == 'psi'):
-            Pcon = 6894.76
-        else:
-            Pcon = 1
+    #def graphDisplay(self, pressure_units = 'bar', distance_units = 'in'):
+    #     #temperature units?
+    #     if(pressure_units == 'bar'):
+    #         Pcon = 100000 #bar
+    #     elif(pressure_units == 'atm'):
+    #         Pcon = 101325
+    #     elif(pressure_units == 'psi'):
+    #         Pcon = 6894.76
+    #     else:
+    #         Pcon = 1
 
-        if(distance_units == 'in'):
-            Dcon = 39.3701
-        elif(distance_units == 'cm'):
-            Dcon = 100
-        elif(distance_units == 'mm'):
-            Dcon = 1000
-        else:
-            Dcon = 1
+    #     if(distance_units == 'in'):
+    #         Dcon = 39.3701
+    #     elif(distance_units == 'cm'):
+    #         Dcon = 100
+    #     elif(distance_units == 'mm'):
+    #         Dcon = 1000
+    #     else:
+    #         Dcon = 1
 
+    #     fig, axs = plt.subplots(2,1, figsize=(8,10.5))
 
-        self.contour = self.contour * Dcon
+    #     axs[0].set_title("Nozzle Geometry")
+    #     axs[0].plot(self.contour[0]*Dcon, self.contour[1]*Dcon, label="self Contour")
+    #     axs[0].set(xlabel="Axial Position ({})".format(distance_units), ylabel="Radial Distance ({})".format(distance_units))
+    #     axs[0].axis('equal')
 
-        fig, axs = plt.subplots(2,1, figsize=(8,10.5))
+    #     secaxs = axs[0].twinx()
+    #     secaxs.plot(self.mach_arr[0]*Dcon, self.mach_arr[1], label="Mach Number", color="green")
+    #     secaxs.set(ylabel="Mach Number (M)")
+    #     axs[0].legend(loc=(0,1))
+    #     secaxs.legend(loc=(0.75,1))
 
-        axs[0].set_title("Nozzle Geometry")
-        axs[0].plot(self.contour[0], self.contour[1], label="self Contour")
-        axs[0].set(xlabel="Axial Position (in)", ylabel="Radial Distance (in)")
-        axs[0].axis('equal')
+    #     axs[1].plot(self.temp_arr[0], self.temp_arr[1], color="orange", label="Temperature")
+    #     axs[1].set(ylabel="Gas Core Temperature (K)")
 
-        secaxs = axs[0].twinx()
-        secaxs.plot(self.mach_arr[0]*Dcon, self.mach_arr[1], label="Mach Number", color="green")
-        secaxs.set(ylabel="Mach Number (M)")
-        axs[0].legend(loc=(0,1))
-        secaxs.legend(loc=(0.75,1))
+    #     secaxs1 = axs[1].twinx()
+    #     secaxs1.plot(self.pressure_arr[0]*Dcon, self.pressure_arr[1]*Pcon, color="purple", label="Pressure")
+    #     secaxs1.set(ylabel="Pressure ({}})".format(pressure_units), xlabel="Axial Position ({})".format(distance_units))
+    #     axs[1].legend(loc=(0,1))
+    #     secaxs1.legend(loc=(0.8,1))
 
-        axs[1].plot(self.temp_arr[0], self.temp_arr[1], color="orange", label="Temperature")
-        axs[1].set(ylabel="Gas Core Temperature (K)")
+    #     #---------------------------------------------------------
+    #     fig2, axs2 = plt.subplots(2,1, figsize=(8,10.5))
+    #     axs2[0].set_title("Nozzle Geometry")
+    #     axs2[0].plot(self.contour[0]*Dcon, self.contour[1]*Dcon)
+    #     axs2[0].set(xlabel="Axial Position ({}})".format(distance_units), ylabel="Radial Distance ({}})".format(distance_units))
+    #     axs2[0].axis('equal')
 
-        secaxs1 = axs[1].twinx()
-        secaxs1.plot(self.pressure_arr[0], self.pressure_arr[1]*Pcon, color="purple", label="Pressure")
-        secaxs1.set(ylabel="Pressure (bar)", xlabel="Axial Position (m)")
-        axs[1].legend(loc=(0,1))
-        secaxs1.legend(loc=(0.8,1))
+    #     axs2[1].plot(self.h_g_arr[0]*Dcon, self.h_g_arr[1], label="h", color="blue")
+    #     axs2[1].set(ylabel="Coefficient of Heat Transfer (W/m^2*K)", xlabel="Axial Position ({})".format(distance_units))
 
-        #---------------------------------------------------------
-        fig2, axs2 = plt.subplots(2,1, figsize=(8,10.5))
-        axs2[0].set_title("Nozzle Geometry")
-        axs2[0].plot(self.contour[0], self.contour[1])
-        axs2[0].set(xlabel="Axial Position (in)", ylabel="Radial Distance (in)")
-        axs2[0].axis('equal')
-
-        axs2[1].plot(self.h_g_arr[0], self.h_g_arr[1], label="h", color="blue")
-        axs2[1].set(ylabel="Coefficient of Heat Transfer (W/m^2*K)", xlabel="Axial Position (m)")
-
-        sax = axs2[1].twinx()
-        sax.plot(self.heat_flux_arr[0], self.heat_flux_arr[1], label="flux", color="g")
-        sax.set(ylabel="Heat Flux Rate (W/m^2)", xlabel="Axial Position (m)")
-        axs2[1].legend(loc=(0,1))
-        sax.legend(loc=(0.8,1))
-
-        self.contour = self.contour / Dcon
-        #self.filewrite("dataTest.txt")
-
-        plt.show()
+    #     sax = axs2[1].twinx()
+    #     sax.plot(self.heat_flux_arr[0]*Dcon, self.heat_flux_arr[1], label="flux", color="g")
+    #     sax.set(ylabel="Heat Flux Rate (W/m^2)", xlabel="Axial Position ({}})".format(distance_units))
+    #     axs2[1].legend(loc=(0,1))
+    #     sax.legend(loc=(0.8,1))
+        
+    #     plt.show()

@@ -56,6 +56,8 @@ step = 5e-3
 nozzle_type = 'bell80'
 test = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, div_angle = div_angle, contourStep = step)
 test.variablesDisplay()
+test.graphDisplay()
+
 
 #rocket trajectory test
 title = "test rocket trajectory"
