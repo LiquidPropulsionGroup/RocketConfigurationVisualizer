@@ -4,18 +4,21 @@ import matplotlib.pyplot as plt
 import scipy as sp
 import time
 from scipy.optimize import fsolve
-from rocketcea.cea_obj import CEA_Obj
+from rocketcea.cea_obj import CEA_Obj, add_new_fuel
 from .chemistryCEA import ChemistryCEA
 from .thrustLevel import ThrustLevel
 
 class Engine:
-    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, div_angle = None, contourStep = 1e-4):
+    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None):
         self.title = title
         self.fuel = fuel
         self.ox = ox
+        if customFuel != None:
+            add_new_fuel( customFuel[0], customFuel[1] )
         self.cea = CEA_Obj( oxName= ox, fuelName= fuel)
         self.nozzle_type = nozzle_type
         self.Mr = Mr
+        self.filmCoolingPercent = filmCoolingPercent
         self.pMaxCham = pMaxCham
         self.mdotMax = mdotMax
         self.pMinExitRatio = pMinExitRatio
@@ -38,8 +41,8 @@ class Engine:
         self.chamber_length = self.chamber_volume / (math.pi * (self.Dcham / 2) ** 2)
         self.contourPoints, self.contour = self.nozzleGeneration()
         self.area_arr = self.areas()
-        self.max.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel_cp, self.Mr)
-        self.min.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel_cp, self.Mr)
+        self.max.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel_cp, self.Mr, self.filmCoolingPercent)
+        self.min.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel_cp, self.Mr, self.filmCoolingPercent)
         
 
 
@@ -66,6 +69,7 @@ class Engine:
             nozmin = ThrustLevel(self.cea, cpGuess, self.Mr, mdotGuess, self.area_arr, ae = ae)
             pGuess = nozmin.exit.p
             #print('pressure guess:{}'.format(pGuess))
+        print('min nozzle exit pressure in pascals: {}'.format(nozmin.exit.p))
         return nozmin
 
     def variableThrustOptimizer(self):
@@ -219,6 +223,7 @@ class Engine:
     #printing veriables
     def variablesDisplay(self):
         print("{}{}:{}".format('\033[33m', self.title, '\033[0m'))
+        print("Propellants:{}, {}".format(self.fuel, self.ox))
         print("Chamber Length: {0:.2f} in".format(self.chamber_length / 0.0254))
         print("Chamber Diameter: {0:.2f} in".format(self.Dcham / 0.0254))
         print("Exit Diameter: {0:.2f} in".format(self.max.exit.d / 0.0254))
@@ -232,6 +237,8 @@ class Engine:
         print("Total Watts: {0:.2f} W".format(self.max.total_watts))
         print("Max Fuel Heat Transfer: {0:.2f} W".format(self.max.max_fuel_heat))
         print("Mass Flow Rate: {0:.2f} mdot".format(self.max.mdot))
+        print("Fuel Mass Flow Rate: {0:.2f} mdot".format(self.max.mdot/(self.max.mr+1)*(1+self.max.filmCoolingPercent)))
+        print("Film Cooling Mass Flow Rate: {0:.2f} mdot".format(self.max.mdot/(self.max.mr+1)*(self.max.filmCoolingPercent)))
         print("chamber pressure: {0:.2f} bar".format(self.max.pressure_arr[1,1]))
         print("{}{}:{}".format('\033[92m', 'Min Thrust', '\033[0m'))
         print("Min Thrust: {0:.2f} N".format(self.min.thrust))
@@ -240,69 +247,11 @@ class Engine:
         print("Total Watts: {0:.2f} W".format(self.min.total_watts))
         print("Max Fuel Heat Transfer: {0:.2f} W".format(self.min.max_fuel_heat))
         print("Mass Flow Rate: {0:.2f} mdot".format(self.min.mdot))
+        print("Fuel Mass Flow Rate: {0:.2f} mdot".format(self.min.mdot/(self.min.mr+1)*(1+self.min.filmCoolingPercent)))
+        print("Film Cooling Mass Flow Rate: {0:.2f} mdot".format(self.min.mdot/(self.min.mr+1)*(self.min.filmCoolingPercent)))
         print("chamber pressure: {0:.2f} bar".format(self.min.pressure_arr[1,1]))
         print()
         
     def graphDisplay(self):
         self.max.graphDisplay()
         self.min.graphDisplay()
-
-    #def graphDisplay(self, pressure_units = 'bar', distance_units = 'in'):
-    #     #temperature units?
-    #     if(pressure_units == 'bar'):
-    #         Pcon = 100000 #bar
-    #     elif(pressure_units == 'atm'):
-    #         Pcon = 101325
-    #     elif(pressure_units == 'psi'):
-    #         Pcon = 6894.76
-    #     else:
-    #         Pcon = 1
-
-    #     if(distance_units == 'in'):
-    #         Dcon = 39.3701
-    #     elif(distance_units == 'cm'):
-    #         Dcon = 100
-    #     elif(distance_units == 'mm'):
-    #         Dcon = 1000
-    #     else:
-    #         Dcon = 1
-
-    #     fig, axs = plt.subplots(2,1, figsize=(8,10.5))
-
-    #     axs[0].set_title("Nozzle Geometry")
-    #     axs[0].plot(self.contour[0]*Dcon, self.contour[1]*Dcon, label="self Contour")
-    #     axs[0].set(xlabel="Axial Position ({})".format(distance_units), ylabel="Radial Distance ({})".format(distance_units))
-    #     axs[0].axis('equal')
-
-    #     secaxs = axs[0].twinx()
-    #     secaxs.plot(self.mach_arr[0]*Dcon, self.mach_arr[1], label="Mach Number", color="green")
-    #     secaxs.set(ylabel="Mach Number (M)")
-    #     axs[0].legend(loc=(0,1))
-    #     secaxs.legend(loc=(0.75,1))
-
-    #     axs[1].plot(self.temp_arr[0], self.temp_arr[1], color="orange", label="Temperature")
-    #     axs[1].set(ylabel="Gas Core Temperature (K)")
-
-    #     secaxs1 = axs[1].twinx()
-    #     secaxs1.plot(self.pressure_arr[0]*Dcon, self.pressure_arr[1]*Pcon, color="purple", label="Pressure")
-    #     secaxs1.set(ylabel="Pressure ({}})".format(pressure_units), xlabel="Axial Position ({})".format(distance_units))
-    #     axs[1].legend(loc=(0,1))
-    #     secaxs1.legend(loc=(0.8,1))
-
-    #     #---------------------------------------------------------
-    #     fig2, axs2 = plt.subplots(2,1, figsize=(8,10.5))
-    #     axs2[0].set_title("Nozzle Geometry")
-    #     axs2[0].plot(self.contour[0]*Dcon, self.contour[1]*Dcon)
-    #     axs2[0].set(xlabel="Axial Position ({}})".format(distance_units), ylabel="Radial Distance ({}})".format(distance_units))
-    #     axs2[0].axis('equal')
-
-    #     axs2[1].plot(self.h_g_arr[0]*Dcon, self.h_g_arr[1], label="h", color="blue")
-    #     axs2[1].set(ylabel="Coefficient of Heat Transfer (W/m^2*K)", xlabel="Axial Position ({})".format(distance_units))
-
-    #     sax = axs2[1].twinx()
-    #     sax.plot(self.heat_flux_arr[0]*Dcon, self.heat_flux_arr[1], label="flux", color="g")
-    #     sax.set(ylabel="Heat Flux Rate (W/m^2)", xlabel="Axial Position ({}})".format(distance_units))
-    #     axs2[1].legend(loc=(0,1))
-    #     sax.legend(loc=(0.8,1))
-        
-    #     plt.show()

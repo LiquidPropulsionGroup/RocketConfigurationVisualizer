@@ -20,7 +20,11 @@ class ThrustLevel:
         self.cham = chems[0] # converging starts (end of chamber)
         self.thr = chems[1] # throat
         self.exit = chems[2] # exit
+        #debug prints
+        #print(chems)
+        #print('exit mach:{}'.format(self.exit.mach))
         self.mdot = mdot
+        self.filmCoolingPercent = 0
         self.contour = None
         self.area_arr = area_arr
         self.mach_arr = []
@@ -43,14 +47,14 @@ class ThrustLevel:
         self.calcThrust(1.01325)
 
 
-    def heatCalcs(self, area_arr, contour, wall_temp, fuel_delta_t, fuel_cp, mr):
+    def heatCalcs(self, area_arr, contour, wall_temp, fuel_delta_t, fuel_cp, mr, filmCoolingPercent):
         self.area_arr = area_arr
         self.contour = contour
         self.wall_temp = wall_temp
         self.fuel_delta_t = fuel_delta_t
         self.fuel_cp = fuel_cp
         self.mr = mr
-        #if self.area_arr != None:
+        self.filmCoolingPercent = filmCoolingPercent
         self.mach_arr = self.solveMach()
         self.temp_arr, self.pressure_arr = self.tempPressureDensity()
         self.h_g_arr = self.calcBartz()
@@ -143,11 +147,11 @@ class ThrustLevel:
     def totalWatts(self):
         total_watts = 0
         for i in range(len(self.heat_flux_arr[0])-1):
-            total_watts = total_watts + abs(self.area_arr[0,i+1] - self.area_arr[0,i]) * self.heat_flux_arr[1,i]
+            total_watts = total_watts + math.sqrt((self.contour[0,i] - self.contour[0,i+1])**2+(self.contour[1,i] - self.contour[1,i+1])**2)*2*math.pi* self.contour[1,i]* self.heat_flux_arr[1,i]
         return total_watts
     
     def fuelWatts(self):
-        return (self.fuel_cp*self.fuel_delta_t*self.mdot/(self.mr+1))
+        return (self.fuel_cp*self.fuel_delta_t*(self.mdot/(self.mr+1)*(1+self.filmCoolingPercent)))
 
     def graphDisplay(self, pressure_units = 'bar', distance_units = 'in'):
         #temperature units?
