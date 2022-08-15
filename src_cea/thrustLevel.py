@@ -46,7 +46,6 @@ class ThrustLevel:
         self.Cstar = self.cham.p * self.thr.a / self.mdot
         self.calcThrust(1.01325)
 
-
     def heatCalcs(self, area_arr, contour, wall_temp, fuel_delta_t, fuel_cp, mr, filmCoolingPercent):
         self.area_arr = area_arr
         self.contour = contour
@@ -61,6 +60,48 @@ class ThrustLevel:
         self.heat_flux_arr = self.calcHeatFlux()
         self.total_watts = self.totalWatts()
         self.max_fuel_heat = self.fuelWatts()
+
+    def heatCalcsFilmCooling(self, area_arr, contour, wall_temp, fuel_delta_t, fuel_cp, mr, filmCoolingPercent):
+        self.area_arr = area_arr
+        self.contour = contour
+        self.wall_temp = wall_temp
+        self.fuel_delta_t = fuel_delta_t
+        self.fuel_cp = fuel_cp
+        self.mr = mr
+        self.filmCoolingPercent = filmCoolingPercent
+        self.mach_arr = self.solveMach()
+        self.temp_arr, self.pressure_arr = self.tempPressureDensity()
+        '''
+        https://www.sciencedirect.com/science/article/pii/S0017931012003195?casa_token=U5ONT6cTbYsAAAAA:VQ47ewAtIETX8_y5dxiMSEA2abz2aqwbIjpYr0QxATVftTxfp45c582heKU_gtFZuT6mXjwACw
+        values needed for film cooling calculation:
+        mdot_g
+        mdot_c
+        P_cc
+        D_cc
+        properties of free stream gas:
+        cp
+        mu_g
+        Pr_g
+        roe_g
+        liquid coolant properties:
+        c_l
+        h_fg
+        T_sat
+        roe_l
+        calculated values:
+        Re_g        calculated from G_mean
+        lamda
+        St_0
+        e_t
+        K_t
+        h_0
+        hstar_fg
+        epselon_t
+        Qdot_rad
+        St
+        h
+        '''
+
 
     def calcThrust(self, pAmbient):#make dependant on altitude input
         self.thrust = self.mdot * self.exit.mach * self.exit.son + (self.exit.p - pAmbient)*self.exit.a
@@ -93,7 +134,6 @@ class ThrustLevel:
             last = mach
         mach_arr = np.array(mach_arr).transpose()
         return mach_arr
-
 
     def temp_eq(self, mach):#NOTE: stagnation values need improvment
         gam = self.thr.gam
