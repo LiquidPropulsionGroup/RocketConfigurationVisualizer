@@ -8,14 +8,14 @@ from rocketcea.cea_obj import CEA_Obj
 from .chemistryCEA import ChemistryCEA
 
 class ThrustLevel:
-    def __init__(self, cea, pCham, Mr, mdot, area_arr, pAmbient = None, ae = None):
+    def __init__(self, cea, pCham, Mr, mdot, area_arr, pAmbient = None, ae = None, frozen = 1):
         if ae == None:
             #print('chamber pressure:{}\nambient pressure:{}'.format(pCham, pAmbient))
-            chems = ChemistryCEA.create(cea, pCham, Mr, pAmbient = pAmbient)
+            chems = ChemistryCEA.create(cea, pCham, Mr, pAmbient = pAmbient, frozen = frozen)
         else:
             self.ambientP = pAmbient
             #print('chamber pressure:{}\nae:{}'.format(pCham, ae))
-            chems = ChemistryCEA.create(cea, pCham, Mr, ae = ae)
+            chems = ChemistryCEA.create(cea, pCham, Mr, ae = ae, frozen = frozen)
         self.inj = None # injector
         self.cham = chems[0] # converging starts (end of chamber)
         self.thr = chems[1] # throat

@@ -10,7 +10,7 @@ from .thrustLevel import ThrustLevel
 from .fluidProperties.fluidProperties import FluidProperties
 
 class Engine:
-    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None):
+    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None, frozen = 1):
         self.title = title
         self.fuel = FluidProperties(fuel)
         print(self.fuel)
@@ -32,6 +32,7 @@ class Engine:
         self.r1 = r1
         self.r2 = r2
         self.r3 = r3
+        self.frozen = frozen
         self.conv_angle = conv_angle
         self.div_angle = div_angle
         self.contourStep = contourStep
@@ -74,7 +75,7 @@ class Engine:
                     cpGuess -= cpStep
                     mdotGuess -= mdotStep
             #print('chamber pressure:{}\nmr:{}\nmdot:{}\narea array:{}\nae:{}'.format(cpGuess, self.Mr, mdotGuess, self.area_arr, ae))
-            nozmin = ThrustLevel(self.cea, cpGuess, self.Mr, mdotGuess, self.area_arr, ae = ae)
+            nozmin = ThrustLevel(self.cea, cpGuess, self.Mr, mdotGuess, self.area_arr, ae = ae, frozen = self.frozen)
             pGuess = nozmin.exit.p
             #print('pressure guess:{}'.format(pGuess))
         print('min nozzle exit pressure in pascals: {}'.format(nozmin.exit.p))
@@ -85,10 +86,10 @@ class Engine:
         if self.nozzle_type == 'bell80' or 'conical':
             optimalP = 0.9
 
-            nozmax = ThrustLevel(self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = optimalP)
+            nozmax = ThrustLevel(self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = optimalP, frozen = self.frozen)
             nozmin = self.throttleLevelCalculator(self.pMinExitRatio, nozmax.exit.aeat)
             return nozmax, nozmin
-
+            '''
         elif self.nozzle_type == 'duelbell':
             optimalP1 = 0.9
             optimalp2 = 0.4
@@ -100,7 +101,7 @@ class Engine:
             self.throttleLevelCalculator(self.pMinExitRatio, noz2max.exit.aeat)
             #print('min thrust throat area: {}'.format(noz1min.thr.a))
             print('max thrust throat area: {}'.format(noz1max.thr.a))
-
+            '''
     def nozzleGeneration(self):#, r1 = self.r1, r2 = self.r2, r3 = self.r3, dThr = self.max.thr.d, dCham = self.cham.d, dExit = self.exit.d, lenCham = self.chamber_length, convAngle = self.conv_angle, divAngle = self.divergence_angle, aeExit = self.max.exit.aeat): #this function creates contour points and functions for the chamber and nozzle geometry
         #this first section sets up points for the chamber and throat.  with the left being the chamber the right being the exit, the points go in order of a, b, c, d, o, n, e
         r1 = self.r1 * self.max.thr.d/2
