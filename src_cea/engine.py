@@ -10,7 +10,7 @@ from .thrustLevel import ThrustLevel
 from .fluidProperties.fluidProperties import FluidProperties
 
 class Engine:
-    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None, frozen = 1):
+    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None, frozen = 1, optimalP = 1):
         self.title = title
         self.fuel = FluidProperties(fuel)
         print(self.fuel)
@@ -20,6 +20,7 @@ class Engine:
         self.cea = CEA_Obj( oxName= ox, fuelName= fuel)
         self.nozzle_type = nozzle_type
         self.Mr = Mr
+        self.optimalP = optimalP
         self.filmCoolingPercent = filmCoolingPercent
         self.pMaxCham = pMaxCham
         self.mdotMax = mdotMax
@@ -84,9 +85,7 @@ class Engine:
     def variableThrustOptimizer(self):
 
         if self.nozzle_type == 'bell80' or 'conical':
-            optimalP = 0.9
-
-            nozmax = ThrustLevel(self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = optimalP, frozen = self.frozen)
+            nozmax = ThrustLevel(self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = self.optimalP, frozen = self.frozen)
             nozmin = self.throttleLevelCalculator(self.pMinExitRatio, nozmax.exit.aeat)
             return nozmax, nozmin
             '''
