@@ -14,12 +14,16 @@ class FluidProperties:
     c_l = None
     def __init__(self, fluidName):
         #print(os.getcwd())
-        with open(f'src_cea\\fluidProperties\\{fluidName}.csv') as csvfile:
-            lines = csvfile.readlines()
-            for i in range(len(lines)):
-                lines[i] = lines[i].split(',')
-            for i in range(len(lines[0])):
-                self.__setattr__(lines[0][i], float(lines[1][i]))
+        self.name = fluidName
+        try:
+            with open(f'src_cea\\fluidProperties\\{fluidName}.csv') as csvfile:
+                lines = csvfile.readlines()
+                for i in range(len(lines)):
+                    lines[i] = lines[i].split(',')
+                for i in range(len(lines[0])):
+                    self.__setattr__(lines[0][i], float(lines[1][i]))
+        except:
+            print(f'could not import fluid property file {fluidName}.csv')
 
     def __repr__(self):
         return f"h_fg: {self.h_fg} " \

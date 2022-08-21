@@ -31,6 +31,8 @@ class ThrustLevel:
         self.pressure_arr = None
         self.temp_arr = None
         self.density_arr = None
+        self.fuel = None
+        self.ox = None
         self.h_g_arr = []
         self.heat_flux_arr = []
         self.total_watts = 0
@@ -46,12 +48,12 @@ class ThrustLevel:
         self.Cstar = self.cham.p * self.thr.a / self.mdot
         self.calcThrust(1.01325)
 
-    def heatCalcs(self, area_arr, contour, wall_temp, fuel_delta_t, fuel_cp, mr, filmCoolingPercent):
+    def heatCalcs(self, area_arr, contour, wall_temp, fuel_delta_t, fuel, mr, filmCoolingPercent):
         self.area_arr = area_arr
         self.contour = contour
         self.wall_temp = wall_temp
         self.fuel_delta_t = fuel_delta_t
-        self.fuel_cp = fuel_cp
+        self.fuel = fuel
         self.mr = mr
         self.filmCoolingPercent = filmCoolingPercent
         self.mach_arr = self.solveMach()
@@ -60,17 +62,44 @@ class ThrustLevel:
         self.heat_flux_arr = self.calcHeatFlux()
         self.total_watts = self.totalWatts()
         self.max_fuel_heat = self.fuelWatts()
-
-    def heatCalcsFilmCooling(self, area_arr, contour, wall_temp, fuel_delta_t, fuel_cp, mr, filmCoolingPercent):
+        '''
+    def heatCalcsFilmCooling(self, area_arr, contour, wall_temp, fuel_delta_t, fuel, mr, filmCoolingPercent):
         self.area_arr = area_arr
         self.contour = contour
         self.wall_temp = wall_temp
         self.fuel_delta_t = fuel_delta_t
-        self.fuel_cp = fuel_cp
+        self.fuel = fuel
         self.mr = mr
         self.filmCoolingPercent = filmCoolingPercent
         self.mach_arr = self.solveMach()
         self.temp_arr, self.pressure_arr = self.tempPressureDensity()
+        mdot_g = self.mdot
+        mdot_c = self.mdot * self.filmCoolingPercent
+        P_cc = self.cham.p
+        D_cc = self.cham.d
+        #properties of free stream gas:
+        cp_g = self.cham.cp
+        mu_g = 
+        Pr_g = 
+        roe_g = self.cham.roe
+        #liquid coolant properties:
+        cp_l = self.fuel.cp
+        h_fg = self.fuel.h_fg
+        T_sat = self.fuel.T_sat
+        roe_l = self.fuel.roe
+        #calculated values:
+        Re_g =        #calculated from G_mean
+        lamda = 
+        St_0 = 
+        e_t = 
+        K_t = 
+        h_0 = 
+        hstar_fg = 
+        epselon_t = 
+        Qdot_rad = 
+        St = 
+        h = 
+        '''
         '''
         https://www.sciencedirect.com/science/article/pii/S0017931012003195?casa_token=U5ONT6cTbYsAAAAA:VQ47ewAtIETX8_y5dxiMSEA2abz2aqwbIjpYr0QxATVftTxfp45c582heKU_gtFZuT6mXjwACw
         values needed for film cooling calculation:
@@ -191,7 +220,7 @@ class ThrustLevel:
         return total_watts
     
     def fuelWatts(self):
-        return (self.fuel_cp*self.fuel_delta_t*(self.mdot/(self.mr+1)*(1+self.filmCoolingPercent)))
+        return (self.fuel.cp*self.fuel_delta_t*(self.mdot/(self.mr+1)*(1+self.filmCoolingPercent)))
 
     def graphDisplay(self, pressure_units = 'bar', distance_units = 'in'):
         #temperature units?

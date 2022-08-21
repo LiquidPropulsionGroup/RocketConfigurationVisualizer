@@ -7,12 +7,13 @@ from scipy.optimize import fsolve
 from rocketcea.cea_obj import CEA_Obj, add_new_fuel
 from .chemistryCEA import ChemistryCEA
 from .thrustLevel import ThrustLevel
+from .fluidProperties.fluidProperties import FluidProperties
 
 class Engine:
     def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None):
         self.title = title
-        self.fuel = fuel
-        self.ox = ox
+        self.fuel = FluidProperties(fuel)
+        self.ox = FluidProperties(ox)
         if customFuel != None:
             add_new_fuel( customFuel[0], customFuel[1] )
         self.cea = CEA_Obj( oxName= ox, fuelName= fuel)
@@ -41,10 +42,16 @@ class Engine:
         self.chamber_length = self.chamber_volume / (math.pi * (self.Dcham / 2) ** 2)
         self.contourPoints, self.contour = self.nozzleGeneration()
         self.area_arr = self.areas()
-        self.max.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel_cp, self.Mr, self.filmCoolingPercent)
-        self.min.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel_cp, self.Mr, self.filmCoolingPercent)
+        self.max.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel, self.Mr, self.filmCoolingPercent)
+        self.min.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel, self.Mr, self.filmCoolingPercent)
         
+    def bartzHeatCalcs(self):
+        self.max.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel, self.Mr, self.filmCoolingPercent)
+        self.min.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel, self.Mr, self.filmCoolingPercent)
 
+    def filmCoolingHeatCalcs(self): 
+        self.max.heatCalcsFilmCooling()     #add arguments
+        self.max.heatCalcsFilmCooling()
 
     def throttleLevelCalculator(self, pMin, ae):
         #print('pressure ratio:{}'.format(pMin))
@@ -140,10 +147,10 @@ class Engine:
             curvePercent2 = .8
             optimalP1 = 0.9
             optimalp2 = 0.4
-            noz1 = ceaRocket(self.fuel, self.ox, self.max.cham.p, self.Mr, self.max.mdot, title = 'smallAE', pAmbient = optimalP1)
+            noz1 = ceaRocket(self.fuel.name, self.ox.name, self.max.cham.p, self.Mr, self.max.mdot, title = 'smallAE', pAmbient = optimalP1)
             ae1 = noz1.exit.aeat
             print('throat1: ')
-            noz2 = ceaRocket(self.fuel, self.ox, self.max.cham.p, self.Mr, self.max.mdot, title = 'largeAE', pAmbient = optimalP2)
+            noz2 = ceaRocket(self.fuel.name, self.ox.name, self.max.cham.p, self.Mr, self.max.mdot, title = 'largeAE', pAmbient = optimalP2)
             ae1 = noz1.exit.aeat
             curve1ae = ae1 #low altitude optimized area ratio
             curve2ae = ae2
@@ -223,7 +230,7 @@ class Engine:
     #printing veriables
     def variablesDisplay(self):
         print("{}{}:{}".format('\033[33m', self.title, '\033[0m'))
-        print("Propellants:{}, {}".format(self.fuel, self.ox))
+        print("Propellants:{}, {}".format(self.fuel.name, self.ox.name))
         print("Chamber Length: {0:.2f} in".format(self.chamber_length / 0.0254))
         print("Chamber Diameter: {0:.2f} in".format(self.Dcham / 0.0254))
         print("Exit Diameter: {0:.2f} in".format(self.max.exit.d / 0.0254))
