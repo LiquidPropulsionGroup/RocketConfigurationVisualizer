@@ -220,7 +220,8 @@ class ThrustLevel:
         return total_watts
     
     def fuelWatts(self):
-        return (self.fuel.cp*self.fuel_delta_t*(self.mdot/(self.mr+1)*(1+self.filmCoolingPercent)))
+        #print(f'fuel cp: {self.fuel.cp} \nfuel delta t: {self.fuel_delta_t}\nmdot: {self.mdot}\nmr: {self.mr}\nfilm cooling percent: {self.filmCoolingPercent}')
+        return (self.fuel.cp * self.fuel_delta_t * (self.mdot/(self.mr+1) * (1+self.filmCoolingPercent)))
 
     def graphDisplay(self, pressure_units = 'bar', distance_units = 'in'):
         #temperature units?

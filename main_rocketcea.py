@@ -30,7 +30,7 @@ r2 = 1
 r3 = 0.4
 step = 5e-3
 nozzle_type = 'conical'
-stinger = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, div_angle = div_angle, contourStep = step)
+#stinger = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, div_angle = div_angle, contourStep = step)
 #stinger.variablesDisplay()
 #stinger.graphDisplay()
 
@@ -39,7 +39,7 @@ stinger = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRa
 #test engine 
 title = 'Test Engine Sizing'
 ox = 'LOX'        # full propellant selection is availible at https://rocketcea.readthedocs.io/en/latest/propellants.html
-fuel =  'CH4'# 'Isopropanol70''Ethanol''RP1'
+fuel =  'RP1'# 'Isopropanol70''Ethanol''CH4'
 customFuel = [
     "Isopropanol70", 
     """fuel C3H8O-2propanol C 3 H 8 O 1    wt%=70.0
@@ -69,7 +69,7 @@ step = 5e-3
 nozzle_type = 'bell80' #'conical'
 test = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, filmCoolingPercent = filmCoolingPercent, div_angle = div_angle, contourStep = step, customFuel = customFuel)
 test.variablesDisplay()
-test.graphDisplay()
+#test.graphDisplay()
 
 
 #rocket trajectory test

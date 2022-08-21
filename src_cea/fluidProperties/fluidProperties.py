@@ -12,6 +12,7 @@ class FluidProperties:
     T_sat = None
     roe_l = None
     c_l = None
+    cp = None
     def __init__(self, fluidName):
         #print(os.getcwd())
         self.name = fluidName
@@ -20,6 +21,8 @@ class FluidProperties:
                 lines = csvfile.readlines()
                 for i in range(len(lines)):
                     lines[i] = lines[i].split(',')
+                #print(f'len(lines[0]) = {len(lines[0])}')
+                print(lines)
                 for i in range(len(lines[0])):
                     self.__setattr__(lines[0][i], float(lines[1][i]))
         except:
@@ -30,6 +33,7 @@ class FluidProperties:
             f"T_sat: {self.T_sat} " \
             f"roe_l: {self.roe_l} " \
             f"c_l: {self.c_l} " \
+            f"cp: {self.cp} " \
 
 if __name__ == '__main__':
     keroseneProps = FluidProperties('kerosene')

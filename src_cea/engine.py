@@ -13,6 +13,7 @@ class Engine:
     def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None):
         self.title = title
         self.fuel = FluidProperties(fuel)
+        print(self.fuel)
         self.ox = FluidProperties(ox)
         if customFuel != None:
             add_new_fuel( customFuel[0], customFuel[1] )
@@ -136,7 +137,7 @@ class Engine:
             cc = X[2]
             nozzleCurve = lambda x: (-X[1] + (X[1]**2 - 4 * X[0] * (X[2]-x))**0.5) / (2*X[0]) # might need to change sign
 
-
+            '''
         elif self.nozzle_type == 'dualbell': #work in progress, this sets the points and equations for a duel bell nozzle, in this there is an extra point 'm' between the n and e points
             r3 = self.r3 * self.max.thr.d/2
             thetaE1 = 7 *np.pi/180 # theta values found in table... hard coded temporarily
@@ -174,7 +175,7 @@ class Engine:
             B = np.array([1/np.tan(thetaN2), 1/np.tan(thetaE2), m[0]])
             X2 = np.linalg.solve(A, B)
             nozzleCurve2 = lambda x: (-X2[1] + math.sqrt(X2[1]**2 - 4*X2[0]*(X2[2]-x)))/ 2*X2[0]
-
+            '''
         else: #this runs if the nozzle type input does not match any of the above nozzle types
             print("invalid nozzle type")
         
