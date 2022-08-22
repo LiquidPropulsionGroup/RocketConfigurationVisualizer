@@ -79,26 +79,34 @@ class ThrustLevel:
         D_cc = self.cham.d
         #properties of free stream gas:
         cp_g = self.cham.cp
-        mu_g = 
-        Pr_g = 
+        mu_g = self.cham.mu
+        Pr_g = self.cham.Pr
         roe_g = self.cham.roe
         #liquid coolant properties:
         cp_l = self.fuel.cp
         h_fg = self.fuel.h_fg
         T_sat = self.fuel.T_sat
         roe_l = self.fuel.roe
+        #other needed properties:
+        f =     #fanning friction factor
         #calculated values:
-        Re_g =        #calculated from G_mean
-        lamda = 
-        St_0 = 
-        e_t = 
-        K_t = 
-        h_0 = 
-        hstar_fg = 
+        G_g = roe_g * u_g
+        G_mean = G_g * (u_g - u_c)/u_g #coolant and chamber gas velocites needed
+        Re_g = G_mean * D_cc/u_g
+        #lamda ... solve for 1/(lamda)^.5 = 1.93*ln(Re*lamda^.5)-0.537
+        St_0 = f/2/(1.2+11.8*(f/2)^.5*(Pr-1)*Pr^(-1/3))
+        e_t = #obtain from test data?
+        K_t = 1 + 4 * e_t
+        h_0 = G_mean * cp_g * St_0 * K_t
+        hstar_fg = h_fg + (T_sat - ???) * cp_l
         epselon_t = 
         Qdot_rad = 
         St = 
         h = 
+        Qdot_tot = 
+        mdot_v
+        Γ_c = # blowing ratio or the coolant flow rate per circumference available for film cooling
+        L_c = #film cooling length
         '''
         '''
         https://www.sciencedirect.com/science/article/pii/S0017931012003195?casa_token=U5ONT6cTbYsAAAAA:VQ47ewAtIETX8_y5dxiMSEA2abz2aqwbIjpYr0QxATVftTxfp45c582heKU_gtFZuT6mXjwACw
