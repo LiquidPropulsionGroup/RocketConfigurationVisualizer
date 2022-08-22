@@ -248,6 +248,9 @@ class Engine:
         print("Fuel Mass Flow Rate: {0:.2f} mdot".format(self.max.mdot/(self.max.mr+1)*(1+self.max.filmCoolingPercent)))
         print("Film Cooling Mass Flow Rate: {0:.2f} mdot".format(self.max.mdot/(self.max.mr+1)*(self.max.filmCoolingPercent)))
         print("chamber pressure: {0:.2f} bar".format(self.max.pressure_arr[1,1]))
+        print(f'chamber values: {self.max.cham}')
+        print(f'throat values: {self.max.thr}')
+        print(f'exit values: {self.max.exit}')
         print("{}{}:{}".format('\033[92m', 'Min Thrust', '\033[0m'))
         print("Min Thrust: {0:.2f} N".format(self.min.thrust))
         print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.min.h_g_arr[1,1]))
@@ -258,7 +261,7 @@ class Engine:
         print("Fuel Mass Flow Rate: {0:.2f} mdot".format(self.min.mdot/(self.min.mr+1)*(1+self.min.filmCoolingPercent)))
         print("Film Cooling Mass Flow Rate: {0:.2f} mdot".format(self.min.mdot/(self.min.mr+1)*(self.min.filmCoolingPercent)))
         print("chamber pressure: {0:.2f} bar".format(self.min.pressure_arr[1,1]))
-        print()
+
         
     def graphDisplay(self):
         self.max.graphDisplay()
