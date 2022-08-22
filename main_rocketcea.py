@@ -47,7 +47,7 @@ h,cal=-65133.0     t(k)=298.15   rho=0.786
 fuel water H 2.0 O 1.0  wt%=30.0
 h,cal=-68308.0  t(k)=298.15 rho,g/cc = 0.9998"""
 ]
-print('{}'.format(customFuel[1]))
+#print('{}'.format(customFuel[1]))
 pMaxCham = 15     #max thrust chamber pressure in bar
 Mr = 2.3 # propellant mixture ratio
 pAmbient = 1.01325
@@ -69,6 +69,7 @@ step = 5e-3
 nozzle_type = 'conical' #'bell80'
 test = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, filmCoolingPercent = filmCoolingPercent, div_angle = div_angle, contourStep = step, customFuel = customFuel, frozen = 1)
 test.variablesDisplay()
+#test.debugAndRawVariablesDisplay()
 #test.graphDisplay()
 
 

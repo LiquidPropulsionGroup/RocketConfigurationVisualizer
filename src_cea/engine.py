@@ -13,7 +13,7 @@ class Engine:
     def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None, frozen = 1, optimalP = 1):
         self.title = title
         self.fuel = FluidProperties(fuel)
-        print(self.fuel)
+        #print(self.fuel)
         self.ox = FluidProperties(ox)
         if customFuel != None:
             add_new_fuel( customFuel[0], customFuel[1] )
@@ -79,7 +79,7 @@ class Engine:
             nozmin = ThrustLevel(self.cea, cpGuess, self.Mr, mdotGuess, self.area_arr, ae = ae, frozen = self.frozen)
             pGuess = nozmin.exit.p
             #print('pressure guess:{}'.format(pGuess))
-        print('min nozzle exit pressure in pascals: {}'.format(nozmin.exit.p))
+        #print('min nozzle exit pressure in bar: {}'.format(nozmin.exit.p))
         return nozmin
 
     def variableThrustOptimizer(self):
@@ -248,9 +248,6 @@ class Engine:
         print("Fuel Mass Flow Rate: {0:.2f} mdot".format(self.max.mdot/(self.max.mr+1)*(1+self.max.filmCoolingPercent)))
         print("Film Cooling Mass Flow Rate: {0:.2f} mdot".format(self.max.mdot/(self.max.mr+1)*(self.max.filmCoolingPercent)))
         print("chamber pressure: {0:.2f} bar".format(self.max.pressure_arr[1,1]))
-        print(f'chamber values: {self.max.cham}')
-        print(f'throat values: {self.max.thr}')
-        print(f'exit values: {self.max.exit}')
         print("{}{}:{}".format('\033[92m', 'Min Thrust', '\033[0m'))
         print("Min Thrust: {0:.2f} N".format(self.min.thrust))
         print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.min.h_g_arr[1,1]))
@@ -261,8 +258,11 @@ class Engine:
         print("Fuel Mass Flow Rate: {0:.2f} mdot".format(self.min.mdot/(self.min.mr+1)*(1+self.min.filmCoolingPercent)))
         print("Film Cooling Mass Flow Rate: {0:.2f} mdot".format(self.min.mdot/(self.min.mr+1)*(self.min.filmCoolingPercent)))
         print("chamber pressure: {0:.2f} bar".format(self.min.pressure_arr[1,1]))
-
-        
+    def debugAndRawVariablesDisplay(self):
+        print(f'chamber values: {self.max.cham}')
+        print(f'throat values: {self.max.thr}')
+        print(f'exit values: {self.max.exit}')
+        print(f'raw cea output: {self.max.cham.raw_cea_output}')
     def graphDisplay(self):
         self.max.graphDisplay()
         self.min.graphDisplay()

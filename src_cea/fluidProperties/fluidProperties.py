@@ -36,7 +36,7 @@ class FluidProperties:
                     for i in range(len(lines)):
                         lines[i] = lines[i].split(',')
                     #print(f'len(lines[0]) = {len(lines[0])}')
-                    print(lines)
+                    #print(lines)
                     for i in range(len(lines[0])):
                         self.__setattr__(lines[0][i], float(lines[1][i]))
             except:

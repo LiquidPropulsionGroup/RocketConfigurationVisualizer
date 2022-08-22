@@ -25,7 +25,7 @@ class ChemistryCEA:
     d = None #diameter
     mu = None #viscosity
     Pr = None #prandtl number
-
+    raw_cea_output = None
 
     def initCalculations(self):
         #print('m:{}'.format(self.m))
@@ -37,15 +37,14 @@ class ChemistryCEA:
         #print('cea:{}\npCham:{}\nMr:{}\nae:{}\npAmbient{}'.format(cea, pCham, Mr, ae, pAmbient))
         if ae == None:
             Pratio = pCham/pAmbient
-            string = cea.get_full_cea_output(Pc = pCham, MR = Mr, eps = ae, PcOvPe = Pratio, pc_units='bar', output='KJ', short_output=1, frozen = frozen) 
+            mystring = cea.get_full_cea_output(Pc = pCham, MR = Mr, eps = ae, PcOvPe = Pratio, pc_units='bar', output='KJ', short_output=1, frozen = frozen) 
             #frozen = 1 is frozen , frozen = 0 is equilibrium
         elif ae != None:
-            string = cea.get_full_cea_output(Pc = pCham, MR = Mr, eps = ae, PcOvPe = None, pc_units='bar', output='KJ', short_output=1, frozen = frozen)
+            mystring = cea.get_full_cea_output(Pc = pCham, MR = Mr, eps = ae, PcOvPe = None, pc_units='bar', output='KJ', short_output=1, frozen = frozen)
         else:
             print('chem needs a pAmbient or ae value')
         #print(string)
-        lines = string.splitlines()
-        
+        lines = mystring.splitlines()
         lines.reverse()
         #print(f'lines: {lines}')
         my_vars = [
@@ -120,7 +119,7 @@ class ChemistryCEA:
                                             #print(f'checking char: {chars[i]}')
                                             isvar = 0
                                             vals[isvar] = vals[isvar] + chars[i]
-                            print(f'vals: {vals}')
+                            #print(f'vals: {vals}')
                             for i in range(3):
                                 setattr(chems[i], varName[1], vals[i])
                         else:
@@ -133,10 +132,11 @@ class ChemistryCEA:
                                 #print('chem:{}\ntemp:{}\nvarName:{}'.format(chems[-(k+1)], temp, varName[1]))
                                 setattr(chems[-(k+1)], varName[1], temp)
                                 #chems[-(k+1)].__setattr__(varName[1], temp)
+                
         #print('chems:{}'.format(chems))
         for i in range(len(chems)):
             chems[i].initCalculations()
-
+            setattr(chems[i], 'raw_cea_output', mystring)
         return chems
 
 
