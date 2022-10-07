@@ -39,3 +39,93 @@ my_contourPoints is a function that generates x and y positions for critical poi
 
 This function interpolates the contour for numerical calculations. It uses lambda functions: the contour consists of straight lines and circles per Sutton. Nozzle is conical, with 80% bell optimization capability to be added in the future.
 
+## Math Review
+
+### inputs
+
+ox  # full propellant selection is availible at https://rocketcea.readthedocs.io/en/latest/propellants.html
+fuel
+customFuel = [
+    "Isopropanol70", 
+    """fuel C3H8O-2propanol C 3 H 8 O 1    wt%=70.0
+h,cal=-65133.0     t(k)=298.15   rho=0.786
+fuel water H 2.0 O 1.0  wt%=30.0
+h,cal=-68308.0  t(k)=298.15 rho,g/cc = 0.9998"""
+]
+pMaxCham    #max thrust chamber pressure in bar
+Mr  #propellant mixture ratio
+pAmbient
+pMinExitRatio
+#set veriables
+mdotMax  #max thrust mass flow rate
+filmCoolingPercent
+Lstar
+Dcham
+conv_angle
+div_angle
+wall_temp
+fuel_delta_t
+fuel_cp
+r1
+r2
+r3
+step
+nozzle_type
+### outputs
+
+
+
+### CEA and parser
+the thermochemistry part of this code is done through the CEArocket package which is a wraper for the NASA CEA FORTRAN code. the chemistry CEA
+#### CEA inputes
+fuel
+pCham
+Mr
+pAmbient or ea
+frozen or equilibrium
+
+#### CEA outputs
+
+
+### chamber nozzle contour
+points a,b,c,d,o,n,e from left to right where the exit is to the right are used to define the nozzle contour
+r1, r2, r3 are the radii ratios compared to the throat for the throat and chamber curvatures
+o stands for origin
+e for exit
+the nozzle can be either connical or a bell nozzle:
+for connical a 15 degree strait line is drawn from point n to the exit radius
+
+#### 80% bell nozzle calcs
+for the bell nozzle a parabola is drawn with the x distance being defined as 80% of the length of the respective connical nozzle. the paper below has detailes for the equations we used for making this.
+"Design and analysis of contour bell nozzle and comparison with dual bell nozzle"
+https://core.ac.uk/download/pdf/154060575.pdf
+
+### mach area
+
+( 2 / (self.thr.gam + 1) * ( 1 + (self.thr.gam - 1)/2 * mach**2 ))**((self.thr.gam+1)/(2*(self.thr.gam-1))) - mach * area_ratio
+https://web.mit.edu/16.unified/www/SPRING/propulsion/notes/node104.html
+IMPORTANT NOTE: area ratio might be wrong, might need to be inversed
+
+### bartz
+(0.026 / math.pow(d_throat, 0.2) * math.pow((p_chamber / c_star), 0.8) * math.pow((d_throat / d),
+            1.8) * c_p * math.pow(visc, 0.2) * math.pow((t_gas / t_boundary), (0.8 - 0.2 * 0.6)))
+
+h_g_arr[1,i] = self.bartz(self.thr.d, self.cham.p, self.Cstar, self.contour[1,i]*2, self.cham.cp*1000, 0.85452e-4, self.temp_arr[1,i], self.wall_temp)
+
+https://arc.aiaa.org/doi/pdf/10.2514/8.12572
+
+### adiabatic pressure, temperature, density
+
+t_stag = self.cham.t * (1 + ((gam-1)/2 * self.cham.mach**2))
+myreturn = t_stag * (1 + ((gam-1)/2 * mach**2))**(-1)
+
+p_stag = self.cham.p * (1 + ((gam-1)/2 * self.cham.mach**2))**(gam/(gam-1))
+myreturn = p_stag * (1 + ((gam-1)/2 * mach**2))**(-gam/(gam-1))
+
+d_stag = self.cham.rho * (1 + ((gam-1)/2 * self.cham.mach**2))**(1/(gam-1))
+myreturn = d_stag * (1 + ((gam-1)/2 * mach**2))**(-1/(gam-1))
+
+
+### other heat calcs
+
+### wall thermal calcs
