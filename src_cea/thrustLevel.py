@@ -154,7 +154,7 @@ class ThrustLevel:
         return (mdot / (press)) * math.sqrt(temp * rbar / gam) * math.pow(
                 (1 + ((gam - 1) / 2)), ((gam + 1) / (2 * (gam - 1))))
 
-    def solveMach(self):
+    def solveMach(self): # IMPORTANT NOTE: area ratio might be wrong, might need to be inversed
         def solveMatchForAreaRatio(area_ratio, mach_guess=0.7):
             def machEqn(mach):
                 # return mach * area_ratio + 10
@@ -173,6 +173,7 @@ class ThrustLevel:
         return mach_arr
 
     def temp_eq(self, mach):#NOTE: stagnation values need improvment
+        #NOTE: check if gamma can be made into array along x axis
         gam = self.thr.gam
         t_stag = self.cham.t * (1 + ((gam-1)/2 * self.cham.mach**2))
         # Note: ok technically, yes, the stagnation temperature needs to account for
@@ -190,7 +191,7 @@ class ThrustLevel:
         return myreturn
 
     def density_eq(self, mach):#need to find chamber density
-        gam = self.cham.gam# CHECK THIS!!!
+        gam = self.thr.gam# CHECK THIS!!!
         d_stag = self.cham.rho * (1 + ((gam-1)/2 * self.cham.mach**2))**(1/(gam-1))
         myreturn = d_stag * (1 + ((gam-1)/2 * mach**2))**(-1/(gam-1))
         return myreturn
@@ -290,4 +291,3 @@ class ThrustLevel:
         sax.legend(loc=(0.75,1))
         
         plt.show()
-
