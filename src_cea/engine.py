@@ -135,6 +135,7 @@ class Engine:
             aa = X[0]
             bb = X[1]
             cc = X[2]
+            print(f'bell parabola constants\na = {aa}\nb = {bb}\nc = {cc}')
             nozzleCurve = lambda x: (-X[1] + (X[1]**2 - 4 * X[0] * (X[2]-x))**0.5) / (2*X[0]) # might need to change sign
 
             '''
@@ -224,7 +225,7 @@ class Engine:
             self.contour[0,i] += -offset
         output.write("X,Y,MACH,TEMP,Pressure,h_g,FLUX\n")
         for i in range(len(self.contour[1,:])):
-            output.write("{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}\n".format(self.contour[0,i], self.contour[1,i], self.mach_arr[1,i], self.temp_arr[1,i], self.pressure_arr[1,i], self.h_g_arr[1,i], self.heat_flux_arr[1,i]))
+            output.write("{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}\n".format(self.contour[0,i], self.contour[1,i], self.max.mach_arr[1,i], self.max.temp_arr[1,i], self.max.pressure_arr[1,i], self.max.h_g_arr[1,i], self.max.heat_flux_arr[1,i]))
         output.close()
 ###############################
 
