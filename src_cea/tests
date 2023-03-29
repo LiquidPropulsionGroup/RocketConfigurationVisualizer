@@ -1,0 +1,28 @@
+import math
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy as sp
+import numpy as np
+from scipy.optimize import fsolve
+
+
+def myFunction(z, alpha):
+    phi = z[0]
+    mu = z[1]
+    F = np.empty((2))
+    F[0] = np.tan(alpha) - np.sqrt(2*(1-phi)/phi)
+    F[1] = mu - phi*np.sqrt(phi/(2-phi))
+    return F
+
+zGuess = np.array([0.5,0.5])
+alpha = 60*np.pi/180
+z = fsolve(myFunction,zGuess, args=(alpha,))
+print(z)
+phi, mu = z
+
+def funA(A, phi, mu):
+    return mu - 1/np.sqrt(A**2/(1-phi)+1/phi**2)
+AGuess = 0.5
+A = fsolve(funA, AGuess, args=(phi, mu,))
+print(A)
+
