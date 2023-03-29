@@ -26,3 +26,16 @@ AGuess = 0.5
 A = fsolve(funA, AGuess, args=(phi, mu,))
 print(A)
 
+def funPhi(phi, A):
+    return A - (1-phi)*np.sqrt(2)/(phi*np.sqrt(phi))
+phiGuess = 0.5
+phi = fsolve(funPhi, phiGuess, args=(A,))
+print(phi)
+
+mu = phi*np.sqrt(phi)/np.sqrt(2-phi)
+print(mu)
+
+alpha_eq = 180/np.pi*np.arctan(np.sqrt(2*(1-phi)/phi))
+print(alpha_eq)
+
+print(180/np.pi*np.arctan(1))
