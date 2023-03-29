@@ -13,7 +13,7 @@ can be found in the following paper.
 "Design and Dynamics of Jet and Swirl Injectors" Vladimir Bazarov, Vigor Yang, Puneesh Puri
 '''
 class Injector:
-    def __init__(self, mdot, p_f, p_in, p_c, alpha, n, l_n, l_in, l_s):
+    def __init__(self, mdot, p_f, p_in, p_c, alpha, n, l_n, l_in, l_s, rho, nu):
 
         #user input values
         self.mdot = mdot    # mass flow rate
@@ -22,13 +22,11 @@ class Injector:
         self.p_c = p_c      # pressure of chamber
         self.alpha = alpha  # spray cone angle
         self.n = n          # number of tangential injection passages
-        self.eps_in         # hydraulic loss coefficient of the inlet passages
-        self.roe            # density of fluid
-        self.nu             # kinematic viscosity
+        self.rho = rho      # density of fluid
+        self.nu = nu        # kinematic viscosity
         self.l_in = l_in    # 3-6, length of tangential passages
         self.l_n = l_n      # 0.5-2, length of nozzle
         self.l_s = l_s      # l_s>2, length of vortex chamber
-        self.R_s = None     # radius of vortex chamber
 
         self.mu = None      # mass flow coefficient
         self.phi = None     # coefficient of passage fullness, or fractional area occupied by liquid in the nozzle
@@ -53,7 +51,7 @@ cases). The geometric characteristic parameter A and the flow coefficient mu
 are then determined from the plots in Fig. 32.
     '''
 #alpha is gigen as an input
-#with alpha angle, phi, mu and A can be calculated
+#with alpha angle chosen, values for phi, mu and A can be calculated
     def calc_phi_mu_A(self, alpha): #aplha needs to be in radians for this to work
         def funcPhiMu(z, alpha):
             phi = z[0]
@@ -75,10 +73,10 @@ are then determined from the plots in Fig. 32.
 #step 2
 #determine nozzle radius R_n
 # this can be done with the calculated mu from step 1 and inpit values
-# of mdot, roe, and deltaP
+# of mdot, rho, and deltaP
 # the deltaP is the total pressure drop
-    def calc_R_n(self, mdot, mu, roe, deltaP):
-        R_n = 0.475*np.sqrt(mdot/(mu*np.sqrt(roe*deltaP))) #eq 103
+    def calc_R_n(self, mdot, mu, rho, deltaP):
+        R_n = 0.475*np.sqrt(mdot/(mu*np.sqrt(rho*deltaP))) #eq 103
         return R_n
 #step 3
     '''
@@ -87,7 +85,7 @@ coefficient of injector opening, based on structural considerations. Then, the
 radius of the inlet passage is obtained
     '''
 # number of passages n is user input
-# R_in is decided of of structural considerations NOTE: learn more about this
+# R_in is decided from structural considerations NOTE: learn more about this
 # A and R_n are calculated from steps 1 and 2 respectivly
     def calc_r_in(self, R_in, R_n, n, A):
         r_in = np.sqrt(R_in*R_n/(n*A)) #eq 104
@@ -98,17 +96,20 @@ radius of the inlet passage is obtained
 # l_in = 3-6
 # l_n = 0.5-2
 # l_s > 2
+# #NOTE: maybe add user input on this step so numbers can be changed through each iteration
     def calc_lengths(self, r_in, R_in, R_n, l_in, l_n, l_s):
-        self.l_in = l_in*r_in
-        self.l_n = l_n*R_n
-        self.l_s = l_s*R_in
-        self.R_s = R_in + r_in
+        l_in = l_in*r_in
+        l_n = l_n*R_n
+        l_s = l_s*R_in
+        R_s = R_in + r_in
+        return l_in, l_n, l_s, R_s
 #step 5
 # find reynolds number in the inlet passages
 # n and r_in are from previous steps
-# mdot, roe, and nu are user input values
-    def calc_Re(self, mdot, n, r_in, roe, nu):
-        self.Re = 0.637*mdot/(np.sqrt(n)*r_in*roe*nu) #eq 101
+# mdot, rho, and nu are user input values
+    def calc_Re(self, mdot, n, r_in, rho, nu):
+        Re = 0.637*mdot/(np.sqrt(n)*r_in*rho*nu) #eq 101
+        return Re
 #step 6
 # calculate A_eq and use that to get mu_eq and alpha_eq from the methods used in step 1
 # R_in, R_n, n, r_in, Re are calculated from previous steps
@@ -116,7 +117,8 @@ radius of the inlet passage is obtained
         lam = 0.3164/(Re)**0.25 #eq 101
         return lam
     def calc_A_eq(self, R_in, R_n, n, r_in, lam):
-        self.A_eq = R_in*R_n/(n*r_in^2+lam/2*R_in*(R_in-R_n)) #eq 100
+        A_eq = R_in*R_n/(n*r_in**2+lam/2*R_in*(R_in-R_n)) #eq 100
+        return A_eq
     def calc_phi_eq(self, A_eq):
         def funPhi(phi, A):
             return A - (1-phi)*np.sqrt(2)/(phi*np.sqrt(phi))#eq 92
@@ -135,18 +137,22 @@ radius of the inlet passage is obtained
 # this hydraulic loss coefficient is reltated to the inlet geometry of the inlet passages
 # there are different equations for sharp edges, rounded, and angled orifice inlets
 # figure 25 in the paper show these relations
+# R_s, l_in, lam, and r_in are calculated from previous steps
     def calc_eps_in(self, R_s, l_in): 
         alpha = 90-180/np.pi*np.arctan(R_s/l_in)
         eps_in = -0.015*(alpha-30)+0.9 # linear equation from figure 25
         return eps_in
     def calc_eps(self, eps_in, lam, l_in, r_in):
-        self.eps = eps_in + lam*l_in/(2*r_in) #eq 20
+        eps = eps_in + lam*l_in/(2*r_in) #eq 20
+        return eps
 #step 8
 #Determine the actual flow coefficient
+# mu_eq, eps, R_in, R_n, A are calculated from previous steps
 #NOTE: check which A to use
     def calc_mu(self, mu_eq, eps, R_in, R_n, A):
         Rbar_in = R_in/R_n
-        self.mu = mu_eq/np.sqrt(1+eps*mu_eq^2*A/Rbar_in^2) # eq 99
+        mu = mu_eq/np.sqrt(1+eps*mu_eq**2*A**2/Rbar_in**2) # eq 99
+        return mu
 #step 9
 # Calculate the nozzle radius using the new approximation
 # this step reuses the function from step 2 but with new value for mu
@@ -154,14 +160,53 @@ radius of the inlet passage is obtained
 
 #step 10
 # Calculate the geometric parameter A with the new value for R_n
+# R_in, R_n, and r_in are calculated from previous steps
+# n is user input
     def calc_A(self,R_in, R_n, n, r_in):
-        self.A = R_in*R_n/(n*r_in^2) #eq 48
+        A = R_in*R_n/(n*r_in**2) #eq 48
+        return A
 
 #step 11
 # Repeat steps 1-10 until the calculated injector parameters converge.
 
     def calculate(self):
-        pass
+        alpha = self.alpha
+        deltaP = self.p_f - self.p_c #NOTE: confirm this is correct
+        l_in, l_n, l_s = self.l_in, self.l_n, self.l_s
+        print(f"input values: \nalpha = {alpha}\ndeltaP = {deltaP}\nl_in = {l_in}\nl_n = {l_n}\nl_s = {l_s}")
+        print("calculated values:")
+        A, phi, mu = self.calc_phi_mu_A(alpha)
+        print('A = {}\nphi = {}\nmu = {}'.format(A, phi, mu))
+        R_n = self.calc_R_n(self.mdot, mu, self.rho, deltaP)
+        print(f'R_n = {R_n}')
+        R_in = R_n*1.25 # consider making this a user input check for each iteration
+        print(f'R_in = {R_in}')
+        r_in = self.calc_r_in(R_in, R_n, self.n, A)
+        print(f'r_in = {r_in}')
+        l_in, l_n, l_s, R_s = self.calc_lengths(r_in, R_in, R_n, l_in, l_n, l_s)
+        print('l_in = {}\nl_n = {}\nl_s = {}\nR_s = {}'.format(l_in, l_n, l_s, R_s))
+        Re = self.calc_Re(self.mdot, self.n, r_in, self.rho, self.nu)
+        print(f'Re = {Re}')
+        lam = self.calc_lam(Re)
+        print(f'lam = {lam}')
+        A_eq = self.calc_A_eq(R_in, R_n, self.n, r_in, lam)
+        print(f'A_eq = {A_eq}')
+        phi_eq = self.calc_phi_eq(A_eq)
+        print(f'phi_eq = {phi_eq}')
+        mu_eq = self.calc_mu_eq(phi_eq)
+        print(f'mu_eq = {mu_eq}')
+        alpha_eq = self.calc_alpha_eq(phi_eq)
+        print(f'alpha_eq = {alpha_eq}')
+        eps_in = self.calc_eps_in(R_s, l_in)
+        print(f'eps_in = {eps_in}')
+        eps = self.calc_eps(eps_in, lam, l_in, r_in)
+        print(f'eps = {eps}')
+        mu = self.calc_mu(mu_eq, eps, R_in, R_n, A)
+        print(f'mu = {mu}')
+        R_n = self.calc_R_n(self.mdot, mu, self.rho, deltaP)
+        print(f'R_n = {R_n}')
+        A = self.calc_A(R_in, R_n, self.n, r_in)
+        print(f'A = {A}')
 
 
 #--------------------------------------------------------------------------------------
@@ -195,3 +240,19 @@ radius of the inlet passage is obtained
         # Show the plot
         plt.show()
 
+if __name__ == "__main__": #test values
+    mdot = 0.5
+    #pressures in pascals
+    p_f = 24*10**5
+    p_in = 23*10**5 # not currently being used
+    p_c = 20*10**5
+    alpha = 50  #in degrees
+    n = 4
+    l_n = 4.5   # l_in = 3-6
+    l_in = 1    # l_n = 0.5-2
+    l_s = 3     # l_s > 2
+    rho = 997   #in kg/m^3
+    nu = 0.6*10**(-6) #in m^2/s
+
+    my_swirl_injector = Injector(mdot, p_f, p_in, p_c, alpha, n, l_n, l_in, l_s, rho, nu)
+    my_swirl_injector.calculate()
