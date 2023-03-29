@@ -60,7 +60,7 @@ are then determined from the plots in Fig. 32.
             F[0] = np.tan(alpha) - np.sqrt(2*(1-phi)/phi) #eq 74
             F[1] = mu - phi*np.sqrt(phi/(2-phi)) #eq 62
             return F
-        zGuess = np.array([0.5,0.5])
+        zGuess = np.array([0.5,0.4])
         #alpha = 60*np.pi/180 
         phi, mu = fsolve(funcPhiMu,zGuess, args=(alpha,))
 
@@ -246,7 +246,7 @@ if __name__ == "__main__": #test values
     p_f = 24*10**5
     p_in = 23*10**5 # not currently being used
     p_c = 20*10**5
-    alpha = 50  #in degrees
+    alpha = 60*np.pi/180 #in radians
     n = 4
     l_n = 4.5   # l_in = 3-6
     l_in = 1    # l_n = 0.5-2
