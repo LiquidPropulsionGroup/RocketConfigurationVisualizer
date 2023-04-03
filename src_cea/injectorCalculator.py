@@ -6,27 +6,38 @@ from scipy.optimize import fsolve
 from sympy import symbols, solve
 
 '''
-this class is currently for sizing a coax swirl injector
+this class is currently for sizing a bipropellant coax swirl injector
 functionality for other injector types may be added later.
 the equations and derivations for the swirl injector sizing
 can be found in the following paper.
 "Design and Dynamics of Jet and Swirl Injectors" Vladimir Bazarov, Vigor Yang, Puneesh Puri
 '''
 class Injector:
-    def __init__(self, mdot, p_f, p_in, p_c, alpha, n, l_n, l_in, l_s, rho, nu):
+    def __init__(self, mdot1, mdot2, p_f1, p_in1, p_c1, p_f2, p_in2, p_c2, alpha1, alpha2, n1, n2, rho1, rho2, nu1, nu2, l_n1, l_in1, l_s1, l_n2, l_in2, l_s2):
 
         #user input values
-        self.mdot = mdot    # mass flow rate
-        self.p_f = p_f      # pressure of the preasure feed system befor injection
-        self.p_in = p_in    # pressure after being injected to the swirler
-        self.p_c = p_c      # pressure of chamber
-        self.alpha = alpha  # spray cone angle
-        self.n = n          # number of tangential injection passages
-        self.rho = rho      # density of fluid
-        self.nu = nu        # kinematic viscosity
-        self.l_in = l_in    # 3-6, length of tangential passages
-        self.l_n = l_n      # 0.5-2, length of nozzle
-        self.l_s = l_s      # l_s>2, length of vortex chamber
+        self.mdot1 = mdot1  # mass flow rate stage 1
+        self.mdot2 = mdot2  # mass flow rate stage 2
+        self.p_f1 = p_f1      # pressure of the preasure feed system befor injection
+        self.p_in1 = p_in1    # pressure after being injected to the swirler
+        self.p_c1 = p_c1      # pressure of chamber
+        self.p_f2 = p_f2      # pressure of the preasure feed system befor injection
+        self.p_in2 = p_in2    # pressure after being injected to the swirler
+        self.p_c2 = p_c2      # pressure of chamber        
+        self.alpha1 = alpha1  # spray cone angle
+        self.alpha2 = alpha2  # spray cone angle
+        self.n1 = n1          # number of tangential injection passages
+        self.n2 = n2          # number of tangential injection passages
+        self.rho1 = rho1      # density of fluid
+        self.rho2 = rho2      # density of fluid
+        self.nu1 = nu1        # kinematic viscosity
+        self.nu2 = nu2        # kinematic viscosity
+        self.l_in1 = l_in1    # 3-6, length of tangential passages
+        self.l_n1 = l_n1      # 0.5-2, length of nozzle
+        self.l_s1 = l_s1      # l_s>2, length of vortex chamber
+        self.l_in2 = l_in2    # 3-6, length of tangential passages
+        self.l_n2 = l_n2      # 0.5-2, length of nozzle
+        self.l_s2 = l_s2      # l_s>2, length of vortex chamber
 
         self.mu = None      # mass flow coefficient
         self.phi = None     # coefficient of passage fullness, or fractional area occupied by liquid in the nozzle
@@ -290,7 +301,8 @@ radius of the inlet passage is obtained
         )
 
 if __name__ == "__main__": #test values
-    mdot = 0.3/7  #mass flow of one injection orifice
+    mdot1 = 0.7/6       #mass flow of stage 1 of one injection element
+    mdot2 = 0.3/6       #mass flow of stage 2 of one injection element
     #pressures in pascals
     p_f = 24*10**5
     p_in = 23*10**5 # not currently being used
@@ -303,6 +315,6 @@ if __name__ == "__main__": #test values
     rho = 997   #in kg/m^3
     nu = 0.6*10**(-6) #in m^2/s
 
-    my_swirl_injector = Injector(mdot, p_f, p_in, p_c, alpha, n, l_n, l_in, l_s, rho, nu)
+    my_swirl_injector = Injector(mdot1, mdot2, p_f, p_in, p_c, alpha, n, l_n, l_in, l_s, rho, nu)
     my_swirl_injector.calculate()
     print(my_swirl_injector)
