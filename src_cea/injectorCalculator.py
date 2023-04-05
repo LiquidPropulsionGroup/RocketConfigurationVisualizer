@@ -226,7 +226,6 @@ radius of the inlet passage is obtained
             alpha = self.calc_alpha_eq(phi)
             print(f'alpha_eq = {alpha_eq}')
 
-        
         self.R_in = R_in
         self.R_s = R_s
         self.R_n = R_n
@@ -239,6 +238,38 @@ radius of the inlet passage is obtained
         self.A = A
         self.eps = eps
         self.Re = Re
+
+    '''
+this method uses much the same procedure as the monopropellant element sizing except that it is ment for
+designing two nested elements denoted as stage 1 being the inner element and stage 2 being the outer.
+there is also an option for internal or external mixing which involve different calculations.
+there are 2 calculations senerios which effect the sizing of the stage 2 element:
+senerio 1 the wall of the stage 1 nozzle is within the gaseouse core of the stage 2 nozzle flow
+senerio 2 the stage 1 nozzle is submerged and effecting the flow of the stage 2 nozzle
+    '''
+    def calculateBipropellant(self, senerio):
+        # stage 1 sizing calculations
+
+        # step 1
+        '''
+1) Prescribe the spray cone angles 2alpha_2 and 2alpha_1, according to the empirical
+condition 2alpha_1 — 2alpha_2 = 10 to 15 deg based on injector operating conditions.
+With these values and the correlation given in Fig. 34a, find the geometric characteristic parameters, A1 and A2.
+The flow coefficients of stages 1 and 2, mu_1 and mu_2, are then determined from Fig. 34b
+        '''
+        # step 2
+        '''
+2) Calculate the nozzle radii R_n1 and R_n2 from Eq. (103), and determine the
+tangential-entry radii r_in1 and r_in2 from Eq. (104).
+        '''
+
+        # stage 2 sizing calculations
+        if senerio == 0:
+
+        else:
+
+        #mixing element sizing calculations
+
 
 #--------------------------------------------------------------------------------------
     def swirlgraphs(self):
