@@ -170,50 +170,50 @@ radius of the inlet passage is obtained
 
     def calculate(self):
         alpha = self.alpha
-        deltaP = self.p_f - self.p_c #NOTE: confirm this is correct
+        deltaP = self.p_f - self.p_c #pressure drop across the whole injector
         l_in_ratio, l_n_ratio, l_s_ratio = self.l_in, self.l_n, self.l_s
-        print(f"input values: \nalpha = {alpha}\ndeltaP = {deltaP}\nl_in_ratio = {l_in_ratio}\nl_n_ratio = {l_n_ratio}\nl_s_ratio = {l_s_ratio}")
-        print("calculated values:")
+        #print(f"input values: \nalpha = {alpha}\ndeltaP = {deltaP}\nl_in_ratio = {l_in_ratio}\nl_n_ratio = {l_n_ratio}\nl_s_ratio = {l_s_ratio}")
+        #print("calculated values:")
         A, phi, mu = self.calc_phi_mu_A(alpha)
-        print('A = {}\nphi = {}\nmu = {}'.format(A, phi, mu))
+        #print('A = {}\nphi = {}\nmu = {}'.format(A, phi, mu))
         R_n = self.calc_R_n(self.mdot, mu, self.rho, deltaP)
-        print(f'R_n = {R_n}')
+        #print(f'R_n = {R_n}')
         for i in range(20):
-            print()
-            R_in = R_n*1.25 # consider making this a user input check for each iteration
-            print(f'R_in = {R_in}')
+            #print()
+            R_in = R_n*1.9 # consider making this a user input check for each iteration
+            #print(f'R_in = {R_in}')
             r_in = self.calc_r_in(R_in, R_n, self.n, A)
-            print(f'r_in = {r_in}')
+            #print(f'r_in = {r_in}')
             l_in, l_n, l_s, R_s = self.calc_lengths(r_in, R_in, R_n, l_in_ratio, l_n_ratio, l_s_ratio)
-            print('l_in = {}\nl_n = {}\nl_s = {}\nR_s = {}'.format(l_in, l_n, l_s, R_s))
+            #print('l_in = {}\nl_n = {}\nl_s = {}\nR_s = {}'.format(l_in, l_n, l_s, R_s))
             Re = self.calc_Re(self.mdot, self.n, r_in, self.rho, self.nu)
-            print(f'Re = {Re}')
+            #print(f'Re = {Re}')
             lam = self.calc_lam(Re)
-            print(f'lam = {lam}')
+            #print(f'lam = {lam}')
             A_eq = self.calc_A_eq(R_in, R_n, self.n, r_in, lam)
-            print(f'A_eq = {A_eq}')
+            #print(f'A_eq = {A_eq}')
             phi_eq = self.calc_phi_eq(A_eq)
-            print(f'phi_eq = {phi_eq}')
+            #print(f'phi_eq = {phi_eq}')
             mu_eq = self.calc_mu_eq(phi_eq)
-            print(f'mu_eq = {mu_eq}')
+            #print(f'mu_eq = {mu_eq}')
             alpha_eq = self.calc_alpha_eq(phi_eq)
-            print(f'alpha_eq = {alpha_eq}')
+            #print(f'alpha_eq = {alpha_eq}')
             eps_in = self.calc_eps_in(R_s, l_in)
-            print(f'eps_in = {eps_in}')
+            #print(f'eps_in = {eps_in}')
             eps = self.calc_eps(eps_in, lam, l_in, r_in)
-            print(f'eps = {eps}')
+            #print(f'eps = {eps}')
             mu = self.calc_mu(mu_eq, eps, R_in, R_n, A)
-            print(f'mu = {mu}')
+            #print(f'mu = {mu}')
             R_n = self.calc_R_n(self.mdot, mu, self.rho, deltaP)
-            print(f'R_n = {R_n}')
+            #print(f'R_n = {R_n}')
             A = self.calc_A(R_in, R_n, self.n, r_in)
-            print(f'A = {A}')
+            #print(f'A = {A}')
             phi = self.calc_phi_eq(A)
-            print(f'phi_eq = {phi_eq}')
+            #print(f'phi_eq = {phi_eq}')
             mu = self.calc_mu_eq(phi)
-            print(f'mu_eq = {mu_eq}')
+            #print(f'mu_eq = {mu_eq}')
             alpha = self.calc_alpha_eq(phi)
-            print(f'alpha_eq = {alpha_eq}')
+            #print(f'alpha_eq = {alpha_eq}')
 
         
         self.R_in = R_in
@@ -224,6 +224,7 @@ radius of the inlet passage is obtained
         self.l_n = l_n
         self.l_s = l_s
         self.alpha = alpha_eq
+        self.phi = phi
         self.mu = mu
         self.A = A
         self.eps = eps
@@ -259,6 +260,39 @@ radius of the inlet passage is obtained
 
         # Show the plot
         plt.show()
+    def variablesDisplay(self, lenghtUnits = 'in'):
+        if lenghtUnits == 'm':
+            R_in = self.R_in
+            R_s = self.R_s
+            R_n = self.R_n
+            r_in = self.r_in
+            l_in = self.l_in
+            l_n = self.l_n
+            l_s = self.l_s
+        elif lenghtUnits == 'in':
+            R_in = self.R_in * 39.37
+            R_s = self.R_s * 39.37
+            R_n = self.R_n * 39.37
+            r_in = self.r_in * 39.37
+            l_in = self.l_in * 39.37
+            l_n = self.l_n * 39.37
+            l_s = self.l_s * 39.37
+        print(f'''
+            R_in = {R_in} {lenghtUnits}\t radial location of tangential inlet passages
+            R_s = {R_s} {lenghtUnits}\t radius of vortex chamber
+            R_n = {R_n} {lenghtUnits}\t radius of nozzle
+            r_in = {r_in} {lenghtUnits}\t radius of inlet passages
+            l_in = {l_in} {lenghtUnits}\t lenth of tangential inlet passages
+            l_n = {l_n} {lenghtUnits}\t length of nozzle
+            l_s = {l_s} {lenghtUnits}\t length of vortex chamber
+            alpha = {self.alpha}
+            phi = {self.phi}
+            mu = {self.mu}
+            A = {self.A}
+            eps = {self.eps}
+            Re = {self.Re}
+        '''
+        )
 
     def __str__(self):
         return '''
@@ -270,6 +304,7 @@ radius of the inlet passage is obtained
             l_n = {} m length of nozzle
             l_s = {} m length of vortex chamber
             alpha = {}
+            phi = {}
             mu = {}
             A = {}        
             eps = {}
@@ -283,6 +318,7 @@ radius of the inlet passage is obtained
             self.l_n,
             self.l_s,
             self.alpha,
+            self.phi,
             self.mu,
             self.A,
             self.eps,
@@ -296,13 +332,13 @@ if __name__ == "__main__": #test values
     p_in = 23*10**5 # not currently being used
     p_c = 20*10**5
     alpha = 60*np.pi/180 #in radians
-    n = 3
+    n = 4
     l_n = 4.5   # l_in = 3-6
     l_in = 1    # l_n = 0.5-2
     l_s = 3     # l_s > 2
     rho = 997   #in kg/m^3
-    nu = 0.6*10**(-6) #in m^2/s
+    nu = 1*10**(-6) #in m^2/s
 
     my_swirl_injector = Injector(mdot, p_f, p_in, p_c, alpha, n, l_n, l_in, l_s, rho, nu)
     my_swirl_injector.calculate()
-    print(my_swirl_injector)
+    my_swirl_injector.variablesDisplay()
