@@ -13,31 +13,31 @@ can be found in the following paper.
 "Design and Dynamics of Jet and Swirl Injectors" Vladimir Bazarov, Vigor Yang, Puneesh Puri
 '''
 class Injector:
-    def __init__(self, mdot1, mdot2, p_f1, p_in1, p_c1, p_f2, p_in2, p_c2, alpha1, alpha2, n1, n2, rho1, rho2, nu1, nu2, l_n1, l_in1, l_s1, l_n2, l_in2, l_s2):
+    def __init__(self):
 
         #user input values
-        self.mdot1 = mdot1  # mass flow rate stage 1
-        self.mdot2 = mdot2  # mass flow rate stage 2
-        self.p_f1 = p_f1      # pressure of the preasure feed system befor injection
-        self.p_in1 = p_in1    # pressure after being injected to the swirler
-        self.p_c1 = p_c1      # pressure of chamber
-        self.p_f2 = p_f2      # pressure of the preasure feed system befor injection
-        self.p_in2 = p_in2    # pressure after being injected to the swirler
-        self.p_c2 = p_c2      # pressure of chamber        
-        self.alpha1 = alpha1  # spray cone angle
-        self.alpha2 = alpha2  # spray cone angle
-        self.n1 = n1          # number of tangential injection passages
-        self.n2 = n2          # number of tangential injection passages
-        self.rho1 = rho1      # density of fluid
-        self.rho2 = rho2      # density of fluid
-        self.nu1 = nu1        # kinematic viscosity
-        self.nu2 = nu2        # kinematic viscosity
-        self.l_in1 = l_in1    # 3-6, length of tangential passages
-        self.l_n1 = l_n1      # 0.5-2, length of nozzle
-        self.l_s1 = l_s1      # l_s>2, length of vortex chamber
-        self.l_in2 = l_in2    # 3-6, length of tangential passages
-        self.l_n2 = l_n2      # 0.5-2, length of nozzle
-        self.l_s2 = l_s2      # l_s>2, length of vortex chamber
+        # self.mdot1 = mdot1  # mass flow rate stage 1
+        # self.mdot2 = mdot2  # mass flow rate stage 2
+        # self.p_f1 = p_f1      # pressure of the preasure feed system befor injection
+        # self.p_in1 = p_in1    # pressure after being injected to the swirler
+        # self.p_c1 = p_c1      # pressure of chamber
+        # self.p_f2 = p_f2      # pressure of the preasure feed system befor injection
+        # self.p_in2 = p_in2    # pressure after being injected to the swirler
+        # self.p_c2 = p_c2      # pressure of chamber        
+        # self.alpha1 = alpha1  # spray cone angle
+        # self.alpha2 = alpha2  # spray cone angle
+        # self.n1 = n1          # number of tangential injection passages
+        # self.n2 = n2          # number of tangential injection passages
+        # self.rho1 = rho1      # density of fluid
+        # self.rho2 = rho2      # density of fluid
+        # self.nu1 = nu1        # kinematic viscosity
+        # self.nu2 = nu2        # kinematic viscosity
+        # self.l_in1 = l_in1    # 3-6, length of tangential passages
+        # self.l_n1 = l_n1      # 0.5-2, length of nozzle
+        # self.l_s1 = l_s1      # l_s>2, length of vortex chamber
+        # self.l_in2 = l_in2    # 3-6, length of tangential passages
+        # self.l_n2 = l_n2      # 0.5-2, length of nozzle
+        # self.l_s2 = l_s2      # l_s>2, length of vortex chamber
 
         self.mu = None      # mass flow coefficient
         self.phi = None     # coefficient of passage fullness, or fractional area occupied by liquid in the nozzle
@@ -260,13 +260,13 @@ uses experimental data to simplify the calculations
         #step 2
         # mdot, rho and deltaP are input values
         deltaP = p_f - p_c
-        R_n = self.calc_R_n(self, mdot, mu_in, rho, deltaP)
+        R_n = self.calc_R_n(mdot, mu_in, rho, deltaP)
         #step 3
         # n, R_in_ratio are input values
         R_in = R_n*R_in_ratio
-        r_in = self.calc_r_in(self, R_in, R_n, n, A)
+        r_in = self.calc_r_in(R_in, R_n, n, A)
         #step 4
-        Re_in = self.calc_Re(self, mdot, n, r_in, rho, nu)
+        Re_in = self.calc_Re(mdot, n, r_in, rho, nu)
         if Re_in < 10000:
             print(f'Re_in = {Re_in}\nRe_in must be larger than 10000\nchange input values to achive this')
             return
@@ -274,8 +274,8 @@ uses experimental data to simplify the calculations
             print(f'Re_in = {Re_in}')
         #step 5
         # l_in_ratio, l_n_ratio, l_s_ratio, rbar_m are input values
-        l_in, not_needed, l_s, R_s = self.calc_lengths(r_in, R_in, R_n, l_in_ratio, l_n_ratio, l_s_ratio)
-        rbar_m = float(input(f"A = {A}\nenter the corresponding rbar_m from figure 35:"))
+        l_in, l_n, l_s, R_s = self.calc_lengths(r_in, R_in, R_n, l_in_ratio, l_n_ratio, l_s_ratio)
+        rbar_m = float(input(f"A = {A}\nRbar_in = {R_in/R_n}\nenter the corresponding rbar_m from figure 35:"))
         r_m = rbar_m*R_n
         if lenghtUnits == 'm':
             pass
@@ -301,12 +301,6 @@ uses experimental data to simplify the calculations
             Re_in = {Re_in}
             deltaP = {deltaP}
         ''')
-
-
-
-
-
-
 
     '''
 this method uses much the same procedure as the monopropellant element sizing except that it is ment for
@@ -505,14 +499,22 @@ if __name__ == "__main__": #test values
     p_f = 24*10**5
     p_in = 23*10**5 # not currently being used
     p_c = 20*10**5
-    alpha = 60*np.pi/180 #in radians
+    alpha = 50*np.pi/180 #in radians
     n = 3
-    l_n = 4.5   # l_in = 3-6
-    l_in = 1    # l_n = 0.5-2
-    l_s = 3     # l_s > 2
+    l_n_ratio = 4.5   # l_in = 3-6
+    l_in_ratio = 1    # l_n = 0.5-2
+    l_s_ratio = 3     # l_s > 2
     rho = 997   #in kg/m^3
     nu = 0.6*10**(-6) #in m^2/s
 
-    my_swirl_injector = Injector(mdot1, mdot2, p_f, p_in, p_c, alpha, n, l_n, l_in, l_s, rho, nu)
-    my_swirl_injector.calculate1()
+    my_swirl_injector = Injector()
+    my_swirl_injector.calculate1(mdot2, p_f, p_in, p_c, alpha, n, rho, nu, l_n_ratio, l_in_ratio, l_s_ratio)
+    print("------------------------------------")
     my_swirl_injector.calc1variablesDisplay()
+    print("------------------------------------")
+    alpha = 50
+    l_n__D_n = 2
+    A = 6.7
+    mu_in = 0.1
+    R_in_ratio = 1.25
+    my_swirl_injector.calculate2(alpha, l_n__D_n, A, mu_in, mdot2, rho, n, R_in_ratio, p_f, p_c, l_in_ratio, l_n_ratio, l_s_ratio)
