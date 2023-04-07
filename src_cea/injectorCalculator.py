@@ -179,53 +179,62 @@ radius of the inlet passage is obtained
 #step 11
 # Repeat steps 1-10 until the calculated injector parameters converge.
 
-    def calculate(self):
-        alpha = self.alpha
-        deltaP = self.p_f - self.p_c #pressure drop across the whole injector
-        l_in_ratio, l_n_ratio, l_s_ratio = self.l_in, self.l_n, self.l_s
-        #print(f"input values: \nalpha = {alpha}\ndeltaP = {deltaP}\nl_in_ratio = {l_in_ratio}\nl_n_ratio = {l_n_ratio}\nl_s_ratio = {l_s_ratio}")
-        #print("calculated values:")
+    def calculate1(self, mdot, p_f, p_in, p_c, alpha, n, rho, nu, l_n_ratio, l_in_ratio, l_s_ratio):
+        deltaP = p_f - p_c #NOTE: confirm this is correct
+        print(f"input values: \nalpha = {alpha}\ndeltaP = {deltaP}\nl_in_ratio = {l_in_ratio}\nl_n_ratio = {l_n_ratio}\nl_s_ratio = {l_s_ratio}")
+        print("calculated values:")
         A, phi, mu = self.calc_phi_mu_A(alpha)
-        #print('A = {}\nphi = {}\nmu = {}'.format(A, phi, mu))
-        R_n = self.calc_R_n(self.mdot, mu, self.rho, deltaP)
-        #print(f'R_n = {R_n}')
+        print('A = {}\nphi = {}\nmu = {}'.format(A, phi, mu))
+        R_n = self.calc_R_n(mdot, mu, rho, deltaP)
+        print(f'R_n = {R_n}')
         for i in range(20):
-            #print()
-            R_in = R_n*1.9 # consider making this a user input check for each iteration
-            #print(f'R_in = {R_in}')
-            r_in = self.calc_r_in(R_in, R_n, self.n, A)
-            #print(f'r_in = {r_in}')
+            print()
+            R_in = R_n*1.25 # consider making this a user input check for each iteration
+            print(f'R_in = {R_in}')
+            r_in = self.calc_r_in(R_in, R_n, n, A)
+            print(f'r_in = {r_in}')
             l_in, l_n, l_s, R_s = self.calc_lengths(r_in, R_in, R_n, l_in_ratio, l_n_ratio, l_s_ratio)
-            #print('l_in = {}\nl_n = {}\nl_s = {}\nR_s = {}'.format(l_in, l_n, l_s, R_s))
-            Re = self.calc_Re(self.mdot, self.n, r_in, self.rho, self.nu)
-            #print(f'Re = {Re}')
+            print('l_in = {}\nl_n = {}\nl_s = {}\nR_s = {}'.format(l_in, l_n, l_s, R_s))
+            Re = self.calc_Re(mdot, n, r_in, rho, nu)
+            print(f'Re = {Re}')
             lam = self.calc_lam(Re)
-            #print(f'lam = {lam}')
-            A_eq = self.calc_A_eq(R_in, R_n, self.n, r_in, lam)
-            #print(f'A_eq = {A_eq}')
+            print(f'lam = {lam}')
+            A_eq = self.calc_A_eq(R_in, R_n, n, r_in, lam)
+            print(f'A_eq = {A_eq}')
             phi_eq = self.calc_phi_eq(A_eq)
-            #print(f'phi_eq = {phi_eq}')
+            print(f'phi_eq = {phi_eq}')
             mu_eq = self.calc_mu_eq(phi_eq)
-            #print(f'mu_eq = {mu_eq}')
+            print(f'mu_eq = {mu_eq}')
             alpha_eq = self.calc_alpha_eq(phi_eq)
-            #print(f'alpha_eq = {alpha_eq}')
+            print(f'alpha_eq = {alpha_eq}')
             eps_in = self.calc_eps_in(R_s, l_in)
-            #print(f'eps_in = {eps_in}')
+            print(f'eps_in = {eps_in}')
             eps = self.calc_eps(eps_in, lam, l_in, r_in)
-            #print(f'eps = {eps}')
+            print(f'eps = {eps}')
             mu = self.calc_mu(mu_eq, eps, R_in, R_n, A)
-            #print(f'mu = {mu}')
-            R_n = self.calc_R_n(self.mdot, mu, self.rho, deltaP)
-            #print(f'R_n = {R_n}')
-            A = self.calc_A(R_in, R_n, self.n, r_in)
-            #print(f'A = {A}')
+            print(f'mu = {mu}')
+            R_n = self.calc_R_n(mdot, mu, rho, deltaP)
+            print(f'R_n = {R_n}')
+            A = self.calc_A(R_in, R_n, n, r_in)
+            print(f'A = {A}')
             phi = self.calc_phi_eq(A)
-            #print(f'phi_eq = {phi_eq}')
+            print(f'phi_eq = {phi_eq}')
             mu = self.calc_mu_eq(phi)
-            #print(f'mu_eq = {mu_eq}')
+            print(f'mu_eq = {mu_eq}')
             alpha = self.calc_alpha_eq(phi)
-            #print(f'alpha_eq = {alpha_eq}')
+            print(f'alpha_eq = {alpha_eq}')
 
+        self.mdot = mdot
+        self.p_f = p_f
+        self.p_in = p_in
+        self.p_c = p_c
+        self.alpha = alpha
+        self.n = n
+        self.rho = rho
+        self.nu =  nu
+        self.l_n = l_n
+        self.l_in = l_in
+        self.l_s = l_s
         self.R_in = R_in
         self.R_s = R_s
         self.R_n = R_n
@@ -239,6 +248,65 @@ radius of the inlet passage is obtained
         self.A = A
         self.eps = eps
         self.Re = Re
+    
+    '''
+this calculates a monopropellant swirl element with a method that
+uses experimental data to simplify the calculations
+    '''
+    def calculate2(self, alpha, l_n__D_n, A, mu_in, mdot, rho, n, R_in_ratio, p_f, p_c, l_in_ratio, l_n_ratio, l_s_ratio, lenghtUnits = 'in'):
+        #step 1
+        # alpha, l_n__D_n, A, mu_in are manually input values
+        l_n_ratio = l_n__D_n*2
+        #step 2
+        # mdot, rho and deltaP are input values
+        deltaP = p_f - p_c
+        R_n = self.calc_R_n(self, mdot, mu_in, rho, deltaP)
+        #step 3
+        # n, R_in_ratio are input values
+        R_in = R_n*R_in_ratio
+        r_in = self.calc_r_in(self, R_in, R_n, n, A)
+        #step 4
+        Re_in = self.calc_Re(self, mdot, n, r_in, rho, nu)
+        if Re_in < 10000:
+            print(f'Re_in = {Re_in}\nRe_in must be larger than 10000\nchange input values to achive this')
+            return
+        else:
+            print(f'Re_in = {Re_in}')
+        #step 5
+        # l_in_ratio, l_n_ratio, l_s_ratio, rbar_m are input values
+        l_in, not_needed, l_s, R_s = self.calc_lengths(r_in, R_in, R_n, l_in_ratio, l_n_ratio, l_s_ratio)
+        rbar_m = float(input(f"A = {A}\nenter the corresponding rbar_m from figure 35:"))
+        r_m = rbar_m*R_n
+        if lenghtUnits == 'm':
+            pass
+        elif lenghtUnits == 'in':
+            R_in = R_in * 39.37
+            R_s = R_s * 39.37
+            R_n = R_n * 39.37
+            r_in = r_in * 39.37
+            l_in = l_in * 39.37
+            l_n = l_n * 39.37
+            l_s = l_s * 39.37
+        print(f'''
+            R_in = {R_in} {lenghtUnits}\t radial location of tangential inlet passages
+            R_s = {R_s} {lenghtUnits}\t radius of vortex chamber
+            R_n = {R_n} {lenghtUnits}\t radius of nozzle
+            r_in = {r_in} {lenghtUnits}\t radius of inlet passages
+            l_in = {l_in} {lenghtUnits}\t lenth of tangential inlet passages
+            l_n = {l_n} {lenghtUnits}\t length of nozzle
+            l_s = {l_s} {lenghtUnits}\t length of vortex chamber
+            alpha = {alpha}
+            mu = {mu_in}
+            A = {A}
+            Re_in = {Re_in}
+            deltaP = {deltaP}
+        ''')
+
+
+
+
+
+
 
     '''
 this method uses much the same procedure as the monopropellant element sizing except that it is ment for
@@ -248,7 +316,8 @@ there are 2 calculations senerios which effect the sizing of the stage 2 element
 senerio 1 the wall of the stage 1 nozzle is within the gaseouse core of the stage 2 nozzle flow
 senerio 2 the stage 1 nozzle is submerged and effecting the flow of the stage 2 nozzle
     '''
-    def calculateBipropellant(self, senerio):
+    #calculateBipropellant 1 uses manually inputed experimental data from graphs
+    def calculateBipropellant1(self, senerio):
         # stage 1 sizing calculations
 
         # step 1
@@ -258,20 +327,83 @@ condition 2alpha_1 — 2alpha_2 = 10 to 15 deg based on injector operating condi
 With these values and the correlation given in Fig. 34a, find the geometric characteristic parameters, A1 and A2.
 The flow coefficients of stages 1 and 2, mu_1 and mu_2, are then determined from Fig. 34b
         '''
+        alpha_1 = None
+        alpha_2 = None
+        A_1 = None
+        A_2 = None
+        mu_1 = None
+        mu_2 = None
         # step 2
         '''
 2) Calculate the nozzle radii R_n1 and R_n2 from Eq. (103), and determine the
 tangential-entry radii r_in1 and r_in2 from Eq. (104).
         '''
-
+        R_n1 = None
+        R_n2 = None
+        r_in1 = None
+        r_in2 = None
+        # step 3
+        '''
+3) Determine the Reynolds numbers Re_in1 and Re_in2 using Eq. (101). The
+design is completed if Re_in > 10^4, and the injector dimensions and flow
+parameters are calculated.
+        '''
+        Re_1 = None
         # stage 2 sizing calculations
         if senerio == 0:
+            pass
 
         else:
-
+            # step 1
+            delta_w = None
+            R_1 = None
+            # step 2
+            delr = None
+            R_n2
+            # step 3
+            A_2
+            mu_2
+            # step 4
+            r_in2
+            # step 5
+            deltaP_i2 = None
+            # step 6 Repeat steps 1-5 using another prespecified value.
         #mixing element sizing calculations
+        #calculateBipropellant 2 uses calculated data from methods used in monopropellant calculator
+    def calculateBipropellant2(self, senerio):
+        #stage 1 calculations
+        #step 1 
+        '''
+        1) the gas-column radius of stage 2 should exceed the external radius of the
+        nozzle of stage 1, with rm2 — rm\ = 0.2-0.3 mm
+        '''
+        #step 2
+        '''
+        2) the spray cone angle of stage 1 should be such that the propellant arrives at
+        the mixer wall 2-3 mm downstream of the tangential entries of stage 2.
+        '''
+        deltap_i1 = None
+        deltap_i2 = None
+        mdot_i1 = None
+        mdot_i2 = None
+        Rbar_in1 = None
+        Rbar_in2 = None
+        lbar_n1 = None
+        lbar_n2 = None
+        n_1 = None
+        n_2 = None
 
 
+        #step 3
+        '''
+
+        '''
+
+        #stage 2 calculations
+        if senerio == 0:
+            pass
+        else:
+            pass
 #--------------------------------------------------------------------------------------
     def swirlgraphs(self):
         def y(x, A):
@@ -302,7 +434,7 @@ tangential-entry radii r_in1 and r_in2 from Eq. (104).
 
         # Show the plot
         plt.show()
-    def variablesDisplay(self, lenghtUnits = 'in'):
+    def calc1variablesDisplay(self, lenghtUnits = 'in'):
         if lenghtUnits == 'm':
             R_in = self.R_in
             R_s = self.R_s
@@ -333,8 +465,7 @@ tangential-entry radii r_in1 and r_in2 from Eq. (104).
             A = {self.A}
             eps = {self.eps}
             Re = {self.Re}
-        '''
-        )
+        ''')
 
     def __str__(self):
         return '''
@@ -375,13 +506,13 @@ if __name__ == "__main__": #test values
     p_in = 23*10**5 # not currently being used
     p_c = 20*10**5
     alpha = 60*np.pi/180 #in radians
-    n = 4
+    n = 3
     l_n = 4.5   # l_in = 3-6
     l_in = 1    # l_n = 0.5-2
     l_s = 3     # l_s > 2
     rho = 997   #in kg/m^3
-    nu = 1*10**(-6) #in m^2/s
+    nu = 0.6*10**(-6) #in m^2/s
 
     my_swirl_injector = Injector(mdot1, mdot2, p_f, p_in, p_c, alpha, n, l_n, l_in, l_s, rho, nu)
-    my_swirl_injector.calculate()
-    my_swirl_injector.variablesDisplay()
+    my_swirl_injector.calculate1()
+    my_swirl_injector.calc1variablesDisplay()
