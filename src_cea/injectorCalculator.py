@@ -71,7 +71,7 @@ are then determined from the plots in Fig. 32.
             F[0] = np.tan(alpha) - np.sqrt(2*(1-phi)/phi) #eq 74
             F[1] = mu - phi*np.sqrt(phi/(2-phi)) #eq 62
             return F
-        zGuess = np.array([0.5,0.4])
+        zGuess = np.array([0.8,0.8])
         #alpha = 60*np.pi/180 
         phi, mu = fsolve(funcPhiMu,zGuess, args=(alpha,))
 
@@ -187,8 +187,13 @@ radius of the inlet passage is obtained
         print('A = {}\nphi = {}\nmu = {}'.format(A, phi, mu))
         R_n = self.calc_R_n(mdot, mu, rho, deltaP)
         print(f'R_n = {R_n}')
-        for i in range(20):
+        interationsCount = 0
+        alphaOld = 0
+        while abs(alpha-alphaOld)>0.001:
+            interationsCount += 1
             print()
+            print(f'iteration: {interationsCount}')
+            alphaOld = alpha
             R_in = R_n*1.25 # consider making this a user input check for each iteration
             print(f'R_in = {R_in}')
             r_in = self.calc_r_in(R_in, R_n, n, A)
@@ -208,6 +213,7 @@ radius of the inlet passage is obtained
             alpha_eq = self.calc_alpha_eq(phi_eq)
             print(f'alpha_eq = {alpha_eq}')
             eps_in = self.calc_eps_in(R_s, l_in)
+            eps_in = 0.1
             print(f'eps_in = {eps_in}')
             eps = self.calc_eps(eps_in, lam, l_in, r_in)
             print(f'eps = {eps}')
@@ -223,6 +229,7 @@ radius of the inlet passage is obtained
             print(f'mu_eq = {mu_eq}')
             alpha = self.calc_alpha_eq(phi)
             print(f'alpha_eq = {alpha_eq}')
+
 
         self.mdot = mdot
         self.p_f = p_f
@@ -253,10 +260,10 @@ radius of the inlet passage is obtained
 this calculates a monopropellant swirl element with a method that
 uses experimental data to simplify the calculations
     '''
-    def calculate2(self, alpha, l_n__D_n, A, mu_in, mdot, rho, n, R_in_ratio, p_f, p_c, l_in_ratio, l_n_ratio, l_s_ratio, lenghtUnits = 'in'):
+    def calculate2(self, alpha, l_n__R_n, A, mu_in, mdot, rho, n, R_in_ratio, p_f, p_c, l_in_ratio, l_n_ratio, l_s_ratio, lenghtUnits = 'in'):
         #step 1
         # alpha, l_n__D_n, A, mu_in are manually input values
-        l_n_ratio = l_n__D_n*2
+        l_n_ratio = l_n__R_n*2
         #step 2
         # mdot, rho and deltaP are input values
         deltaP = p_f - p_c
@@ -269,7 +276,7 @@ uses experimental data to simplify the calculations
         Re_in = self.calc_Re(mdot, n, r_in, rho, nu)
         if Re_in < 10000:
             print(f'Re_in = {Re_in}\nRe_in must be larger than 10000\nchange input values to achive this')
-            return
+            return None
         else:
             print(f'Re_in = {Re_in}')
         #step 5
@@ -302,6 +309,12 @@ uses experimental data to simplify the calculations
             deltaP = {deltaP}
         ''')
 
+    def calc_mu2(self, mdot, R_n, rho, deltap):
+        return 0.225*mdot/(R_n)**2/np.sqrt(rho*deltap)
+
+    def clac_l_mix(self, k_m, phi_1, phi_2, mu_1, mu_2, rho_1, rho_2, deltap_1, deltap_2, tau):
+        l_mix = np.sqrt(2)*tau*((k_m*mu_2)/((k_m+1)*phi_2)*np.sqrt(deltap_2/rho_2) + (mu_1)/((k_m+1)*phi_1)*np.sqrt(deltap_1/rho_1))
+        return l_mix
     '''
 this method uses much the same procedure as the monopropellant element sizing except that it is ment for
 designing two nested elements denoted as stage 1 being the inner element and stage 2 being the outer.
@@ -311,8 +324,146 @@ senerio 1 the wall of the stage 1 nozzle is within the gaseouse core of the stag
 senerio 2 the stage 1 nozzle is submerged and effecting the flow of the stage 2 nozzle
     '''
     #calculateBipropellant 1 uses manually inputed experimental data from graphs
-    def calculateBipropellant1(self, senerio):
+    def calculateBipropellant1(self, mdot_1, mdot_2, deltap_1, deltap_2, alpha_1, alpha_2, n_1, n_2, rho_1, rho_2, nu_1, nu_2, l_n_ratio1, l_in_ratio1, l_s_ratio1, l_n_ratio2, l_in_ratio2, l_s_ratio2, del_w, deltar, tau):
         # stage 1 sizing calculations
+        print(f"input values: \nalpha_1 = {alpha_1}\nalpha_2 = {alpha_2}\ndeltap_1 = {deltap_1}\ndeltap_2 = {deltap_2}\nn_1 = {n_1}\nn_2 = {n_2}\nl_in_ratio = {l_in_ratio}\nl_n_ratio = {l_n_ratio}\nl_s_ratio = {l_s_ratio}")
+        print("calculated values:")
+        A_1, phi_1, mu_1 = self.calc_phi_mu_A(alpha_1)
+        #print('A = {}\nphi = {}\nmu = {}'.format(A, phi, mu))
+        R_n1 = self.calc_R_n(mdot_1, mu_1, rho_1, deltap_1)
+        interationsCount = 0
+        alphaOld1 = 0
+        while abs(alpha_1-alphaOld1)>0.001:
+            interationsCount += 1
+            print()
+            print(f'iteration: {interationsCount}')
+            alphaOld1 = alpha_1
+            R_in1 = R_n1*1.25 # consider making this a user input check for each iteration
+            #print(f'R_in = {R_in}')
+            r_in1 = self.calc_r_in(R_in1, R_n1, n_1, A_1)
+            #print(f'r_in = {r_in}')
+            l_in1, l_n1, l_s1, R_s1 = self.calc_lengths(r_in1, R_in1, R_n1, l_in_ratio1, l_n_ratio1, l_s_ratio1)
+            #print('l_in = {}\nl_n = {}\nl_s = {}\nR_s = {}'.format(l_in, l_n, l_s, R_s))
+            Re_1 = self.calc_Re(mdot_1, n_1, r_in1, rho_1, nu_1)
+            #print(f'Re = {Re}')
+            lam_1 = self.calc_lam(Re_1)
+            #print(f'lam = {lam}')
+            A_eq1 = self.calc_A_eq(R_in1, R_n1, n_1, r_in1, lam_1)
+            #print(f'A_eq = {A_eq}')
+            phi_eq1 = self.calc_phi_eq(A_eq1)
+            #print(f'phi_eq = {phi_eq}')
+            mu_eq1 = self.calc_mu_eq(phi_eq1)
+            #print(f'mu_eq = {mu_eq}')
+            alpha_eq1 = self.calc_alpha_eq(phi_eq1)
+            #print(f'alpha_eq = {alpha_eq}')
+            #eps_in = self.calc_eps_in(R_s, l_in)
+            eps_in1 = 0.2
+            #print(f'eps_in = {eps_in}')
+            eps_1 = self.calc_eps(eps_in1, lam_1, l_in1, r_in1)
+            #print(f'eps = {eps}')
+            mu_1 = self.calc_mu(mu_eq1, eps_1, R_in1, R_n1, A_1)
+            #print(f'mu = {mu}')
+            R_n1 = self.calc_R_n(mdot_1, mu_1, rho_1, deltap_1)
+            #print(f'R_n = {R_n}')
+            A_1 = self.calc_A(R_in1, R_n1, n_1, r_in1)
+            #print(f'A = {A}')
+            phi_1 = self.calc_phi_eq(A_1)
+            #print(f'phi_eq = {phi_eq}')
+            mu_1 = self.calc_mu_eq(phi_1)
+            #print(f'mu_eq = {mu_eq}')
+            alpha_1 = self.calc_alpha_eq(phi_1)
+            #print(f'alpha_eq = {alpha_eq}')
+        #stage 2 calculations
+        A_2, phi_2, mu_2 = self.calc_phi_mu_A(alpha_2)
+        #R_n2 = R_n1+del_w+deltar+r_mn2 #first aproximation of R_n2
+        #r_mn2 = np.sqrt(1-phi_2)*R_n2
+        #print(f'R_n = {R_n}')
+        R_n2 = 0 #(R_n1+del_w+deltar)/np.sqrt(1-phi_2)
+        oldR_n2 = 1
+        interationsCount2 = 0
+        while abs(R_n2-oldR_n2) > 0.0001:
+            oldR_n2 = R_n2
+            print(f'oldR_n2 = {oldR_n2}')
+            interationsCount2 += 1
+            print()
+            print(f'iteration: {interationsCount2}')
+            R_n2 = (R_n1+del_w+deltar)/np.sqrt(1-phi_2)
+            print(f'R_n2 = {R_n2}')
+            mu_2 = self.calc_mu2(mdot_2, R_n2, rho_2, deltap_2)
+            def funcphi(mu, phi):
+                return mu - phi*np.sqrt(phi/(2-phi))
+            phiGuess = 0.5
+            phi_2 = fsolve(funcphi, phiGuess, args=(mu_2,))
+        r_mn2 = np.sqrt(1-phi_2)*R_n2
+        def funcA(A, phi, mu):
+            return mu - 1/np.sqrt(A**2/(1-phi)+1/phi**2) #eq 61
+        AGuess = 0.5
+        A_2 = fsolve(funcA, AGuess, args=(phi_2, mu_2,))
+        R_in2 = R_n2 * 1.25 #R_n2_ratio
+        print(f'R_in2 = {R_in2}\nR_n2 = {R_n2}\nn_2 = {n_2}\nA_2 = {A_2}')
+        r_in2 = self.calc_r_in(R_in2, R_n2, n_2, A_2) #np.sqrt(R_n2*R_in2/(n_2*A_2))
+        print('ping')
+        print(f'mdot_2 = {mdot_2}\nn_2 = {n_2}\nr_in2 = {r_in2}\nrho_2 = {rho_2}\nnu_2 = {nu_2}\n')
+        Re_in2 = self.calc_Re(mdot_2, n_2, r_in2, rho_2, nu_2)
+        print('ping2')
+        if Re_in2 < 10000:
+            print(f'Re_in = {Re_in2}\nRe_in must be larger than 10000\nchange input values to achive this')
+        else:
+            print(f'Re_in = {Re_in2}')
+        alpha = alpha_2-17.5
+        k_m = mdot_1/mdot_2
+        l_mix = self.clac_l_mix(k_m, phi_1, phi_2, mu_1, mu_2, rho_1, rho_2, deltap_1, deltap_2, tau)
+        l_in2, l_n2, l_s2, R_s2 = self.calc_lengths(r_in2, R_in2, R_n2, l_in_ratio2, l_n_ratio2, l_s_ratio2)
+        deltal_n2 = (r_mn2 - R_n1)/np.tan(alpha_1)
+        new_l_n2 = l_mix + deltal_n2
+
+        print(f'''
+            mdot_1 = {mdot_1}
+            mdot_2 = {mdot_2}
+            deltap_1 = {deltap_1}
+            deltap_2 = {deltap_2}
+            alpha_1 = {alpha_1}
+            alpha_2 = {alpha_2}
+            n_1 = {n_1}
+            n_2 = {n_2}
+            rho_1 = {rho_1}
+            rho_2 = {rho_2}
+            nu_1 = {nu_1}
+            nu_2 = {nu_2}
+            l_n_ratio1 = {l_n_ratio1}
+            l_in_ratio1 = {l_in_ratio1}
+            l_s_ratio1 = {l_s_ratio1}
+            l_n_ratio2 = {l_n_ratio2}
+            l_in_ratio2 = {l_in_ratio2}
+            l_s_ratio2 = {l_s_ratio2}
+            del_w = {del_w}
+            deltar = {deltar}
+            tau = {tau}
+            A_1 = {A_1}
+            A_2 = {A_2}
+            mu_1 = {mu_1}
+            mu_2 = {mu_2}
+            phi_1 = {phi_1}
+            phi_2 = {phi_2}
+            R_n1 = {R_n1}
+            R_n2 = {R_n2}
+            R_in1 = {R_in1}
+            R_in2 = {R_in2}
+            r_in1 = {r_in1}
+            r_in2 = {r_in2}
+            l_in1 = {l_in1}
+            l_in2 = {l_in2}
+            l_n1 = {l_n1}
+            l_n2 = {l_n2}
+            l_s1 = {l_s1}
+            l_s2 = {l_s2}
+            R_s1 = {R_s1}
+            R_s2 = {R_s2}
+            l_mix = {l_mix}
+            new_l_n2 = {new_l_n2}
+            alpha = {alpha}
+            k_m = {k_m}
+        ''')
 
         # step 1
         '''
@@ -321,47 +472,21 @@ condition 2alpha_1 — 2alpha_2 = 10 to 15 deg based on injector operating condi
 With these values and the correlation given in Fig. 34a, find the geometric characteristic parameters, A1 and A2.
 The flow coefficients of stages 1 and 2, mu_1 and mu_2, are then determined from Fig. 34b
         '''
-        alpha_1 = None
-        alpha_2 = None
-        A_1 = None
-        A_2 = None
-        mu_1 = None
-        mu_2 = None
+
         # step 2
         '''
 2) Calculate the nozzle radii R_n1 and R_n2 from Eq. (103), and determine the
 tangential-entry radii r_in1 and r_in2 from Eq. (104).
         '''
-        R_n1 = None
-        R_n2 = None
-        r_in1 = None
-        r_in2 = None
+
         # step 3
         '''
 3) Determine the Reynolds numbers Re_in1 and Re_in2 using Eq. (101). The
 design is completed if Re_in > 10^4, and the injector dimensions and flow
 parameters are calculated.
         '''
-        Re_1 = None
         # stage 2 sizing calculations
-        if senerio == 0:
-            pass
 
-        else:
-            # step 1
-            delta_w = None
-            R_1 = None
-            # step 2
-            delr = None
-            R_n2
-            # step 3
-            A_2
-            mu_2
-            # step 4
-            r_in2
-            # step 5
-            deltaP_i2 = None
-            # step 6 Repeat steps 1-5 using another prespecified value.
         #mixing element sizing calculations
         #calculateBipropellant 2 uses calculated data from methods used in monopropellant calculator
     def calculateBipropellant2(self, senerio):
@@ -493,28 +618,48 @@ parameters are calculated.
         )
 
 if __name__ == "__main__": #test values
-    mdot1 = 0.7/6       #mass flow of stage 1 of one injection element
-    mdot2 = 0.3/6       #mass flow of stage 2 of one injection element
+    mdot_1 = 0.7/6       #mass flow of stage 1 of one injection element
+    mdot_2 = 0.3/6       #mass flow of stage 2 of one injection element
     #pressures in pascals
     p_f = 24*10**5
     p_in = 23*10**5 # not currently being used
     p_c = 20*10**5
-    alpha = 50*np.pi/180 #in radians
+    alpha = 59.5*np.pi/180 #in radians
     n = 3
-    l_n_ratio = 4.5   # l_in = 3-6
-    l_in_ratio = 1    # l_n = 0.5-2
+    l_in_ratio = 4.5   # l_in = 3-6
+    l_n_ratio = 1    # l_n = 0.5-2
     l_s_ratio = 3     # l_s > 2
     rho = 997   #in kg/m^3
     nu = 0.6*10**(-6) #in m^2/s
 
     my_swirl_injector = Injector()
-    my_swirl_injector.calculate1(mdot2, p_f, p_in, p_c, alpha, n, rho, nu, l_n_ratio, l_in_ratio, l_s_ratio)
+    #my_swirl_injector.calculate1(mdot_1, p_f, p_in, p_c, alpha, n, rho, nu, l_n_ratio, l_in_ratio, l_s_ratio)
     print("------------------------------------")
-    my_swirl_injector.calc1variablesDisplay()
+    #my_swirl_injector.calc1variablesDisplay()
     print("------------------------------------")
     alpha = 50
-    l_n__D_n = 2
-    A = 6.7
-    mu_in = 0.1
+    l_n__R_n = 0.5
+    A = 3.3
+    mu_in = 0.18
     R_in_ratio = 1.25
-    my_swirl_injector.calculate2(alpha, l_n__D_n, A, mu_in, mdot2, rho, n, R_in_ratio, p_f, p_c, l_in_ratio, l_n_ratio, l_s_ratio)
+    #my_swirl_injector.calculate2(alpha, l_n__R_n, A, mu_in, mdot_1, rho, n, R_in_ratio, p_f, p_c, l_in_ratio, l_n_ratio, l_s_ratio)
+    deltap_1 = 4*10**5
+    deltap_2 = 4*10**5
+    alpha_1 = 60*np.pi/180
+    alpha_2 = 60*np.pi/180
+    n_1 = 4
+    n_2 = 4
+    rho_1 = 1141
+    rho_2 = 800
+    nu_1 = 0.08*10**(-6) #in m^2/s
+    nu_2 = 2.7*10**(-6) #in m^2/s
+    l_n_ratio1 = 1
+    l_in_ratio1 = 4.5
+    l_s_ratio1 = 3
+    l_n_ratio2 = 1
+    l_in_ratio2 = 4.5
+    l_s_ratio2 = 3
+    del_w = 0.001
+    deltar = 0.0003
+    tau = 0.2
+    my_swirl_injector.calculateBipropellant1(mdot_1, mdot_2, deltap_1, deltap_2, alpha_1, alpha_2, n_1, n_2, rho_1, rho_2, nu_1, nu_2, l_n_ratio1, l_in_ratio1, l_s_ratio1, l_n_ratio2, l_in_ratio2, l_s_ratio2, del_w, deltar, tau)

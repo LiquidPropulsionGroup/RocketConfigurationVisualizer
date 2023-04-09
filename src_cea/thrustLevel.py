@@ -61,7 +61,7 @@ class ThrustLevel:
         self.h_g_arr = self.calcBartz()
         self.heat_flux_arr = self.calcHeatFlux()
         self.total_watts = self.totalWatts()
-        self.max_fuel_heat = self.fuelWatts()
+        #self.max_fuel_heat = self.fuelWatts()
         '''
     def heatCalcsFilmCooling(self, area_arr, contour, wall_temp, fuel_delta_t, fuel, mr, filmCoolingPercent):
         self.area_arr = area_arr
