@@ -394,9 +394,9 @@ senerio 2 the stage 1 nozzle is submerged and effecting the flow of the stage 2 
             print(f'R_n2 = {R_n2}')
             mu_2 = self.calc_mu2(mdot_2, R_n2, rho_2, deltap_2)
             print(f'mu_2 = {mu_2}')
-            def funcphi(mu, phi):
+            def funcphi(phi, mu):
                 return mu - phi*np.sqrt(phi/(2-phi))
-            phiGuess = 0.5
+            phiGuess = 0.8
             phi_2 = fsolve(funcphi, phiGuess, args=(mu_2,))
             print(f'phi_2 = {phi_2}')
             print(f'abs(R_n2-oldR_n2) = {abs(R_n2-oldR_n2)}')
@@ -659,8 +659,8 @@ if __name__ == "__main__": #test values
     n_2 = 4
     rho_1 = 1141
     rho_2 = 800
-    nu_1 = 0.08*10**(-6) #in m^2/s
-    nu_2 = 0.1*10**(-6)#2.7*10**(-6) #in m^2/s
+    nu_1 = 0.1*10**(-6) #in m^2/s
+    nu_2 = 0.2*10**(-6)#2.7*10**(-6) #in m^2/s
     l_n_ratio1 = 1
     l_in_ratio1 = 4.5
     l_s_ratio1 = 3

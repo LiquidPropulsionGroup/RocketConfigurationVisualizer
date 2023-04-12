@@ -62,3 +62,4 @@ l_mix = np.sqrt(2)*tau*(((k_m*mu_2)/((k_m+1)*phi_2))*np.sqrt(deltap_2/rho_2) + (
 print(f'part 1:{(k_m*mu_2)/((k_m+1)*phi_2)*np.sqrt(deltap_2/rho_2)}')
 print(f'part 2:{mu_1/((k_m+1)*phi_1)*np.sqrt(deltap_1/rho_1)}')
 print(f'l_mix = {l_mix}')
+
