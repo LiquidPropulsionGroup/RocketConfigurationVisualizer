@@ -415,7 +415,7 @@ senerio 2 the stage 1 nozzle is submerged and effecting the flow of the stage 2 
         else:
             print(f'Re_in = {Re_in2}')
         alpha = alpha_2-17.5
-        k_m = mdot_1/mdot_2
+        k_m = 1/(mdot_1/mdot_2)
         l_mix = self.clac_l_mix(k_m, phi_1, phi_2, mu_1, mu_2, rho_1, rho_2, deltap_1, deltap_2, tau)
         l_in2, l_n2, l_s2, R_s2 = self.calc_lengths(r_in2, R_in2, R_n2, l_in_ratio2, l_n_ratio2, l_s_ratio2)
         deltal_n2 = (r_mn2 - R_n1)/np.tan(alpha_1)
@@ -669,5 +669,5 @@ if __name__ == "__main__": #test values
     l_s_ratio2 = 3
     del_w = 0.001
     deltar = 0.0003
-    tau = 0.2
+    tau = 0.2/1000
     my_swirl_injector.calculateBipropellant1(mdot_1, mdot_2, deltap_1, deltap_2, alpha_1, alpha_2, n_1, n_2, rho_1, rho_2, nu_1, nu_2, l_n_ratio1, l_in_ratio1, l_s_ratio1, l_n_ratio2, l_in_ratio2, l_s_ratio2, del_w, deltar, tau)
