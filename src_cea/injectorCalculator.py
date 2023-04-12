@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
 from scipy.optimize import fsolve
-from sympy import symbols, solve
 
 '''
 this class is currently for sizing a bipropellant coax swirl injector
@@ -140,7 +139,7 @@ radius of the inlet passage is obtained
         mu = phi*np.sqrt(phi)/np.sqrt(2-phi) #eq 62
         return mu
     def calc_alpha_eq(self, phi): 
-        alpha_eq = 180/np.pi*np.arctan(np.sqrt(2*(1-phi)/phi)) #eq 74
+        alpha_eq = np.arctan(np.sqrt(2*(1-phi)/phi)) #eq 74
         return alpha_eq
 #step 7
 #Calculate the hydraulic-loss coefficient in the tangential passages
@@ -310,7 +309,10 @@ uses experimental data to simplify the calculations
         ''')
 
     def calc_mu2(self, mdot, R_n, rho, deltap):
-        return 0.225*mdot/(R_n)**2/np.sqrt(rho*deltap)
+        print('----------')
+        print(f'mdot = {mdot}\nR_n = {R_n}\nrho = {rho}\ndeltap = {deltap}')
+        print('----------')
+        return mdot/(R_n)**2/np.sqrt(rho*deltap)
 
     def clac_l_mix(self, k_m, phi_1, phi_2, mu_1, mu_2, rho_1, rho_2, deltap_1, deltap_2, tau):
         l_mix = np.sqrt(2)*tau*((k_m*mu_2)/((k_m+1)*phi_2)*np.sqrt(deltap_2/rho_2) + (mu_1)/((k_m+1)*phi_1)*np.sqrt(deltap_1/rho_1))
@@ -324,7 +326,7 @@ senerio 1 the wall of the stage 1 nozzle is within the gaseouse core of the stag
 senerio 2 the stage 1 nozzle is submerged and effecting the flow of the stage 2 nozzle
     '''
     #calculateBipropellant 1 uses manually inputed experimental data from graphs
-    def calculateBipropellant1(self, mdot_1, mdot_2, deltap_1, deltap_2, alpha_1, alpha_2, n_1, n_2, rho_1, rho_2, nu_1, nu_2, l_n_ratio1, l_in_ratio1, l_s_ratio1, l_n_ratio2, l_in_ratio2, l_s_ratio2, del_w, deltar, tau):
+    def calculateBipropellant1(self, mdot_1, mdot_2, deltap_1, deltap_2, alpha_1, alpha_2, n_1, n_2, rho_1, rho_2, nu_1, nu_2, l_n_ratio1, l_in_ratio1, l_s_ratio1, l_n_ratio2, l_in_ratio2, l_s_ratio2, del_w, deltar, tau, lenUnits = 'in'):
         # stage 1 sizing calculations
         print(f"input values: \nalpha_1 = {alpha_1}\nalpha_2 = {alpha_2}\ndeltap_1 = {deltap_1}\ndeltap_2 = {deltap_2}\nn_1 = {n_1}\nn_2 = {n_2}\nl_in_ratio = {l_in_ratio}\nl_n_ratio = {l_n_ratio}\nl_s_ratio = {l_s_ratio}")
         print("calculated values:")
@@ -375,6 +377,7 @@ senerio 2 the stage 1 nozzle is submerged and effecting the flow of the stage 2 
             #print(f'alpha_eq = {alpha_eq}')
         #stage 2 calculations
         A_2, phi_2, mu_2 = self.calc_phi_mu_A(alpha_2)
+        print('A_2 = {}\nphi_2 = {}\nmu_2 = {}'.format(A_2, phi_2, mu_2))
         #R_n2 = R_n1+del_w+deltar+r_mn2 #first aproximation of R_n2
         #r_mn2 = np.sqrt(1-phi_2)*R_n2
         #print(f'R_n = {R_n}')
@@ -390,22 +393,23 @@ senerio 2 the stage 1 nozzle is submerged and effecting the flow of the stage 2 
             R_n2 = (R_n1+del_w+deltar)/np.sqrt(1-phi_2)
             print(f'R_n2 = {R_n2}')
             mu_2 = self.calc_mu2(mdot_2, R_n2, rho_2, deltap_2)
+            print(f'mu_2 = {mu_2}')
             def funcphi(mu, phi):
                 return mu - phi*np.sqrt(phi/(2-phi))
             phiGuess = 0.5
             phi_2 = fsolve(funcphi, phiGuess, args=(mu_2,))
+            print(f'phi_2 = {phi_2}')
+            print(f'abs(R_n2-oldR_n2) = {abs(R_n2-oldR_n2)}')
         r_mn2 = np.sqrt(1-phi_2)*R_n2
-        def funcA(A, phi, mu):
-            return mu - 1/np.sqrt(A**2/(1-phi)+1/phi**2) #eq 61
+        def funcA(A, phi):
+            return A - (1-phi)*np.sqrt(2)/(phi*np.sqrt(phi)) 
         AGuess = 0.5
-        A_2 = fsolve(funcA, AGuess, args=(phi_2, mu_2,))
+        A_2 = fsolve(funcA, AGuess, args=(phi_2))
         R_in2 = R_n2 * 1.25 #R_n2_ratio
         print(f'R_in2 = {R_in2}\nR_n2 = {R_n2}\nn_2 = {n_2}\nA_2 = {A_2}')
         r_in2 = self.calc_r_in(R_in2, R_n2, n_2, A_2) #np.sqrt(R_n2*R_in2/(n_2*A_2))
-        print('ping')
         print(f'mdot_2 = {mdot_2}\nn_2 = {n_2}\nr_in2 = {r_in2}\nrho_2 = {rho_2}\nnu_2 = {nu_2}\n')
         Re_in2 = self.calc_Re(mdot_2, n_2, r_in2, rho_2, nu_2)
-        print('ping2')
         if Re_in2 < 10000:
             print(f'Re_in = {Re_in2}\nRe_in must be larger than 10000\nchange input values to achive this')
         else:
@@ -416,20 +420,24 @@ senerio 2 the stage 1 nozzle is submerged and effecting the flow of the stage 2 
         l_in2, l_n2, l_s2, R_s2 = self.calc_lengths(r_in2, R_in2, R_n2, l_in_ratio2, l_n_ratio2, l_s_ratio2)
         deltal_n2 = (r_mn2 - R_n1)/np.tan(alpha_1)
         new_l_n2 = l_mix + deltal_n2
+        if lenUnits == 'in': #NOTE: add length units conversion
+            pass
 
         print(f'''
             mdot_1 = {mdot_1}
             mdot_2 = {mdot_2}
             deltap_1 = {deltap_1}
             deltap_2 = {deltap_2}
-            alpha_1 = {alpha_1}
-            alpha_2 = {alpha_2}
+            alpha_1 = {alpha_1*180/np.pi}
+            alpha_2 = {alpha_2*180/np.pi}
             n_1 = {n_1}
             n_2 = {n_2}
             rho_1 = {rho_1}
             rho_2 = {rho_2}
             nu_1 = {nu_1}
             nu_2 = {nu_2}
+            Re_1 = {Re_1}
+            Re_2 = {Re_in2}
             l_n_ratio1 = {l_n_ratio1}
             l_in_ratio1 = {l_in_ratio1}
             l_s_ratio1 = {l_s_ratio1}
@@ -633,9 +641,9 @@ if __name__ == "__main__": #test values
     nu = 0.6*10**(-6) #in m^2/s
 
     my_swirl_injector = Injector()
-    #my_swirl_injector.calculate1(mdot_1, p_f, p_in, p_c, alpha, n, rho, nu, l_n_ratio, l_in_ratio, l_s_ratio)
+    my_swirl_injector.calculate1(mdot_1, p_f, p_in, p_c, alpha, n, rho, nu, l_n_ratio, l_in_ratio, l_s_ratio)
     print("------------------------------------")
-    #my_swirl_injector.calc1variablesDisplay()
+    my_swirl_injector.calc1variablesDisplay()
     print("------------------------------------")
     alpha = 50
     l_n__R_n = 0.5
@@ -645,14 +653,14 @@ if __name__ == "__main__": #test values
     #my_swirl_injector.calculate2(alpha, l_n__R_n, A, mu_in, mdot_1, rho, n, R_in_ratio, p_f, p_c, l_in_ratio, l_n_ratio, l_s_ratio)
     deltap_1 = 4*10**5
     deltap_2 = 4*10**5
-    alpha_1 = 60*np.pi/180
-    alpha_2 = 60*np.pi/180
+    alpha_1 = 50*np.pi/180
+    alpha_2 = 50*np.pi/180
     n_1 = 4
     n_2 = 4
     rho_1 = 1141
     rho_2 = 800
     nu_1 = 0.08*10**(-6) #in m^2/s
-    nu_2 = 2.7*10**(-6) #in m^2/s
+    nu_2 = 0.1*10**(-6)#2.7*10**(-6) #in m^2/s
     l_n_ratio1 = 1
     l_in_ratio1 = 4.5
     l_s_ratio1 = 3

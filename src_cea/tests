@@ -39,3 +39,26 @@ alpha_eq = 180/np.pi*np.arctan(np.sqrt(2*(1-phi)/phi))
 print(alpha_eq)
 
 print(180/np.pi*np.arctan(1))
+
+def funcA(A, phi, mu):
+    return A - (1-phi)*np.sqrt(2)/(phi*np.sqrt(phi)) 
+AGuess = 0.5
+print('ping')
+phi_2 = 0.2
+mu_2 = 0.4
+A_2 = fsolve(funcA, AGuess, args=(phi_2, mu_2,))
+
+k_m = 2.3
+tau = 0.2
+mu_1 = 0.443 #0.374
+mu_2 = 0.064 #0.258
+deltap_1 = 4*10**5
+deltap_2 = 4*10**5
+rho_1 = 1100
+rho_2 = 800
+phi_1 = 0.64 #0.5826179
+phi_2 = 0.2 #0.0991366
+l_mix = np.sqrt(2)*tau*(((k_m*mu_2)/((k_m+1)*phi_2))*np.sqrt(deltap_2/rho_2) + (mu_1/((k_m+1)*phi_1))*np.sqrt(deltap_1/rho_1))
+print(f'part 1:{(k_m*mu_2)/((k_m+1)*phi_2)*np.sqrt(deltap_2/rho_2)}')
+print(f'part 2:{mu_1/((k_m+1)*phi_1)*np.sqrt(deltap_1/rho_1)}')
+print(f'l_mix = {l_mix}')
