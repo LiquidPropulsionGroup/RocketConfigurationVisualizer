@@ -326,7 +326,7 @@ senerio 1 the wall of the stage 1 nozzle is within the gaseouse core of the stag
 senerio 2 the stage 1 nozzle is submerged and effecting the flow of the stage 2 nozzle
     '''
     #calculateBipropellant 1 uses manually inputed experimental data from graphs
-    def calculateBipropellant1(self, mdot_1, mdot_2, deltap_1, deltap_2, alpha_1, alpha_2, n_1, n_2, rho_1, rho_2, nu_1, nu_2, l_n_ratio1, l_in_ratio1, l_s_ratio1, l_n_ratio2, l_in_ratio2, l_s_ratio2, del_w, deltar, tau, lenUnits = 'in'):
+    def calculateBipropellant1(self, mdot_1, mdot_2, deltap_1, deltap_2, alpha_1, alpha_2, n_1, n_2, rho_1, rho_2, nu_1, nu_2, l_n_ratio1, l_in_ratio1, l_s_ratio1, l_n_ratio2, l_in_ratio2, l_s_ratio2, del_w, deltar, tau, lenUnits = 'in', angleUnits = 'degrees'):
         # stage 1 sizing calculations
         print(f"input values: \nalpha_1 = {alpha_1}\nalpha_2 = {alpha_2}\ndeltap_1 = {deltap_1}\ndeltap_2 = {deltap_2}\nn_1 = {n_1}\nn_2 = {n_2}\nl_in_ratio = {l_in_ratio}\nl_n_ratio = {l_n_ratio}\nl_s_ratio = {l_s_ratio}")
         print("calculated values:")
@@ -414,28 +414,49 @@ senerio 2 the stage 1 nozzle is submerged and effecting the flow of the stage 2 
             print(f'Re_in = {Re_in2}\nRe_in must be larger than 10000\nchange input values to achive this')
         else:
             print(f'Re_in = {Re_in2}')
-        alpha = alpha_2-17.5
+        alpha = alpha_2-17.5*np.pi/180
         k_m = 1/(mdot_1/mdot_2)
         l_mix = self.clac_l_mix(k_m, phi_1, phi_2, mu_1, mu_2, rho_1, rho_2, deltap_1, deltap_2, tau)
         l_in2, l_n2, l_s2, R_s2 = self.calc_lengths(r_in2, R_in2, R_n2, l_in_ratio2, l_n_ratio2, l_s_ratio2)
         deltal_n2 = (r_mn2 - R_n1)/np.tan(alpha_1)
         new_l_n2 = l_mix + deltal_n2
         if lenUnits == 'in': #NOTE: add length units conversion
-            pass
-
+            R_n1 *= 39.37
+            R_n2 *= 39.37
+            R_in1 *= 39.37
+            R_in2 *= 39.37
+            r_in1 *= 39.37
+            r_in2 *= 39.37
+            l_in1 *= 39.37
+            l_in2 *= 39.37
+            l_n1 *= 39.37
+            l_n2 *= 39.37
+            l_s1 *= 39.37
+            l_s2 *= 39.37
+            R_s1 *= 39.37
+            R_s2 *= 39.37
+            l_mix *= 39.37
+            new_l_n2 *= 39.37
+            del_w *= 39.37
+            deltar *= 39.37
+        if angleUnits == 'degrees':
+            alpha *= 180/np.pi
+            alpha_1 *= 180/np.pi
+            alpha_2 *= 180/np.pi
+        
         print(f'''
-            mdot_1 = {mdot_1}
-            mdot_2 = {mdot_2}
-            deltap_1 = {deltap_1}
-            deltap_2 = {deltap_2}
-            alpha_1 = {alpha_1*180/np.pi}
-            alpha_2 = {alpha_2*180/np.pi}
+            mdot_1 = {mdot_1} kg/s
+            mdot_2 = {mdot_2} kg/s
+            deltap_1 = {deltap_1} Pa
+            deltap_2 = {deltap_2} Pa
+            alpha_1 = {alpha_1} {angleUnits}
+            alpha_2 = {alpha_2} {angleUnits}
             n_1 = {n_1}
             n_2 = {n_2}
-            rho_1 = {rho_1}
-            rho_2 = {rho_2}
-            nu_1 = {nu_1}
-            nu_2 = {nu_2}
+            rho_1 = {rho_1} kg/m^3
+            rho_2 = {rho_2} kg/m^3
+            nu_1 = {nu_1} m^2/s
+            nu_2 = {nu_2} m^2/s
             Re_1 = {Re_1}
             Re_2 = {Re_in2}
             l_n_ratio1 = {l_n_ratio1}
@@ -444,32 +465,32 @@ senerio 2 the stage 1 nozzle is submerged and effecting the flow of the stage 2 
             l_n_ratio2 = {l_n_ratio2}
             l_in_ratio2 = {l_in_ratio2}
             l_s_ratio2 = {l_s_ratio2}
-            del_w = {del_w}
-            deltar = {deltar}
-            tau = {tau}
+            del_w = {del_w} {lenUnits}
+            deltar = {deltar} {lenUnits}
+            tau = {tau} s
             A_1 = {A_1}
             A_2 = {A_2}
             mu_1 = {mu_1}
             mu_2 = {mu_2}
             phi_1 = {phi_1}
             phi_2 = {phi_2}
-            R_n1 = {R_n1}
-            R_n2 = {R_n2}
-            R_in1 = {R_in1}
-            R_in2 = {R_in2}
-            r_in1 = {r_in1}
-            r_in2 = {r_in2}
-            l_in1 = {l_in1}
-            l_in2 = {l_in2}
-            l_n1 = {l_n1}
-            l_n2 = {l_n2}
-            l_s1 = {l_s1}
-            l_s2 = {l_s2}
-            R_s1 = {R_s1}
-            R_s2 = {R_s2}
-            l_mix = {l_mix}
-            new_l_n2 = {new_l_n2}
-            alpha = {alpha}
+            R_n1 = {R_n1} {lenUnits}
+            R_n2 = {R_n2} {lenUnits}
+            R_in1 = {R_in1} {lenUnits}
+            R_in2 = {R_in2} {lenUnits}
+            r_in1 = {r_in1} {lenUnits}
+            r_in2 = {r_in2} {lenUnits}
+            l_in1 = {l_in1} {lenUnits}
+            l_in2 = {l_in2} {lenUnits}
+            l_n1 = {l_n1} {lenUnits}
+            l_n2 = {l_n2} {lenUnits}
+            l_s1 = {l_s1} {lenUnits}
+            l_s2 = {l_s2} {lenUnits}
+            R_s1 = {R_s1} {lenUnits}
+            R_s2 = {R_s2} {lenUnits}
+            l_mix = {l_mix} {lenUnits}
+            new_l_n2 = {new_l_n2} {lenUnits}
+            alpha = {alpha} {angleUnits}
             k_m = {k_m}
         ''')
 
@@ -653,8 +674,8 @@ if __name__ == "__main__": #test values
     #my_swirl_injector.calculate2(alpha, l_n__R_n, A, mu_in, mdot_1, rho, n, R_in_ratio, p_f, p_c, l_in_ratio, l_n_ratio, l_s_ratio)
     deltap_1 = 4*10**5
     deltap_2 = 4*10**5
-    alpha_1 = 50*np.pi/180
-    alpha_2 = 50*np.pi/180
+    alpha_1 = 32.5*np.pi/180
+    alpha_2 = 60*np.pi/180
     n_1 = 4
     n_2 = 4
     rho_1 = 1141

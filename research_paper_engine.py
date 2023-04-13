@@ -36,9 +36,9 @@ nozzle_type = 'bell80'
 
 title = 'research paper igniter'
 ox = 'O2'        # full propellant selection is availible at https://rocketcea.readthedocs.io/en/latest/propellants.html
-fuel =  'H2'
+fuel =  'CH4'
 pMaxCham = 30    #max thrust chamber pressure in bar
-Mr = 10 # propellant mixture ratio
+Mr = 4 # propellant mixture ratio
 pAmbient = 1.01325
 pMinExitRatio = 0.45
 #set veriables
@@ -48,7 +48,7 @@ Lstar = 0.5
 Dcham = 0.6 * 0.0254 #in meters
 conv_angle = math.pi / 4 # rad, 45deg
 div_angle = math.pi / 12  # rad, 15deg
-wall_temp = 1500 # K
+wall_temp = 1000 # K
 fuel_delta_t = 107 # K
 fuel_cp = 1920 # J/KgK
 r1 = 1
