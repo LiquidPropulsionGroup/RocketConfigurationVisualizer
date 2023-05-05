@@ -654,6 +654,8 @@ if __name__ == "__main__": #test values
     p_in = 23*10**5 # not currently being used
     p_c = 20*10**5
     alpha = 59.5*np.pi/180 #in radians
+
+
     n = 3
     l_in_ratio = 4.5   # l_in = 3-6
     l_n_ratio = 1    # l_n = 0.5-2
@@ -674,10 +676,10 @@ if __name__ == "__main__": #test values
     #my_swirl_injector.calculate2(alpha, l_n__R_n, A, mu_in, mdot_1, rho, n, R_in_ratio, p_f, p_c, l_in_ratio, l_n_ratio, l_s_ratio)
     deltap_1 = 4*10**5
     deltap_2 = 4*10**5
-    alpha_1 = 32.5*np.pi/180
+    alpha_1 = 60*np.pi/180
     alpha_2 = 60*np.pi/180
-    n_1 = 4
-    n_2 = 4
+    n_1 = 6
+    n_2 = 6
     rho_1 = 1141
     rho_2 = 800
     nu_1 = 0.1*10**(-6) #in m^2/s
@@ -688,7 +690,7 @@ if __name__ == "__main__": #test values
     l_n_ratio2 = 1
     l_in_ratio2 = 4.5
     l_s_ratio2 = 3
-    del_w = 0.001
+    del_w = 0.0008
     deltar = 0.0003
     tau = 0.2/1000
     my_swirl_injector.calculateBipropellant1(mdot_1, mdot_2, deltap_1, deltap_2, alpha_1, alpha_2, n_1, n_2, rho_1, rho_2, nu_1, nu_2, l_n_ratio1, l_in_ratio1, l_s_ratio1, l_n_ratio2, l_in_ratio2, l_s_ratio2, del_w, deltar, tau)
