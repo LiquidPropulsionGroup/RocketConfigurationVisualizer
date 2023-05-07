@@ -43,7 +43,8 @@ class ChemistryCEA:
             mystring = cea.get_full_cea_output(Pc = pCham, MR = Mr, eps = ae, PcOvPe = None, pc_units='bar', output='KJ', short_output=1, frozen = frozen)
         else:
             print('chem needs a pAmbient or ae value')
-        #print(string)
+        #print(mystring)# prints raw cea output
+
         lines = mystring.splitlines()
         lines.reverse()
         #print(f'lines: {lines}')
