@@ -674,10 +674,10 @@ if __name__ == "__main__": #test values
     #my_swirl_injector.calculate2(alpha, l_n__R_n, A, mu_in, mdot_1, rho, n, R_in_ratio, p_f, p_c, l_in_ratio, l_n_ratio, l_s_ratio)
     deltap_1 = 4*10**5
     deltap_2 = 4*10**5
-    alpha_1 = 32.5*np.pi/180
+    alpha_1 = 60*np.pi/180
     alpha_2 = 60*np.pi/180
-    n_1 = 4
-    n_2 = 4
+    n_1 = 6
+    n_2 = 6
     rho_1 = 1141
     rho_2 = 800
     nu_1 = 0.1*10**(-6) #in m^2/s
