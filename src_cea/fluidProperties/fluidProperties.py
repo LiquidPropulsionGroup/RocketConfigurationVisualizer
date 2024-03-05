@@ -26,13 +26,12 @@ class FluidProperties:
             c_l = None
             cp = None
         else:
-
-
             #print(os.getcwd())
             self.name = fluidName
             try:
-                with open(f'src_cea\\fluidProperties\\{fluidName}.csv') as csvfile:
+                with open(f'src_cea/fluidProperties/{fluidName}.csv') as csvfile:
                     lines = csvfile.readlines()
+                    print(lines)
                     for i in range(len(lines)):
                         lines[i] = lines[i].split(',')
                     #print(f'len(lines[0]) = {len(lines[0])}')
@@ -50,5 +49,5 @@ class FluidProperties:
             f"cp: {self.cp} " \
 
 if __name__ == '__main__':
-    keroseneProps = FluidProperties('kerosene')
+    keroseneProps = FluidProperties('RP1')
     print(keroseneProps)

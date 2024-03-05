@@ -5,7 +5,7 @@ import scipy as sp
 import time
 from scipy.optimize import fsolve
 from rocketcea.cea_obj import CEA_Obj
-from .chemistryCEA import ChemistryCEA
+#from .chemistryCEA import ChemistryCEA
 from .runCEA import RunCEA
 
 class ThrustLevel:
@@ -54,7 +54,7 @@ class ThrustLevel:
         self.exit.a = self.thr.a * self.exit.aeat
         self.thr.d = 2 * math.sqrt(self.thr.a / math.pi)
         self.exit.d = 2 * math.sqrt(self.exit.a / math.pi)
-        self.isp_s, self.nozzle_mode = self.get_isp()
+        #self.isp_s, self.nozzle_mode = self.get_isp()
         #self.Cstar = self.cham.p * self.thr.a / self.mdot
         self.calcThrust(1.01325)
 
@@ -285,7 +285,7 @@ class ThrustLevel:
         return total_watts
     
     def fuelWatts(self):
-        #print(f'fuel cp: {self.fuel.cp} \nfuel delta t: {self.fuel_delta_t}\nmdot: {self.mdot}\nmr: {self.mr}\nfilm cooling percent: {self.filmCoolingPercent}')
+        print(f'fuel cp: {self.fuel.cp} \nfuel delta t: {self.fuel_delta_t}\nmdot: {self.mdot}\nmr: {self.mr}\nfilm cooling percent: {self.filmCoolingPercent}')
         return (self.fuel.cp * self.fuel_delta_t * (self.mdot/(self.mr+1) * (1+self.filmCoolingPercent)))
 
     def graphDisplay(self, pressure_units = 'bar', distance_units = 'in'):
