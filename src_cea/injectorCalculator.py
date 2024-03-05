@@ -540,8 +540,6 @@ parameters are calculated.
         lbar_n2 = None
         n_1 = None
         n_2 = None
-
-
         #step 3
         '''
 
@@ -647,8 +645,8 @@ parameters are calculated.
         )
 
 if __name__ == "__main__": #test values
-    mdot_1 = 0.7/6       #mass flow of stage 1 of one injection element
-    mdot_2 = 0.3/6       #mass flow of stage 2 of one injection element
+    mdot_1 = 0.3/6/2 #0.7/6       #mass flow of stage 1 of one injection element
+    mdot_2 = 0.7/6/2 #0.3/6       #mass flow of stage 2 of one injection element
     #pressures in pascals
     p_f = 24*10**5
     p_in = 23*10**5 # not currently being used
@@ -680,10 +678,10 @@ if __name__ == "__main__": #test values
     alpha_2 = 60*np.pi/180
     n_1 = 6
     n_2 = 6
-    rho_1 = 1141
-    rho_2 = 800
-    nu_1 = 0.1*10**(-6) #in m^2/s
-    nu_2 = 0.2*10**(-6)#2.7*10**(-6) #in m^2/s
+    rho_1 = 997#1141
+    rho_2 = 997#800
+    nu_1 = 1*10**(-6)#0.1*10**(-6) #in m^2/s
+    nu_2 = 1*10**(-6)#0.2*10**(-6)#2.7*10**(-6) #in m^2/s
     l_n_ratio1 = 1
     l_in_ratio1 = 4.5
     l_s_ratio1 = 3

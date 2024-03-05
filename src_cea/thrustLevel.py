@@ -6,25 +6,36 @@ import time
 from scipy.optimize import fsolve
 from rocketcea.cea_obj import CEA_Obj
 from .chemistryCEA import ChemistryCEA
+from .runCEA import RunCEA
 
 class ThrustLevel:
     def __init__(self, cea, pCham, Mr, mdot, area_arr, pAmbient = None, ae = None, frozen = 1):
         if ae == None:
             #print('chamber pressure:{}\nambient pressure:{}'.format(pCham, pAmbient))
-            chems = ChemistryCEA.create(cea, pCham, Mr, pAmbient = pAmbient, frozen = frozen)
+            chems = RunCEA.create(cea, pCham, Mr, pAmbient = pAmbient, frozen = frozen)
         else:
             self.ambientP = pAmbient
             #print('chamber pressure:{}\nae:{}'.format(pCham, ae))
-            chems = ChemistryCEA.create(cea, pCham, Mr, ae = ae, frozen = frozen)
+            chems = RunCEA.create(cea, pCham, Mr, ae = ae, frozen = frozen)
         self.inj = None # injector
-        self.cham = chems[0] # converging starts (end of chamber)
-        self.thr = chems[1] # throat
-        self.exit = chems[2] # exit
+        if cea.fac_CR is not None: #finite area combustor
+            self.inj = chems[0] #injector
+            self.cham = chems[1] # converging starts (end of chamber)
+            self.thr = chems[2] # throat
+            self.exit = chems[3] # exit
+        else:   # infinite area combustor
+            self.inj = None #injector
+            self.cham = chems[0] # converging starts (end of chamber)
+            self.thr = chems[1] # throat
+            self.exit = chems[2] # exit
         #debug prints
         #print(chems)
         #print('exit mach:{}'.format(self.exit.mach))
         self.mdot = mdot
+        self.Mr = Mr
         self.filmCoolingPercent = 0
+        self.cham.p = pCham
+        self.pAmbient = pAmbient
         self.contour = None
         self.area_arr = area_arr
         self.mach_arr = []
@@ -37,17 +48,60 @@ class ThrustLevel:
         self.heat_flux_arr = []
         self.total_watts = 0
         self.max_fuel_heat = 0
+        self.Cstar = self.cham.Cstar
         #print('mdot:{}\nchamber pressure:{}\nthroat temperature:{}\nthroat rbar:{}\nthroat gamma:{}'.format(self.mdot, self.cham.p, self.thr.t, self.thr.rbar, self.thr.gam))
         self.thr.a = self.throatAreaEquation(self.mdot, self.cham.p, self.thr.t, self.thr.rbar, self.thr.gam)
         self.exit.a = self.thr.a * self.exit.aeat
         self.thr.d = 2 * math.sqrt(self.thr.a / math.pi)
         self.exit.d = 2 * math.sqrt(self.exit.a / math.pi)
-
-        # Specific impulse in seconds
-        #self.isp_s = self.exit.isp / 9.8
-        self.Cstar = self.cham.p * self.thr.a / self.mdot
+        self.isp_s, self.nozzle_mode = self.get_isp()
+        #self.Cstar = self.cham.p * self.thr.a / self.mdot
         self.calcThrust(1.01325)
 
+        # Specific impulse in seconds---------------------------------------------------------------------------------------------------------------------------
+        #self.isp_s = self.exit.isp / 9.8 #9.8 is gravitational constant
+    '''
+    def get_isp(self):
+        from rocketcea.separated_Cf import sepNozzleCf
+
+        IspVac = self.exit.ivac
+        mw,gam = self.thr.m, self.thr.gam # throat gamma
+        #PcOvPe = py_cea.rockt.app[ self.i_exit ]
+        Pexit = self.exit.p*14.7/1.01325
+        Cstar = float(self.Cstar)
+        # ==================================
+        
+        CfOvCfvacAtEsep, CfOvCfvac, Cfsep, CfiVac, CfiAmbSimple, CfVac, epsSep, Psep = \
+             sepNozzleCf(gam, self.exit.aeat, self.cham.p, self.pAmbient)
+        
+        if Pexit > Psep:
+            # if not separated, use theoretical equation for back-pressure correction
+            IspAmb = IspVac - Cstar*self.pAmbient*self.exit.aeat/self.cham.p/32.174 
+            CfAmb = IspAmb * 32.174 / Cstar
+        else:
+            # if separated, use Kalt and Badal estimate of ambient thrust coefficient
+            # NOTE: there are better, more modern methods available
+            IspODEepsSep,CstarODE,Tc = \
+                self.get_IvacCstrTc(Pc=self.cham.p, MR=self.Mr, eps=epsSep)
+                
+            CfvacAtEsep = CfVac * IspODEepsSep / IspVac
+            
+            CfAmb = CfvacAtEsep * CfOvCfvacAtEsep
+            IspAmb = CfAmb * Cstar / 32.174 
+        
+        # figure out mode of nozzle operation
+        if Pexit > Psep:
+            if Pexit > self.pAmbient + 0.05:
+                mode = 'UnderExpanded (Pe=%g)'%Pexit
+            elif Pexit < self.pAmbient - 0.05:
+                mode = 'OverExpanded (Pe=%g)'%Pexit
+            else:
+                mode = 'Pexit = %g'%Pexit
+        else:
+            mode = 'Separated (Psep=%g, epsSep=%g)'%(Psep,epsSep)
+
+        return IspAmb/9.8, mode
+    '''
     def heatCalcs(self, area_arr, contour, wall_temp, fuel_delta_t, fuel, mr, filmCoolingPercent):
         self.area_arr = area_arr
         self.contour = contour
@@ -62,6 +116,8 @@ class ThrustLevel:
         self.heat_flux_arr = self.calcHeatFlux()
         self.total_watts = self.totalWatts()
         self.max_fuel_heat = self.fuelWatts()
+        self.isp_s = self.thrust/(self.mdot*9.8)
+        self.isp_adjusted = self.thrust/((self.mdot+self.mdot/(self.mr+1)*(self.filmCoolingPercent))*9.8) # isp = thrust/(mdot*g)
         '''
     def heatCalcsFilmCooling(self, area_arr, contour, wall_temp, fuel_delta_t, fuel, mr, filmCoolingPercent):
         self.area_arr = area_arr

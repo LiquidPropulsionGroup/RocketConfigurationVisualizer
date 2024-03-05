@@ -1,3 +1,8 @@
+# To Do List
+1. calculate and add isp engine prints
+2. 2d cooling channel calculator
+3. film cooling calculator
+
 # Rocket Configuration Visualizer
 
 <!-- Add information here explaining the visualizer -->

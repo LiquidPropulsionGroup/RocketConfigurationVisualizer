@@ -5,19 +5,23 @@ import scipy as sp
 import time
 from scipy.optimize import fsolve
 from rocketcea.cea_obj import CEA_Obj, add_new_fuel
+# from rocketcea.cea_obj import add_new_fuel
+# from rocketcea.cea_obj_w_units import CEA_Obj
 from .chemistryCEA import ChemistryCEA
 from .thrustLevel import ThrustLevel
 from .fluidProperties.fluidProperties import FluidProperties
 
 class Engine:
-    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None, frozen = 1, optimalP = 1):
+    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, pMinExitRatio, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None, frozen = 1, optimalP = 1, fac_CR = None, pAmbient = 1.01325):
         self.title = title
         self.fuel = FluidProperties(fuel)
         #print(self.fuel)
         self.ox = FluidProperties(ox)
         if customFuel != None:
             add_new_fuel( customFuel[0], customFuel[1] )
-        self.cea = CEA_Obj( oxName= ox, fuelName= fuel)
+        #self.cea = CEA_Obj( oxName= ox, fuelName= fuel, isp_units='sec', cstar_units='m/s', pressure_units='bar', temperature_units='K', sonic_velocity_units='m/s', enthalpy_units='kJ/kg', density_units='kg/m^3', specific_heat_units='kJ/kg-K', viscosity_units='millipoise', thermal_cond_units='W/cm-degC', fac_CR=fac_CR, make_debug_prints=False)
+        #CEA_Obj(propName='', oxName='', fuelName='', useFastLookup=0, makeOutput=0, isp_units='sec', cstar_units='ft/sec', pressure_units='psia', temperature_units='degR', sonic_velocity_units='ft/sec', enthalpy_units='BTU/lbm', density_units='lbm/cuft', specific_heat_units='BTU/lbm degR', viscosity_units='millipoise', thermal_cond_units='mcal/cm-K-s', fac_CR=None, make_debug_prints=False
+        self.cea = CEA_Obj( oxName= ox, fuelName= fuel, fac_CR=fac_CR)
         self.nozzle_type = nozzle_type
         self.Mr = Mr
         self.optimalP = optimalP
@@ -76,7 +80,7 @@ class Engine:
                     cpGuess -= cpStep
                     mdotGuess -= mdotStep
             #print('chamber pressure:{}\nmr:{}\nmdot:{}\narea array:{}\nae:{}'.format(cpGuess, self.Mr, mdotGuess, self.area_arr, ae))
-            nozmin = ThrustLevel(self.cea, cpGuess, self.Mr, mdotGuess, self.area_arr, ae = ae, frozen = self.frozen)
+            nozmin = ThrustLevel(self.cea, cpGuess, self.Mr, mdotGuess, self.area_arr, ae = ae, frozen = self.frozen, pAmbient = self.optimalP)
             pGuess = nozmin.exit.p
             #print('pressure guess:{}'.format(pGuess))
         #print('min nozzle exit pressure in bar: {}'.format(nozmin.exit.p))
@@ -240,24 +244,28 @@ class Engine:
         print("Total Length: {0:.2f} in".format((self.contourPoints[6][0]-self.contourPoints[0][0]) / 0.0254))
         print("Volume: {0:.2f} cc".format(self.chamber_volume * 1000000))
         print("{}{}:{}".format('\033[92m', 'Max Thrust', '\033[0m'))
-        print("Max Thrust: {0:.2f} N".format(self.max.thrust))
+        print("Max Thrust: {0:.2f} N ({1:.2f} lbf)".format(self.max.thrust, (self.max.thrust*0.224809)))
+        print("Max isp: {0:.2f} s".format(self.max.isp_s))
+        print("Max isp Adjusted: {0:.2f} s".format(self.max.isp_adjusted))
         print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.max.h_g_arr[1,1]))
         print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.max.heat_flux_arr[1,1]))
         print("Total Watts: {0:.2f} W".format(self.max.total_watts))
         print("Max Fuel Heat Transfer: {0:.2f} W".format(self.max.max_fuel_heat))
-        print("Mass Flow Rate: {0:.2f} mdot".format(self.max.mdot))
-        print("Fuel Mass Flow Rate: {0:.2f} mdot".format(self.max.mdot/(self.max.mr+1)*(1+self.max.filmCoolingPercent)))
-        print("Film Cooling Mass Flow Rate: {0:.2f} mdot".format(self.max.mdot/(self.max.mr+1)*(self.max.filmCoolingPercent)))
+        print("Mass Flow Rate: {0:.2f} kg/s".format(self.max.mdot))
+        print("Fuel Mass Flow Rate: {0:.2f} kg/s".format(self.max.mdot/(self.max.mr+1)*(1+self.max.filmCoolingPercent)))
+        print("Film Cooling Mass Flow Rate: {0:.3f} kg/s".format(self.max.mdot/(self.max.mr+1)*(self.max.filmCoolingPercent)))
         print("chamber pressure: {0:.2f} bar".format(self.max.pressure_arr[1,1]))
         print("{}{}:{}".format('\033[92m', 'Min Thrust', '\033[0m'))
-        print("Min Thrust: {0:.2f} N".format(self.min.thrust))
+        print("Min Thrust: {0:.2f} N ({1:.2f} lbf)".format(self.min.thrust, (self.min.thrust*0.224809)))
+        print("Min isp: {0:.2f} s".format(self.min.isp_s))
+        print("Min isp Adjusted: {0:.2f} s".format(self.min.isp_adjusted))
         print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.min.h_g_arr[1,1]))
         print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.min.heat_flux_arr[1,1]))
         print("Total Watts: {0:.2f} W".format(self.min.total_watts))
         print("Max Fuel Heat Transfer: {0:.2f} W".format(self.min.max_fuel_heat))
-        print("Mass Flow Rate: {0:.2f} mdot".format(self.min.mdot))
-        print("Fuel Mass Flow Rate: {0:.2f} mdot".format(self.min.mdot/(self.min.mr+1)*(1+self.min.filmCoolingPercent)))
-        print("Film Cooling Mass Flow Rate: {0:.2f} mdot".format(self.min.mdot/(self.min.mr+1)*(self.min.filmCoolingPercent)))
+        print("Mass Flow Rate: {0:.2f} kg/s".format(self.min.mdot))
+        print("Fuel Mass Flow Rate: {0:.2f} kg/s".format(self.min.mdot/(self.min.mr+1)*(1+self.min.filmCoolingPercent)))
+        print("Film Cooling Mass Flow Rate: {0:.3f} kg/s".format(self.min.mdot/(self.min.mr+1)*(self.min.filmCoolingPercent)))
         print("chamber pressure: {0:.2f} bar".format(self.min.pressure_arr[1,1]))
     def debugAndRawVariablesDisplay(self):
         print(f'chamber values: {self.max.cham}')
