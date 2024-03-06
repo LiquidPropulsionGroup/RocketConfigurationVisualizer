@@ -23,7 +23,6 @@ sometimes the interpreter won't be able to find rocketcea when using a virtual e
 the specific file location and names will be defferent depenging on the version and location of your python files
 
 ## Mac install guide
-
 1. Install python (It can be probably be the newest one but there could be issues becuase the rocketcea website says it is compatibly with 3.10 and below) you can check python version in terminal with "python3 --version" or maybe "python --version"
 2. download github desktop (or prefered github tool)
 3. pull repository from "https://github.com/LiquidPropulsionGroup/RocketConfigurationVisualizer/tree/CEA-integration" make sure it is the CEA integration branch
@@ -32,9 +31,12 @@ the specific file location and names will be defferent depenging on the version 
 6. select python interpreter to use with ctl-g and then typing ">Python: select interpreter"
 7. update operating system
 8. download xcode through app store
-9. download homebrew
-10. download gcc(make sure it is linked properly)
-11. 
+9. (in terminal)download homebrew
+10. (in terminal)download gcc (make sure it is linked properly), can check for gfrotran with "which gfortran"
+11. (vscode command line)install all the dependencys with `pip3 install -r requirements.txt` NOTE: this is not in a virtual enviernment beucase it causes issues with rocketcea library accessing gfortran
+12. install rocketcea seperatly with 'pip3 install rocketcea', this fails in many cases so this is the website for refference (https://rocketcea.readthedocs.io/en/latest/quickstart.html)
+
+
 
 ## Basic Overview
 
