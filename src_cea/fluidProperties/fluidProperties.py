@@ -31,7 +31,7 @@ class FluidProperties:
             try:
                 with open(f'src_cea/fluidProperties/{fluidName}.csv') as csvfile:
                     lines = csvfile.readlines()
-                    print(lines)
+                    #print(lines)
                     for i in range(len(lines)):
                         lines[i] = lines[i].split(',')
                     #print(f'len(lines[0]) = {len(lines[0])}')

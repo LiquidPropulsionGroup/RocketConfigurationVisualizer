@@ -115,9 +115,15 @@ class ThrustLevel:
         self.h_g_arr = self.calcBartz()
         self.heat_flux_arr = self.calcHeatFlux()
         self.total_watts = self.totalWatts()
-        self.max_fuel_heat = self.fuelWatts()
+        if fuel_delta_t != None and fuel != None:
+            self.max_fuel_heat = self.fuelWatts()
+        else:
+            self.max_fuel_heat = None
         self.isp_s = self.thrust/(self.mdot*9.8)
-        self.isp_adjusted = self.thrust/((self.mdot+self.mdot/(self.mr+1)*(self.filmCoolingPercent))*9.8) # isp = thrust/(mdot*g)
+        if filmCoolingPercent != 0:
+            self.isp_adjusted = self.thrust/((self.mdot+self.mdot/(self.mr+1)*(self.filmCoolingPercent))*9.8) # isp = thrust/(mdot*g)
+        else:
+            self.isp_adjusted = None
         '''
     def heatCalcsFilmCooling(self, area_arr, contour, wall_temp, fuel_delta_t, fuel, mr, filmCoolingPercent):
         self.area_arr = area_arr
@@ -285,7 +291,7 @@ class ThrustLevel:
         return total_watts
     
     def fuelWatts(self):
-        print(f'fuel cp: {self.fuel.cp} \nfuel delta t: {self.fuel_delta_t}\nmdot: {self.mdot}\nmr: {self.mr}\nfilm cooling percent: {self.filmCoolingPercent}')
+        #print(f'fuel cp: {self.fuel.cp} \nfuel delta t: {self.fuel_delta_t}\nmdot: {self.mdot}\nmr: {self.mr}\nfilm cooling percent: {self.filmCoolingPercent}')
         return (self.fuel.cp * self.fuel_delta_t * (self.mdot/(self.mr+1) * (1+self.filmCoolingPercent)))
 
     def graphDisplay(self, pressure_units = 'bar', distance_units = 'in'):
