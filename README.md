@@ -1,7 +1,22 @@
 # To Do List
-1. calculate and add isp engine prints
-2. 2d cooling channel calculator
-3. film cooling calculator
+small tasks:
+determine what parts of the engine class take longest to run other than CEA
+
+major tasks
+1. make option to not run contour or anythong after
+2. make engines class to run multiple engines
+3. make prop feed class that has tank stats and stuff
+4. make rocket class that takes engine and prop feed classes as inharitence
+5. make engines class somhow able to take rocket classes too and iterate
+6. look into making rocketCEA run faster
+7. code thrust level so it can do a linear sweep that is O(n) rather than the current O(nlog(n)) method
+
+eventually
+1. get ansyst o run through python
+2. get rocket trajectory and aero simulator
+3. cooling channel calculator
+4. film cooling calculator
+5. injegrate injector class
 
 # Rocket Configuration Visualizer
 
@@ -28,14 +43,13 @@ the specific file location and names will be defferent depenging on the version 
 3. pull repository from "https://github.com/LiquidPropulsionGroup/RocketConfigurationVisualizer/tree/CEA-integration" make sure it is the CEA integration branch
 4. download vscode
 5. download python extension in vscode
-6. select python interpreter to use with ctl-g and then typing ">Python: select interpreter"
+6. select python interpreter to use with ctl-g and then typing ">Python: select interpreter" (make sure the selected interpreter and the one being called by pip3 are the same)
 7. update operating system
 8. download xcode through app store
 9. (in terminal)download homebrew
 10. (in terminal)download gcc (make sure it is linked properly), can check for gfrotran with "which gfortran"
 11. (vscode command line)install all the dependencys with `pip3 install -r requirements.txt` NOTE: this is not in a virtual enviernment beucase it causes issues with rocketcea library accessing gfortran
 12. install rocketcea seperatly with 'pip3 install rocketcea', this fails in many cases so this is the website for refference (https://rocketcea.readthedocs.io/en/latest/quickstart.html)
-
 
 
 ## Basic Overview

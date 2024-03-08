@@ -110,11 +110,26 @@ class ThrustLevel:
         self.fuel = fuel
         self.mr = mr
         self.filmCoolingPercent = filmCoolingPercent
+        st = time.time()
         self.mach_arr = self.solveMach()
+        et = time.time()
+        print(f'solveMach run time" {et-st}s')
+        st = time.time()
         self.temp_arr, self.pressure_arr = self.tempPressureDensity()
+        et = time.time()
+        print(f'tempPressureDensity run time" {et-st}s')
+        st = time.time()
         self.h_g_arr = self.calcBartz()
+        et = time.time()
+        print(f'calcBartz run time" {et-st}s')
+        st = time.time()
         self.heat_flux_arr = self.calcHeatFlux()
+        et = time.time()
+        print(f'calcHeatFlux run time" {et-st}s')
+        st = time.time()
         self.total_watts = self.totalWatts()
+        et = time.time()
+        print(f'totalWatts run time" {et-st}s')
         if fuel_delta_t != None and fuel != None:
             self.max_fuel_heat = self.fuelWatts()
         else:
@@ -221,16 +236,17 @@ class ThrustLevel:
             def machEqn(mach):
                 # return mach * area_ratio + 10
                 return ( 2 / (self.thr.gam + 1) * ( 1 + (self.thr.gam - 1)/2 * mach**2 ))**((self.thr.gam+1)/(2*(self.thr.gam-1))) - mach * area_ratio
-            
             return fsolve(machEqn, mach_guess)
+        
         mach_arr = []
         last = 0.7
         for [x, area] in self.area_arr.transpose():
-            if x > 0:
+            if x > 0 and last <= 1: 
                 last = last + 1
             [mach] = solveMatchForAreaRatio(area/self.thr.a, last)
             mach_arr.append([x, mach])
             last = mach
+        
         mach_arr = np.array(mach_arr).transpose()
         return mach_arr
 

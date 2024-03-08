@@ -8,6 +8,6 @@ pillow
 rocketprops
 
 # for FEA
-ffmpeg
+# ffmpeg
 
 #rocketcea

@@ -10,9 +10,11 @@ from rocketcea.cea_obj import CEA_Obj, add_new_fuel
 from .chemistryCEA import ChemistryCEA
 from .thrustLevel import ThrustLevel
 from .fluidProperties.fluidProperties import FluidProperties
+import time
 
 class Engine:
     def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, pMinExitRatio = [], filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None, frozen = 1, optimalP = 1, fac_CR = None, pAmbient = 1.01325):
+        self.starttime = time.time()
         self.title = title
         self.fuel = FluidProperties(fuel)
         #print(self.fuel)
@@ -45,7 +47,10 @@ class Engine:
         self.contour = None
         self.area_arr = None
         #self.max, self.min = self.variableThrustOptimizerold()
+        st = time.time()
         self.throttles = self.variableThrustOptimizer(pMinExitRatio)
+        et = time.time()
+        print(f'thrust level finder run time" {et-st}s')
         self.max = self.throttles[0]
         if len(self.throttles) > 1:
             self.min = self.throttles[-1]
@@ -53,34 +58,43 @@ class Engine:
             self.min = None
         self.chamber_volume = self.Lstar * self.max.thr.a
         self.chamber_length = self.chamber_volume / (math.pi * (self.Dcham / 2) ** 2) #NOTE: make this more accurate
+        st = time.time()
         self.contourPoints, self.contour = self.nozzleGeneration()
+        et = time.time()
+        print(f'contour generator run time" {et-st}s')
+        st = time.time()
         self.area_arr = self.areas()
+        et = time.time()
+        print(f'areas run time" {et-st}s')
+        st = time.time()
         self.bartzHeatCalcs()
-
-        
+        et = time.time()
+        print(f'bartz run time" {et-st}s')
+        self.endtime = time.time()
+        self.runtime = self.endtime-self.starttime
+  
     def bartzHeatCalcs(self):
         for i in self.throttles:
             i.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel, self.Mr, self.filmCoolingPercent)
         # self.max.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel, self.Mr, self.filmCoolingPercent)
         # self.min.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel, self.Mr, self.filmCoolingPercent)
-
     def filmCoolingHeatCalcs(self): 
         self.max.heatCalcsFilmCooling()     #add arguments
         self.max.heatCalcsFilmCooling()
-
     def throttleLevelCalculator(self, pthrottles, ae):
         #print('pressure ratio:{}'.format(pMin))
         #pMin *= 1.013
-        
-        cpGuess = self.pMaxCham
-        cpStep = cpGuess
-        mdotGuess = self.mdotMax
-        mdotStep = mdotGuess
         pGuess = 0.0
         throttles = []
         if type(pthrottles) != list:
             pthrottles = [pthrottles]
         for pthrottle in pthrottles:
+            cpGuess = self.pMaxCham
+            print(cpGuess, self.pMaxCham)
+            cpStep = cpGuess
+            mdotGuess = self.mdotMax
+            mdotStep = mdotGuess
+            pGuess = 0.0
             while abs(pGuess-pthrottle) > 0.0001:
                 #print('cpGuess:{}\ncpStep:{}\nmdotGuess:{}\nmdotStep:{}\npGuess:{}\nminExitPressure:{}'.format(cpGuess, cpStep, mdotGuess, mdotStep, pGuess, pMin))
                 if pGuess != 0:
@@ -97,10 +111,10 @@ class Engine:
                 pGuess = nozmin.exit.p
                 #print('pressure guess:{}'.format(pGuess))
             #print('min nozzle exit pressure in bar: {}'.format(nozmin.exit.p))
+            print('break ------------------------------------------------------')
             throttles.append(nozmin)
         #print(throttles)
         return throttles
-    
     def variableThrustOptimizer(self, pMinExitRatio):
 
         if self.nozzle_type == 'bell80' or 'conical':
@@ -135,7 +149,6 @@ class Engine:
             else:
                 nozmin = self.throttleLevelCalculator(self.pMinExitRatio, nozmax.exit.aeat)
             return nozmax, nozmin
-        
     def nozzleGeneration(self):#, r1 = self.r1, r2 = self.r2, r3 = self.r3, dThr = self.max.thr.d, dCham = self.cham.d, dExit = self.exit.d, lenCham = self.chamber_length, convAngle = self.conv_angle, divAngle = self.divergence_angle, aeExit = self.max.exit.aeat): #this function creates contour points and functions for the chamber and nozzle geometry
         #this first section sets up points for the chamber and throat.  with the left being the chamber the right being the exit, the points go in order of a, b, c, d, o, n, e
         r1 = self.r1 * self.max.thr.d/2
@@ -245,12 +258,10 @@ class Engine:
                 txtout.write('"{0}_{1}"= {2}\n'.format(locs[i], xy[j], contourPoints[i][j]/0.0254))
 
         return contourPoints, contour
-
     def areas(self):
         area_arr = self.contour.copy()
         area_arr[1,:] = (area_arr[1,:] ** 2) * np.pi# this is just pi*r^2 in array form
         return area_arr
-
 
 ########################################################################################################################################################################
     def filewrite(self, filename): #needs update
@@ -314,3 +325,5 @@ class Engine:
                 self.min.graphDisplay()
             else:
                 print('could not display min thrust graphs')
+    def runTime(self):
+        print(f"{self.title} run time: {self.runtime}s")

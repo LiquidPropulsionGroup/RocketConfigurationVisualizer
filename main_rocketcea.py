@@ -34,8 +34,6 @@ nozzle_type = 'conical'
 #stinger.variablesDisplay()
 #stinger.graphDisplay()
 
-
-
 #test engine 
 title = 'APRL Engine mu2 Sizing'
 ox = 'LOX'        # full propellant selection is availible at https://rocketcea.readthedocs.io/en/latest/propellants.html
@@ -49,12 +47,12 @@ h,cal=-68308.0  t(k)=298.15 rho,g/cc = 0.9998"""
 ]
 #print('{}'.format(customFuel[1]))
 pMaxCham = 25     #max thrust chamber pressure in bar
-Mr = 1.8 # propellant mixture ratio
-pAmbient = 1.01325
-pMinExitRatio = [0.8, 0.45] #trottle exit pressure
+Mr = 2.1 # propellant mixture ratio
+pAmbient = 1.01325 #bar
+pMinExitRatio = [.45] #trottle exit pressure
 #set veriables
-mdotMax = 1.3        #max thrust mass flow rate
-filmCoolingPercent = 0.2
+mdotMax = 1.45        #max thrust mass flow rate
+filmCoolingPercent = 0.1
 Lstar = 1.02
 Dcham = 3.25 * 0.0254 #in meters
 conv_angle = math.pi / 4 # rad, 45deg
@@ -67,11 +65,12 @@ r2 = 1
 r3 = 0.4
 step = 5e-3 #array resolution
 nozzle_type = 'conical' #'bell80'
-test = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, pMinExitRatio = pMinExitRatio, filmCoolingPercent = filmCoolingPercent, div_angle = div_angle, contourStep = step, customFuel = customFuel, frozen = 0, pAmbient = pAmbient)
-test.variablesDisplay(minthrust = False)
-#test.debugAndRawVariablesDisplay()
-#test.graphDisplay(minthrust = False)
 
+test = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, pMinExitRatio = pMinExitRatio, filmCoolingPercent = filmCoolingPercent, div_angle = div_angle, contourStep = step, customFuel = customFuel, frozen = 0, pAmbient = pAmbient)
+test.variablesDisplay(minthrust = True)
+#test.debugAndRawVariablesDisplay()
+test.graphDisplay(minthrust = False)
+test.runTime()
 
 #rocket trajectory test
 title = "test rocket trajectory"

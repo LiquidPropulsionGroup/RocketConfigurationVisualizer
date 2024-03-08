@@ -1,6 +1,7 @@
 from rocketcea.cea_obj import CEA_Obj
 import rocketcea.cea_obj as cea_obj
 import rocketcea.py_cea as py_cea
+import time
 
 #: RocketCEA wraps the NASA FORTRAN CEA code to calculate Isp, cstar, and Tcomb
 #: This object wraps the English unit version of CEA_Obj to enable desired user units.
@@ -44,8 +45,11 @@ setupCards(Pc=100.0, MR=1.0, eps=40.0, subar=None, PcOvPe=None, frozen=0, ERphi=
 #: frozenAtThroat flag, 0=frozen in chamber, 1=frozen at throat
 """
 #run cea
+st = time.time()
 C.setupCards(Pc=15.2, MR=2.3, eps=None, PcOvPe=15.2/0.9, frozen=0, pc_units='bar', output='KJ', short_output=1)
-
+et = time.time()
+rt = et-st
+print(f'run time = {rt}s')
 """
 py_cea.rockt.vaci[ self.i_thrt ] =  0.0 # Vacuum Isp at throat
 py_cea.rockt.vaci[ self.i_exit ] =  0.0 # Vacuum Isp at exit
