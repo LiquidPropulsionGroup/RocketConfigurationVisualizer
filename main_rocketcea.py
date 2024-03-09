@@ -63,10 +63,11 @@ fuel_cp = 2010 # J/KgK
 r1 = 1
 r2 = 1
 r3 = 0.4
-step = 5e-3 #array resolution
+step = 1e-2 #array resolution
 nozzle_type = 'conical' #'bell80'
+doContours = True
 
-test = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, pMinExitRatio = pMinExitRatio, filmCoolingPercent = filmCoolingPercent, div_angle = div_angle, contourStep = step, customFuel = customFuel, frozen = 0, pAmbient = pAmbient)
+test = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, pMinExitRatio = pMinExitRatio, filmCoolingPercent = filmCoolingPercent, div_angle = div_angle, contourStep = step, customFuel = customFuel, frozen = 0, pAmbient = pAmbient, doContours = doContours)
 test.variablesDisplay(minthrust = True)
 #test.debugAndRawVariablesDisplay()
 test.graphDisplay(minthrust = False)

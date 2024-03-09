@@ -13,7 +13,7 @@ from .fluidProperties.fluidProperties import FluidProperties
 import time
 
 class Engine:
-    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, pMinExitRatio = [], filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None, frozen = 1, optimalP = 1, fac_CR = None, pAmbient = 1.01325):
+    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, pMinExitRatio = [], filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None, frozen = 1, optimalP = 1, fac_CR = None, pAmbient = 1.01325, doContours = True):
         self.starttime = time.time()
         self.title = title
         self.fuel = FluidProperties(fuel)
@@ -42,6 +42,7 @@ class Engine:
         self.frozen = frozen
         self.conv_angle = conv_angle
         self.div_angle = div_angle
+        self.doContours = doContours
         self.contourStep = contourStep
         self.contourPoints = None
         self.contour = None
@@ -61,26 +62,31 @@ class Engine:
         st = time.time()
         self.contourPoints, self.contour = self.nozzleGeneration()
         et = time.time()
-        print(f'contour generator run time" {et-st}s')
-        st = time.time()
-        self.area_arr = self.areas()
-        et = time.time()
-        print(f'areas run time" {et-st}s')
-        st = time.time()
-        self.bartzHeatCalcs()
-        et = time.time()
-        print(f'bartz run time" {et-st}s')
+        if self.filmCoolingPercent != 0:
+            self.filmCoolingHeatCalcs()
+        if doContours:
+            print(f'contour generator run time" {et-st}s')
+            st = time.time()
+            self.area_arr = self.areas()
+            et = time.time()
+            print(f'areas run time" {et-st}s')
+            st = time.time()
+            self.bartzHeatCalcs()
+            et = time.time()
+            print(f'bartz run time" {et-st}s')
         self.endtime = time.time()
         self.runtime = self.endtime-self.starttime
   
     def bartzHeatCalcs(self):
         for i in self.throttles:
-            i.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel, self.Mr, self.filmCoolingPercent)
+            i.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.Mr)
         # self.max.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel, self.Mr, self.filmCoolingPercent)
         # self.min.heatCalcs(self.area_arr, self.contour, self.wall_temp, self.fuel_delta_t, self.fuel, self.Mr, self.filmCoolingPercent)
     def filmCoolingHeatCalcs(self): 
-        self.max.heatCalcsFilmCooling()     #add arguments
-        self.max.heatCalcsFilmCooling()
+        #self.max.heatCalcsFilmCooling()     #add arguments
+        #self.max.heatCalcsFilmCooling()
+        for i in self.throttles:
+            i.filmCoolingCalcs(self.fuel_delta_t, self.fuel, self.filmCoolingPercent)
     def throttleLevelCalculator(self, pthrottles, ae):
         #print('pressure ratio:{}'.format(pMin))
         #pMin *= 1.013
@@ -107,7 +113,7 @@ class Engine:
                         cpGuess -= cpStep
                         mdotGuess -= mdotStep
                 #print('chamber pressure:{}\nmr:{}\nmdot:{}\narea array:{}\nae:{}'.format(cpGuess, self.Mr, mdotGuess, self.area_arr, ae))
-                nozmin = ThrustLevel(self.cea, cpGuess, self.Mr, mdotGuess, self.area_arr, ae = ae, frozen = self.frozen, pAmbient = self.optimalP)
+                nozmin = ThrustLevel(self.fuel, self.cea, cpGuess, self.Mr, mdotGuess, self.area_arr, ae = ae, frozen = self.frozen, pAmbient = self.optimalP)
                 pGuess = nozmin.exit.p
                 #print('pressure guess:{}'.format(pGuess))
             #print('min nozzle exit pressure in bar: {}'.format(nozmin.exit.p))
@@ -118,7 +124,7 @@ class Engine:
     def variableThrustOptimizer(self, pMinExitRatio):
 
         if self.nozzle_type == 'bell80' or 'conical':
-            nozmax = ThrustLevel(self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = self.optimalP, frozen = self.frozen)
+            nozmax = ThrustLevel(self.fuel, self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = self.optimalP, frozen = self.frozen)
             if pMinExitRatio == None or pMinExitRatio == []:
                 nozmins = []
                 #print('no min throttle pressure given. skipping throttle calculations')
@@ -142,7 +148,7 @@ class Engine:
     def variableThrustOptimizerold(self):
 
         if self.nozzle_type == 'bell80' or 'conical':
-            nozmax = ThrustLevel(self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = self.optimalP, frozen = self.frozen)
+            nozmax = ThrustLevel(self.fuel, self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = self.optimalP, frozen = self.frozen)
             if self.pMinExitRatio == None or self.pMinExitRatio == []:
                 nozmin = None
                 #print('no min throttle pressure given. skipping throttle calculations')
@@ -249,13 +255,16 @@ class Engine:
             x = np.append(x, temp_x)
         contour = np.array([x, y])
 
-        #exports contour points for use in cad
+        #exports contour points for use in cad: 
+        #NOTE: commented out because it can be made as a seperate export function as to speed up code runtime
+        '''
         locs = ['inj', 'b', 'c', 'd', 'o', 'n', 'e']
         xy = ['x', 'y']
         txtout = open('dims.txt','w')
         for i in range(len(contourPoints)):
             for j in range(2):
                 txtout.write('"{0}_{1}"= {2}\n'.format(locs[i], xy[j], contourPoints[i][j]/0.0254))
+        '''
 
         return contourPoints, contour
     def areas(self):
@@ -285,32 +294,43 @@ class Engine:
         print("Throat Diameter: {0:.2f} in".format(self.max.thr.d / 0.0254))
         print("Total Length: {0:.2f} in".format((self.contourPoints[6][0]-self.contourPoints[0][0]) / 0.0254))
         print("Volume: {0:.2f} cc".format(self.chamber_volume * 1000000))
+
         print("{}{}:{}".format('\033[92m', 'Max Thrust', '\033[0m'))
         print("Max Thrust: {0:.2f} N ({1:.2f} lbf)".format(self.max.thrust, (self.max.thrust*0.224809)))
         print("Max isp: {0:.2f} s".format(self.max.isp_s))
-        print("Max isp Adjusted: {0:.2f} s".format(self.max.isp_adjusted))
-        print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.max.h_g_arr[1,1]))
-        print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.max.heat_flux_arr[1,1]))
-        print("Total Watts: {0:.2f} W".format(self.max.total_watts))
-        print("Max Fuel Heat Transfer: {0:.2f} W".format(self.max.max_fuel_heat))
-        print("Mass Flow Rate: {0:.2f} kg/s".format(self.max.mdot))
-        print("Fuel Mass Flow Rate: {0:.2f} kg/s".format(self.max.mdot/(self.max.mr+1)*(1+self.max.filmCoolingPercent)))
-        print("Film Cooling Mass Flow Rate: {0:.3f} kg/s".format(self.max.mdot/(self.max.mr+1)*(self.max.filmCoolingPercent)))
-        print("chamber pressure: {0:.2f} bar".format(self.max.pressure_arr[1,1]))
+        print("Mass Flow Rate: {0:.2f} kg/s".format(self.max.mdot))  
+        if self.filmCoolingPercent != 0:
+            print("Max isp Adjusted: {0:.2f} s".format(self.max.isp_adjusted))
+            print("Fuel Mass Flow Rate: {0:.2f} kg/s".format(self.max.fuelmdot))
+            print("Film Cooling Mass Flow Rate: {0:.3f} kg/s".format(self.max.filmcoolingmdot))
+        if self.doContours:
+            print("chamber pressure: {0:.2f} bar".format(self.max.pressure_arr[1,1]))
+            print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.max.h_g_arr[1,1]))
+            print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.max.heat_flux_arr[1,1]))
+            print("Total Watts: {0:.2f} W".format(self.max.total_watts))
+            print("Max Fuel Heat Transfer: {0:.2f} W".format(self.max.max_fuel_heat))
+        else:
+            print("chamber pressure: {0:.2f} bar".format(self.max.cham.p))
+
+
         if minthrust:
             if self.min != None:
                 print("{}{}:{}".format('\033[92m', 'Min Thrust', '\033[0m'))
                 print("Min Thrust: {0:.2f} N ({1:.2f} lbf)".format(self.min.thrust, (self.min.thrust*0.224809)))
                 print("Min isp: {0:.2f} s".format(self.min.isp_s))
-                print("Min isp Adjusted: {0:.2f} s".format(self.min.isp_adjusted))
-                print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.min.h_g_arr[1,1]))
-                print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.min.heat_flux_arr[1,1]))
-                print("Total Watts: {0:.2f} W".format(self.min.total_watts))
-                print("Max Fuel Heat Transfer: {0:.2f} W".format(self.min.max_fuel_heat))
-                print("Mass Flow Rate: {0:.2f} kg/s".format(self.min.mdot))
-                print("Fuel Mass Flow Rate: {0:.2f} kg/s".format(self.min.mdot/(self.min.mr+1)*(1+self.min.filmCoolingPercent)))
-                print("Film Cooling Mass Flow Rate: {0:.3f} kg/s".format(self.min.mdot/(self.min.mr+1)*(self.min.filmCoolingPercent)))
-                print("chamber pressure: {0:.2f} bar".format(self.min.pressure_arr[1,1]))
+                print("Mass Flow Rate: {0:.2f} kg/s".format(self.min.mdot))                
+                if self.filmCoolingPercent != 0:
+                    print("Min isp Adjusted: {0:.2f} s".format(self.min.isp_adjusted))
+                    print("Fuel Mass Flow Rate: {0:.2f} kg/s".format(self.min.mdot/(self.min.mr+1)*(1+self.min.filmCoolingPercent)))
+                    print("Film Cooling Mass Flow Rate: {0:.3f} kg/s".format(self.min.mdot/(self.min.mr+1)*(self.min.filmCoolingPercent)))
+                if self.doContours:
+                    print("chamber pressure: {0:.2f} bar".format(self.min.pressure_arr[1,1]))
+                    print("Chamber heat flux constant: {0:.2f} W/m^2K".format(self.min.h_g_arr[1,1]))
+                    print("Chamber heat flux W/m^2: {0:.2f} W/m^2".format(self.min.heat_flux_arr[1,1]))
+                    print("Total Watts: {0:.2f} W".format(self.min.total_watts))
+                    print("Max Fuel Heat Transfer: {0:.2f} W".format(self.min.max_fuel_heat))
+                else:
+                    print("chamber pressure: {0:.2f} bar".format(self.min.cham.p))
             else:
                 print('could not print min thrust values')
     def debugAndRawVariablesDisplay(self):

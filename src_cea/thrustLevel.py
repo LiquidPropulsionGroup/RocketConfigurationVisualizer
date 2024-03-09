@@ -9,14 +9,14 @@ from rocketcea.cea_obj import CEA_Obj
 from .runCEA import RunCEA
 
 class ThrustLevel:
-    def __init__(self, cea, pCham, Mr, mdot, area_arr, pAmbient = None, ae = None, frozen = 1):
+    def __init__(self, fuel, cea, pCham, mr, mdot, area_arr, pAmbient = None, ae = None, frozen = 1):
         if ae == None:
             #print('chamber pressure:{}\nambient pressure:{}'.format(pCham, pAmbient))
-            chems = RunCEA.create(cea, pCham, Mr, pAmbient = pAmbient, frozen = frozen)
+            chems = RunCEA.create(cea, pCham, mr, pAmbient = pAmbient, frozen = frozen)
         else:
             self.ambientP = pAmbient
             #print('chamber pressure:{}\nae:{}'.format(pCham, ae))
-            chems = RunCEA.create(cea, pCham, Mr, ae = ae, frozen = frozen)
+            chems = RunCEA.create(cea, pCham, mr, ae = ae, frozen = frozen)
         self.inj = None # injector
         if cea.fac_CR is not None: #finite area combustor
             self.inj = chems[0] #injector
@@ -32,7 +32,8 @@ class ThrustLevel:
         #print(chems)
         #print('exit mach:{}'.format(self.exit.mach))
         self.mdot = mdot
-        self.Mr = Mr
+        self.mr = mr
+        self.fuel = fuel
         self.filmCoolingPercent = 0
         self.cham.p = pCham
         self.pAmbient = pAmbient
@@ -42,7 +43,6 @@ class ThrustLevel:
         self.pressure_arr = None
         self.temp_arr = None
         self.density_arr = None
-        self.fuel = None
         self.ox = None
         self.h_g_arr = []
         self.heat_flux_arr = []
@@ -57,6 +57,7 @@ class ThrustLevel:
         #self.isp_s, self.nozzle_mode = self.get_isp()
         #self.Cstar = self.cham.p * self.thr.a / self.mdot
         self.calcThrust(1.01325)
+        self.isp_s = self.thrust/(self.mdot*9.8)
 
         # Specific impulse in seconds---------------------------------------------------------------------------------------------------------------------------
         #self.isp_s = self.exit.isp / 9.8 #9.8 is gravitational constant
@@ -102,14 +103,26 @@ class ThrustLevel:
 
         return IspAmb/9.8, mode
     '''
-    def heatCalcs(self, area_arr, contour, wall_temp, fuel_delta_t, fuel, mr, filmCoolingPercent):
-        self.area_arr = area_arr
-        self.contour = contour
-        self.wall_temp = wall_temp
-        self.fuel_delta_t = fuel_delta_t
-        self.fuel = fuel
-        self.mr = mr
+
+    def filmCoolingCalcs(self, fuel_delta_t, fuel, filmCoolingPercent):
         self.filmCoolingPercent = filmCoolingPercent
+        self.fuel_delta_t = fuel_delta_t
+        self.filmcoolingmdot = self.mdot/(self.mr+1)*(self.filmCoolingPercent)
+        self.fuelmdot = self.mdot/(self.mr+1)*(1+self.filmCoolingPercent)
+        if fuel_delta_t != None and fuel != None:
+            self.max_fuel_heat = self.fuelWatts()
+        else:
+            self.max_fuel_heat = None
+        if filmCoolingPercent != 0:
+            self.isp_adjusted = self.thrust/((self.mdot+self.mdot/(self.mr+1)*(self.filmCoolingPercent))*9.8) # isp = thrust/(mdot*g)
+        else:
+            self.isp_adjusted = None
+
+    def heatCalcs(self, area_arr, contour, wall_temp, mr):
+        self.area_arr = area_arr
+        self.contour = contour 
+        self.wall_temp = wall_temp #NOTE: variable not used yet
+        self.mr = mr
         st = time.time()
         self.mach_arr = self.solveMach()
         et = time.time()
@@ -130,15 +143,6 @@ class ThrustLevel:
         self.total_watts = self.totalWatts()
         et = time.time()
         print(f'totalWatts run time" {et-st}s')
-        if fuel_delta_t != None and fuel != None:
-            self.max_fuel_heat = self.fuelWatts()
-        else:
-            self.max_fuel_heat = None
-        self.isp_s = self.thrust/(self.mdot*9.8)
-        if filmCoolingPercent != 0:
-            self.isp_adjusted = self.thrust/((self.mdot+self.mdot/(self.mr+1)*(self.filmCoolingPercent))*9.8) # isp = thrust/(mdot*g)
-        else:
-            self.isp_adjusted = None
         '''
     def heatCalcsFilmCooling(self, area_arr, contour, wall_temp, fuel_delta_t, fuel, mr, filmCoolingPercent):
         self.area_arr = area_arr
@@ -311,6 +315,9 @@ class ThrustLevel:
         return (self.fuel.cp * self.fuel_delta_t * (self.mdot/(self.mr+1) * (1+self.filmCoolingPercent)))
 
     def graphDisplay(self, pressure_units = 'bar', distance_units = 'in'):
+        if self.contour is None:
+            print('no contour to generate graphs')
+            return
         #temperature units?
         if(pressure_units == 'bar'):
             Pcon = 1 #bar
