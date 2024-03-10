@@ -26,7 +26,8 @@ class Engine:
         self.cea = CEA_Obj( oxName= ox, fuelName= fuel, fac_CR=fac_CR)
         self.nozzle_type = nozzle_type
         self.Mr = Mr
-        self.optimalP = optimalP
+        self.optimalP = optimalP #these two variables are the same
+        self.pAmbient = pAmbient #these two variables are the same
         self.filmCoolingPercent = filmCoolingPercent
         self.pMaxCham = pMaxCham
         self.mdotMax = mdotMax
@@ -347,3 +348,12 @@ class Engine:
                 print('could not display min thrust graphs')
     def runTime(self):
         print(f"{self.title} run time: {self.runtime}s")
+
+    def fullCEAOut(self):
+        mystring = self.cea.get_full_cea_output(Pc = self.pMaxCham, MR = self.Mr, PcOvPe = (self.pMaxCham/self.pAmbient), pc_units='bar', output='KJ', short_output=1, frozen = self.frozen)
+        #mystring = self.cea.get_full_cea_output(Pc = self.pMaxCham, MR = self.Mr, PcOvPe = (self.pMaxCham/self.pAmbient), short_output=1, frozen = self.frozen)
+        print(mystring)
+    def testRunCEAOut(self):
+        from .runCEA import RunCEA
+        chems = RunCEA.create(self.cea, self.pMaxCham, self.Mr, pAmbient = self.pAmbient, frozen = self.frozen)
+        print(chems)

@@ -49,7 +49,9 @@ h,cal=-68308.0  t(k)=298.15 rho,g/cc = 0.9998"""
 pMaxCham = 25     #max thrust chamber pressure in bar
 Mr = 2.1 # propellant mixture ratio
 pAmbient = 1.01325 #bar
-pMinExitRatio = [.45] #trottle exit pressure
+#pMaxCham = 25*14.5     #max thrust chamber pressure in bar
+#pAmbient = 1.01325*14.5 #bar
+pMinExitRatio = [] #trottle exit pressure
 #set veriables
 mdotMax = 1.45        #max thrust mass flow rate
 filmCoolingPercent = 0.1
@@ -71,7 +73,10 @@ test = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, Lstar, Dcham,
 test.variablesDisplay(minthrust = True)
 #test.debugAndRawVariablesDisplay()
 test.graphDisplay(minthrust = False)
-test.runTime()
+#test.runTime()
+#test.fullCEAOut()
+#test.testRunCEAOut()
+print(test.cea.get_Densities(Pc=pMaxCham, MR=Mr, eps = test.max.exit.aeat))
 
 #rocket trajectory test
 title = "test rocket trajectory"

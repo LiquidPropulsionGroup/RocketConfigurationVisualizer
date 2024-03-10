@@ -1,15 +1,17 @@
 # To Do List
 small tasks:
-determine what parts of the engine class take longest to run other than CEA
+viscosity wont export from rocketCEA. fix this
+bartz equasion needs a complete overhall to test accuracy, viscosity is a constant for some reason
 
 major tasks
-1. make option to not run contour or anythong after
 2. make engines class to run multiple engines
 3. make prop feed class that has tank stats and stuff
 4. make rocket class that takes engine and prop feed classes as inharitence
 5. make engines class somhow able to take rocket classes too and iterate
 6. look into making rocketCEA run faster
-7. code thrust level so it can do a linear sweep that is O(n) rather than the current O(nlog(n)) method
+7. make engine able to run with lower contour resolution
+8. look into making solveMach run faster
+9. code thrust level so it can do a linear sweep that is O(n) rather than the current O(nlog(n)) method
 
 eventually
 1. get ansyst o run through python

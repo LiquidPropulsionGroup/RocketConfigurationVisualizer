@@ -293,9 +293,10 @@ class ThrustLevel:
 
     def calcBartz(self):
         h_g_arr = self.contour.copy()
+        print('thr diameter:{}\nchamber pressure:{}\nc star:{}\nchamber cp:{}\nwall temp:{}'.format(self.thr.d, self.cham.p, self.Cstar, self.cham.cp, self.wall_temp))
         for i in range(len(h_g_arr[0])):
             #print('thr diameter:{}\nchamber pressure:{}\nc star:{}\ncontour:{}\nchamber cp:{}\ntemperature array:{}\nwall temp{}'.format(self.thr.d, self.cham.p, self.Cstar, self.contour, self.cham.cp, self.temp_arr, self.wall_temp))
-            h_g_arr[1,i] = self.bartz(self.thr.d, self.cham.p, self.Cstar, self.contour[1,i]*2, self.cham.cp*1000, 0.85452e-4, self.temp_arr[1,i], self.wall_temp)
+            h_g_arr[1,i] = self.bartz(self.thr.d, self.cham.p*100000, self.Cstar, self.contour[1,i]*2, self.cham.cp*1000, 0.85452e-4, self.temp_arr[1,i], self.wall_temp) #add viscosity to this
         return h_g_arr
 
     def calcHeatFlux(self):

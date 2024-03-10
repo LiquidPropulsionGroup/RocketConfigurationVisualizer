@@ -27,6 +27,7 @@ class RunCEA:
     Cstar = None
     raw_cea_output = None
     rbar = None
+    mus = None
 
     def initCalculations(self):
         #print('m:{}'.format(self.m))
@@ -41,7 +42,8 @@ class RunCEA:
             PcOvPe = None
         else:
             PcOvPe = Pc/pAmbient
-        cea.setupCards(Pc=Pc, MR=Mr, eps=ae, PcOvPe=PcOvPe, frozen=frozen, pc_units='bar', output='KJ', short_output=1, frozenAtThroat = frozenAtThroat)        
+        cea.setupCards(Pc=Pc, MR=Mr, eps=ae, PcOvPe=PcOvPe, frozen=frozen, short_output=1, frozenAtThroat = frozenAtThroat, pc_units='bar', output='KJ')
+        #cea.setupCards(Pc=Pc, MR=Mr, eps=ae, PcOvPe=PcOvPe, frozen=frozen, short_output=1, frozenAtThroat = frozenAtThroat)
         chems = []
         if cea.fac_CR is not None:
             temp_num = 4
@@ -51,22 +53,24 @@ class RunCEA:
             rrr = RunCEA()
             #self.i_injface = injector, self.i_chm = chamber, self.i_thrt = thrust, self.i_exit = exit
             # using these instead of the indicies manually allows for finite area combustor support
-            rrr.p = py_cea.prtout.ppp[i]
-            rrr.t = py_cea.prtout.ttt[i]                       # temperatures, t
-            rrr.cp = py_cea.prtout.cpr[i]                      # heat capacities, cp
+            rrr.p = py_cea.prtout.ppp[i]                       # pressure in bar
+            rrr.t = py_cea.prtout.ttt[i]                       # temperatures, t in K
+            rrr.cp = py_cea.prtout.cpr[i]*8.31451 #magic conversion number, idk their code is weird     # heat capacities, cp in kJ/kgK
             rrr.gam = py_cea.prtout.gammas[i]               # heat capacity ratios, gammas
-            rrr.son = py_cea.rockt.sonvel[i]                   # speed of sound, son
-            rrr.mach = py_cea.rockt.vmoc[i]                    # mach number
-            rrr.aeat = py_cea.rockt.aeat[i]                    # area exit / area throat
-            rrr.Cstar = py_cea.rockt.cstr                      # Cstar
-            rrr.ivac = py_cea.rockt.vaci[i]                    # isp in vacuum
+            rrr.son = py_cea.rockt.sonvel[i]                   # speed of sound, son in m/s
+            rrr.mach = py_cea.rockt.vmoc[i]                    # mach number 
+            rrr.aeat = py_cea.rockt.aeat[i]                    # area exit / area throat 
+            rrr.Cstar = py_cea.rockt.cstr                      # Cstar in m/s
+            rrr.ivac = py_cea.rockt.vaci[i]                    # isp in vacuum m/s
             #isp = ... def estimate_Ambient_Isp(self, Pc=100.0, MR=1.0, eps=40.0, Pamb=14.7, frozen=0, frozenAtThroat=0):
-            rrr.rho = py_cea.prtout.vlm[i]                     # density
-            rrr.mu = py_cea.trpts.vis[i]                       # viscosity in millipoise
-            rrr.h = py_cea.prtout.hsum[i]                      # enthalpy
-            rrr.m = py_cea.prtout.wm[i]                        # molecular weight
+            rrr.rho = 62.42796*100/py_cea.prtout.vlm[i]/62.42792*1000                     # density in kg/m^3
+            rrr.mu = py_cea.trpts.vis[i]                       # viscosity in ?????? NOTE: not working
+            rrr.h = py_cea.prtout.hsum[i]*1.8*8314.51/4184*2.326     # enthalpy in kJ/kg
+            rrr.m = py_cea.prtout.wm[i]                        # molecular weight in 1/n
             rrr.rbar = rrr.initCalculations()
+            rrr.mus = py_cea.trpts.vis  #debugging variable
             chems.append(rrr)
+        
         return chems
         
     def __repr__(self):
@@ -93,4 +97,6 @@ class RunCEA:
         d={self.d}
         mu={self.mu}
         Pr={self.Pr}
-        Cstar{self.Cstar}'''
+        Cstar{self.Cstar}
+        mus{self.mus}
+        '''
