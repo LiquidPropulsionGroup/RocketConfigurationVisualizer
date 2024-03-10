@@ -1,9 +1,9 @@
 # To Do List
 small tasks:
-viscosity wont export from rocketCEA. fix this
-bartz equasion needs a complete overhall to test accuracy, viscosity is a constant for some reason
+
 
 major tasks
+1. bartz equasion needs a complete overhall to test accuracy, viscosity is a constant for some reason
 2. make engines class to run multiple engines
 3. make prop feed class that has tank stats and stuff
 4. make rocket class that takes engine and prop feed classes as inharitence

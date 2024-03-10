@@ -125,7 +125,10 @@ class Engine:
     def variableThrustOptimizer(self, pMinExitRatio):
 
         if self.nozzle_type == 'bell80' or 'conical':
+            st = time.time()
             nozmax = ThrustLevel(self.fuel, self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = self.optimalP, frozen = self.frozen)
+            et = time.time()
+            print(f'ThrustLevel runtime" {et-st}s')
             if pMinExitRatio == None or pMinExitRatio == []:
                 nozmins = []
                 #print('no min throttle pressure given. skipping throttle calculations')

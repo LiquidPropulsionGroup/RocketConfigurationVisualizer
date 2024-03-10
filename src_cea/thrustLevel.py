@@ -12,7 +12,10 @@ class ThrustLevel:
     def __init__(self, fuel, cea, pCham, mr, mdot, area_arr, pAmbient = None, ae = None, frozen = 1):
         if ae == None:
             #print('chamber pressure:{}\nambient pressure:{}'.format(pCham, pAmbient))
+            st = time.time()
             chems = RunCEA.create(cea, pCham, mr, pAmbient = pAmbient, frozen = frozen)
+            et = time.time()
+            print(f'RunCEA runtime" {et-st}s')
         else:
             self.ambientP = pAmbient
             #print('chamber pressure:{}\nae:{}'.format(pCham, ae))
