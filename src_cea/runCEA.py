@@ -27,7 +27,8 @@ class RunCEA:
     Cstar = None
     raw_cea_output = None
     rbar = None
-    mus = None
+    pr = None
+    test = None
 
     def initCalculations(self):
         #print('m:{}'.format(self.m))
@@ -42,7 +43,7 @@ class RunCEA:
             PcOvPe = None
         else:
             PcOvPe = Pc/pAmbient
-        cea.setupCards(Pc=Pc, MR=Mr, eps=ae, PcOvPe=PcOvPe, frozen=frozen, short_output=1, frozenAtThroat = frozenAtThroat, pc_units='bar', output='KJ')
+        cea.setupCards(Pc=Pc, MR=Mr, eps=ae, PcOvPe=PcOvPe, frozen=frozen, short_output=1, frozenAtThroat = frozenAtThroat, pc_units='bar', output='KJ', show_transport=1)
         #cea.setupCards(Pc=Pc, MR=Mr, eps=ae, PcOvPe=PcOvPe, frozen=frozen, short_output=1, frozenAtThroat = frozenAtThroat)
         chems = []
         if cea.fac_CR is not None:
@@ -64,11 +65,12 @@ class RunCEA:
             rrr.ivac = py_cea.rockt.vaci[i]                    # isp in vacuum m/s
             #isp = ... def estimate_Ambient_Isp(self, Pc=100.0, MR=1.0, eps=40.0, Pamb=14.7, frozen=0, frozenAtThroat=0):
             rrr.rho = 62.42796*100/py_cea.prtout.vlm[i]/62.42792*1000                     # density in kg/m^3
-            rrr.mu = py_cea.trpts.vis[i]                       # viscosity in ?????? NOTE: not working
+            rrr.mu = py_cea.trpts.vis[i]                       # viscosity in milipoise
             rrr.h = py_cea.prtout.hsum[i]*1.8*8314.51/4184*2.326     # enthalpy in kJ/kg
             rrr.m = py_cea.prtout.wm[i]                        # molecular weight in 1/n
+            rrr.pr = py_cea.trpts.preql[i]                      #prandtl number
             rrr.rbar = rrr.initCalculations()
-            rrr.mus = py_cea.trpts.vis  #debugging variable
+            rrr.test = py_cea.trpts.preql  #debugging variable
             chems.append(rrr)
         
         return chems
@@ -97,6 +99,6 @@ class RunCEA:
         d={self.d}
         mu={self.mu}
         Pr={self.Pr}
-        Cstar{self.Cstar}
-        mus{self.mus}
+        Cstar={self.Cstar}
+        test={self.test}
         '''
