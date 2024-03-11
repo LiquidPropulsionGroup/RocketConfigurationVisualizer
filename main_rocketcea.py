@@ -61,7 +61,7 @@ conv_angle = math.pi / 4 # rad, 45deg
 div_angle = math.pi / 12  # rad, 15deg
 wall_temp = 650 # K
 fuel_delta_t = 300 # K
-fuel_cp = 2010 # J/KgK
+#fuel_cp = 2010 # J/KgK
 r1 = 1
 r2 = 1
 r3 = 0.4
@@ -69,13 +69,13 @@ step = 1e-2 #array resolution
 nozzle_type = 'conical' #'bell80'
 doContours = True
 
-test = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, pMinExitRatio = pMinExitRatio, filmCoolingPercent = filmCoolingPercent, div_angle = div_angle, contourStep = step, customFuel = customFuel, frozen = 0, pAmbient = pAmbient, doContours = doContours)
+test = Engine(title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, pMinExitRatio = pMinExitRatio, filmCoolingPercent = filmCoolingPercent, div_angle = div_angle, contourStep = step, customFuel = customFuel, frozen = 0, pAmbient = pAmbient, doContours = doContours)
 #test.variablesDisplay(minthrust = True)
 #test.debugAndRawVariablesDisplay()
 #test.graphDisplay(minthrust = False)
-#test.runTime()
-test.fullCEAOut()
-test.testRunCEAOut()
+test.runTime()
+#test.fullCEAOut()
+#test.testRunCEAOut()
 #print(test.cea.get_Densities(Pc=pMaxCham, MR=Mr, eps = test.max.exit.aeat))
 
 #rocket trajectory test

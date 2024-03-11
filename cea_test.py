@@ -3,6 +3,7 @@ import rocketcea.cea_obj as cea_obj
 import rocketcea.py_cea as py_cea
 import time
 from CEA_Wrap import Fuel, Oxidizer, RocketProblem
+import platform
 
 #: RocketCEA wraps the NASA FORTRAN CEA code to calculate Isp, cstar, and Tcomb
 #: This object wraps the English unit version of CEA_Obj to enable desired user units.
@@ -52,15 +53,18 @@ et = time.time()
 rt = et-st
 print(f'rocketcea run time = {rt}s')
 
-h2 = Fuel("H2(L)", temp=20) # Liquid H2, Temp in Kelvin
-lox = Oxidizer("O2(L)", temp=90)
-# Rocket at 2000psi and supersonic area ratio of 5
-st = time.time()
-problem1 = RocketProblem(pressure=2000, materials=[h2, lox], phi=1, sup=5)
-results = problem1.run()
-et = time.time()
-rt = et-st
-print(f'CEA_Wrap run time = {rt}s')
+if platform.system() == "Windows":
+    h2 = Fuel("H2(L)", temp=20) # Liquid H2, Temp in Kelvin
+    lox = Oxidizer("O2(L)", temp=90)
+    # Rocket at 2000psi and supersonic area ratio of 5
+    st = time.time()
+    problem1 = RocketProblem(pressure=2000, materials=[h2, lox], phi=1, sup=5)
+    results = problem1.run()
+    et = time.time()
+    rt = et-st
+    print(f'CEA_Wrap run time = {rt}s')
+else:
+    print("windows not detected. skipping CEA_Wrap")
 
 """
 py_cea.rockt.vaci[ self.i_thrt ] =  0.0 # Vacuum Isp at throat

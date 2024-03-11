@@ -13,7 +13,7 @@ from .fluidProperties.fluidProperties import FluidProperties
 import time
 
 class Engine:
-    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, fuel_cp, pMinExitRatio = [], filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None, frozen = 1, optimalP = 1, fac_CR = None, pAmbient = 1.01325, doContours = True):
+    def __init__(self, title, fuel, ox, nozzle_type, Mr, pMaxCham, mdotMax, Lstar, Dcham, wall_temp, r1, r2, r3, conv_angle, fuel_delta_t, pMinExitRatio = [], filmCoolingPercent = 0, div_angle = None, contourStep = 1e-4, customFuel = None, frozen = 1, fac_CR = None, pAmbient = 1.01325, doContours = True):
         self.starttime = time.time()
         self.title = title
         self.fuel = FluidProperties(fuel)
@@ -26,8 +26,7 @@ class Engine:
         self.cea = CEA_Obj( oxName= ox, fuelName= fuel, fac_CR=fac_CR)
         self.nozzle_type = nozzle_type
         self.Mr = Mr
-        self.optimalP = optimalP #these two variables are the same
-        self.pAmbient = pAmbient #these two variables are the same
+        self.pAmbient = pAmbient
         self.filmCoolingPercent = filmCoolingPercent
         self.pMaxCham = pMaxCham
         self.mdotMax = mdotMax
@@ -36,7 +35,6 @@ class Engine:
         self.Dcham = Dcham #diameter of the chamber
         self.wall_temp = wall_temp
         self.fuel_delta_t = fuel_delta_t
-        self.fuel_cp = fuel_cp
         self.r1 = r1
         self.r2 = r2
         self.r3 = r3
@@ -114,7 +112,7 @@ class Engine:
                         cpGuess -= cpStep
                         mdotGuess -= mdotStep
                 #print('chamber pressure:{}\nmr:{}\nmdot:{}\narea array:{}\nae:{}'.format(cpGuess, self.Mr, mdotGuess, self.area_arr, ae))
-                nozmin = ThrustLevel(self.fuel, self.cea, cpGuess, self.Mr, mdotGuess, self.area_arr, ae = ae, frozen = self.frozen, pAmbient = self.optimalP)
+                nozmin = ThrustLevel(self.fuel, self.cea, cpGuess, self.Mr, mdotGuess, self.area_arr, ae = ae, frozen = self.frozen, pAmbient = self.pAmbient)
                 pGuess = nozmin.exit.p
                 #print('pressure guess:{}'.format(pGuess))
             #print('min nozzle exit pressure in bar: {}'.format(nozmin.exit.p))
@@ -126,7 +124,7 @@ class Engine:
 
         if self.nozzle_type == 'bell80' or 'conical':
             st = time.time()
-            nozmax = ThrustLevel(self.fuel, self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = self.optimalP, frozen = self.frozen)
+            nozmax = ThrustLevel(self.fuel, self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = self.pAmbient, frozen = self.frozen)
             et = time.time()
             print(f'ThrustLevel runtime" {et-st}s')
             if pMinExitRatio == None or pMinExitRatio == []:
@@ -152,7 +150,7 @@ class Engine:
     def variableThrustOptimizerold(self):
 
         if self.nozzle_type == 'bell80' or 'conical':
-            nozmax = ThrustLevel(self.fuel, self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = self.optimalP, frozen = self.frozen)
+            nozmax = ThrustLevel(self.fuel, self.cea, self.pMaxCham, self.Mr, self.mdotMax, self.area_arr, pAmbient = self.pAmbient, frozen = self.frozen)
             if self.pMinExitRatio == None or self.pMinExitRatio == []:
                 nozmin = None
                 #print('no min throttle pressure given. skipping throttle calculations')
